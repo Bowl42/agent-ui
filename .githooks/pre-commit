@@ -1,0 +1,6 @@
+#!/bin/sh
+# The quick checks, on every commit: ESLint and Prettier, types and the
+# registry. The story tests and the Storybook build run once, before a
+# release (.githooks/pre-push). It checks the working tree, so unstaged
+# edits count too.
+exec pnpm -s check:quick

@@ -1,0 +1,45 @@
+#!/bin/sh
+# Before main or a tag is pushed, the full check (`pnpm check`: the quick
+# checks, the story tests in three browsers and the dark theme, and the
+# Storybook build). Other branches push without it. It checks the working
+# tree, so the commit pushed must be the one checked out, with no edits.
+#
+# A commit whose source passed is not checked again; nor is a release's
+# tag commit, main's with the built registry added (public/r, and
+# registry.json naming its dependencies by their URLs at the tag), once main
+# passed: its tag push checks the registry only. The source passed is
+# kept in the repository's git directory.
+full=
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main | refs/tags/*)
+      [ "$local_sha" = 0000000000000000000000000000000000000000 ] && continue
+      commit=$(git rev-parse "$local_sha^{commit}") || exit 1
+      if [ "$commit" != "$(git rev-parse HEAD)" ] || [ -n "$(git status --porcelain)" ]; then
+        echo "pre-push: check out $commit, with no edits, to push it to $remote_ref" >&2
+        exit 1
+      fi
+      full=1
+      ;;
+  esac
+done
+[ -n "$full" ] || exit 0
+
+# What the full check reads: every file but the built one (public/r).
+tree_of() {
+  git ls-tree -r "$1" | grep -v "	public/r/" | git hash-object --stdin
+}
+passed="$(git rev-parse --git-common-dir)/agent-ui-checked"
+last=$(cat "$passed" 2>/dev/null)
+if [ -n "$last" ] && [ "$(tree_of HEAD)" = "$last" ]; then
+  echo "pre-push: this source passed the full check" >&2
+  exit 0
+fi
+if [ -n "$last" ] && git rev-parse -q --verify HEAD^ >/dev/null &&
+  [ "$(tree_of HEAD^)" = "$last" ] &&
+  git diff --quiet HEAD^ HEAD -- . ':(exclude)public/r' ':(exclude)registry.json'; then
+  echo "pre-push: main's source passed the full check; checking the built registry" >&2
+  exec pnpm -s registry:check
+fi
+pnpm -s check || exit 1
+tree_of HEAD > "$passed"

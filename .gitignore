@@ -1,0 +1,18 @@
+node_modules/
+dist/
+storybook-static/
+coverage/
+.vitest/
+test-results/
+*.tgz
+.DS_Store
+public/r/
+
+# Local worktrees.
+.claude/worktrees/
+
+# Third-party agent skills, installed locally, not part of the registry.
+.claude/skills/shadcn/
+.claude/skills/impeccable/
+.claude/skills/web-design-guidelines/
+debug-storybook.log

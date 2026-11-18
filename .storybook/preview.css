@@ -1,0 +1,12 @@
+/* The theme as an app gets it, and, as an app using the markdown item
+   does, Streamdown's own classes. */
+@import "../src/index.css";
+@source "../node_modules/streamdown/dist/*.js";
+
+/* A story's frame is at most the viewport's width, so a story's
+   `max-w-full` holds at a phone's width instead of the frame growing to
+   fit it. */
+.sb-main-centered #storybook-root,
+.sb-main-padded #storybook-root {
+  max-width: 100%;
+}

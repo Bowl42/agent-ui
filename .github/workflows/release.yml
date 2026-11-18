@@ -1,0 +1,65 @@
+name: Release
+
+# A release of main as it is: from the Actions tab, "Run workflow", with
+# its version. Main's checks must have passed on that commit; the job
+# then builds the registry into a commit of its own (scripts/release.ts),
+# tags it and makes a GitHub release with notes from the pull requests
+# since the last one.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version, e.g. v0.1.1"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.ref == 'refs/heads/main'
+    env:
+      VERSION: ${{ inputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check the version and main's checks
+        run: |
+          if ! printf '%s' "$VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::A version is vX.Y.Z, e.g. v0.1.1" && exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+            echo "::error::$VERSION is released already" && exit 1
+          fi
+          checks=$(gh run list --workflow check.yml --commit "$GITHUB_SHA" \
+            --event push --json conclusion --jq '.[0].conclusion // "none"')
+          if [ "$checks" != success ]; then
+            echo "::error::Main's checks on $GITHUB_SHA: $checks; release once they pass" && exit 1
+          fi
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          node scripts/release.ts "$VERSION"
+          pnpm -s registry:check
+          git push origin "refs/tags/$VERSION"
+      - name: Make the GitHub release
+        run: |
+          previous=$(git tag --list 'v*' --sort=-v:refname | grep -vx "$VERSION" | head -n 1)
+          gh release create "$VERSION" --verify-tag --title "$VERSION" \
+            --generate-notes ${previous:+--notes-start-tag "$previous"}

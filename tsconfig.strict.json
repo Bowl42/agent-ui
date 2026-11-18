@@ -1,0 +1,17 @@
+{
+  // What an app gets (components, hooks, lib), type-checked with the strict
+  // options apps commonly turn on, so the files build in those apps too;
+  // `pnpm typecheck:ts5` checks it again with TypeScript 5, as they build.
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.strict.tsbuildinfo",
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedSideEffectImports": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false
+  },
+  "include": ["src/components", "src/hooks", "src/lib"]
+}

@@ -1,0 +1,6 @@
+#!/bin/sh
+# Conventional Commits: type(scope)!: description
+pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?!?: .+'
+head -n 1 "$1" | grep -Eq "$pattern" && exit 0
+echo "commit message must follow Conventional Commits: type(scope): description" >&2
+exit 1

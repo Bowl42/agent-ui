@@ -1,0 +1,17 @@
+node_modules/
+coverage/
+.pnpm-store/
+pnpm-lock.yaml
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+storybook-static/
+.vitest/
+public/r/
+# Written by the shadcn CLI (or kept as close to it as a fix allows), so
+# updates diff cleanly against upstream.
+src/components/ui/
+src/hooks/
+src/lib/
+.claude/worktrees/
+.claude/skills/

@@ -1,0 +1,68 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ESLint, Prettier, types, the registry, the grid, the content and the
+  # Storybook build.
+  quick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:quick
+      - run: pnpm storybook:build
+
+  # The story tests, a job per browser so they run side by side. A pull
+  # request tests in Chromium; main in Firefox, WebKit and the dark theme
+  # too, as the pre-push hook does.
+  test:
+    runs-on: ubuntu-latest
+    # Playwright's image: its browsers, and the same fonts on every run, as
+    # layout tests need. Its tag is the version of `playwright` in
+    # pnpm-lock.yaml. Run it locally the same way:
+    #   docker run --rm -it --ipc=host -v "$PWD:/src" -w /src \
+    #     mcr.microsoft.com/playwright:v1.64.1-noble bash
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: ${{ fromJSON(github.event_name == 'pull_request' && '["chromium"]' || '["chromium","firefox","webkit","dark"]') }}
+    env:
+      # Firefox in a container needs a home it owns.
+      HOME: /root
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Test
+        run: |
+          case "${{ matrix.suite }}" in
+            chromium) pnpm test:chromium ;;
+            firefox) pnpm exec vitest run --project "storybook (firefox)" ;;
+            webkit) pnpm exec vitest run --project "storybook (webkit)" ;;
+            dark) pnpm exec vitest run --project "storybook-dark (chromium)" ;;
+          esac

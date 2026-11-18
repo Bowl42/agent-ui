@@ -1,0 +1,277 @@
+"use client"
+
+import * as React from "react"
+import { Toast as ToastPrimitive } from "@base-ui/react/toast"
+import { cn } from "cn"
+
+import { Button } from "@/components/ui/button"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Cancel01Icon, CheckmarkCircle02Icon, InformationCircleIcon, Alert02Icon, MultiplicationSignCircleIcon, Loading03Icon } from "@hugeicons/core-free-icons"
+
+const toast = ToastPrimitive.createToastManager()
+
+function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
+  return <ToastPrimitive.Provider {...props} />
+}
+
+function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
+  return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />
+}
+
+// agent-ui: where toasts show, the window's bottom or top end. At the top,
+// under a titlebar (AgentApp's --agent-app-titlebar) and the status bar;
+// at the end, clear of what the app keeps there (--toast-inset-end, e.g.
+// a native view the page cannot cover).
+type ToastPosition = "bottom-end" | "top-end"
+
+const ToastPositionContext = React.createContext<ToastPosition>("bottom-end")
+
+function ToastViewport({
+  className,
+  position = "bottom-end",
+  ...props
+}: ToastPrimitive.Viewport.Props & { position?: ToastPosition }) {
+  return (
+    <ToastPositionContext.Provider value={position}>
+      <ToastPrimitive.Viewport
+        data-slot="toast-viewport"
+        data-position={position}
+        className={cn(
+          "pointer-events-none fixed inset-x-4 z-50 mx-auto flex w-auto max-w-sm flex-col gap-3 outline-none sm:right-[calc(1rem+var(--toast-inset-end,0px))] sm:left-auto sm:mx-0 sm:w-full",
+          position === "top-end"
+            ? "top-safe-offset-4"
+            : "bottom-safe-offset-4 flex-col-reverse",
+          className
+        )}
+        {...props}
+      />
+    </ToastPositionContext.Provider>
+  )
+}
+
+function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
+  const position = React.useContext(ToastPositionContext)
+  return (
+    <ToastPrimitive.Root
+      data-slot="toast"
+      swipeDirection={position === "top-end" ? ["up", "right"] : ["down", "right"]}
+      // agent-ui: a dialog's radius, and no border: shadow-lg is the theme's
+      // shadow-float, which has its own hairline.
+      className={cn(
+        "group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom [--toast-dir:1] in-data-[position=top-end]:top-0 in-data-[position=top-end]:bottom-auto in-data-[position=top-end]:origin-top in-data-[position=top-end]:[--toast-dir:-1] rounded-xl bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc((var(--toast-offset-y)+var(--toast-index)*var(--gap))*var(--toast-dir)*-1+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
+        "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-((var(--toast-index)*var(--peek))+(var(--shrink)*var(--height)))*var(--toast-dir)))_scale(var(--scale))] [transition:transform_var(--motion-slide)_var(--ease-enter),opacity_var(--motion-slide)_var(--ease-enter),height_var(--motion-fade)_var(--ease-ui)]",
+        "after:absolute after:top-full after:left-0 in-data-[position=top-end]:after:top-auto in-data-[position=top-end]:after:bottom-full after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
+        "data-expanded:h-(--toast-height) data-expanded:[transform:translateX(var(--toast-swipe-movement-x))_translateY(var(--offset-y))]",
+        "data-limited:opacity-0 data-starting-style:[transform:translateY(calc(var(--toast-dir)*150%))]",
+        "[&[data-ending-style]:not([data-limited]):not([data-swipe-direction])]:[transform:translateY(calc(var(--toast-dir)*150%))]",
+        "data-ending-style:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y)+150%))]",
+        "data-ending-style:data-[swipe-direction=left]:[transform:translateX(calc(var(--toast-swipe-movement-x)-150%))_translateY(var(--offset-y))]",
+        "data-ending-style:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x)+150%))_translateY(var(--offset-y))]",
+        "data-ending-style:data-[swipe-direction=up]:[transform:translateY(calc(var(--toast-swipe-movement-y)-150%))]",
+        "data-expanded:data-ending-style:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y)+150%))]",
+        "data-expanded:data-ending-style:data-[swipe-direction=left]:[transform:translateX(calc(var(--toast-swipe-movement-x)-150%))_translateY(var(--offset-y))]",
+        "data-expanded:data-ending-style:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x)+150%))_translateY(var(--offset-y))]",
+        "data-expanded:data-ending-style:data-[swipe-direction=up]:[transform:translateY(calc(var(--toast-swipe-movement-y)-150%))]",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
+  return (
+    <ToastPrimitive.Content
+      data-slot="toast-content"
+      className={cn(
+        "flex h-full items-center gap-3 overflow-hidden p-4 transition-opacity motion-size data-behind:opacity-0 data-expanded:opacity-100",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
+  return (
+    <ToastPrimitive.Title
+      data-slot="toast-title"
+      className={cn("text-sm font-medium", className)}
+      {...props}
+    />
+  )
+}
+
+function ToastDescription({
+  className,
+  ...props
+}: ToastPrimitive.Description.Props) {
+  return (
+    <ToastPrimitive.Description
+      data-slot="toast-description"
+      className={cn("text-sm text-muted-foreground", className)}
+      {...props}
+    />
+  )
+}
+
+function ToastAction({
+  className,
+  render = <Button variant="outline" size="sm" />,
+  ...props
+}: ToastPrimitive.Action.Props) {
+  return (
+    <ToastPrimitive.Action
+      data-slot="toast-action"
+      render={render}
+      className={cn("shrink-0", className)}
+      {...props}
+    />
+  )
+}
+
+function ToastClose({
+  className,
+  children,
+  render = <Button variant="ghost" size="icon-sm" />,
+  ...props
+}: ToastPrimitive.Close.Props) {
+  return (
+    <ToastPrimitive.Close
+      data-slot="toast-close"
+      aria-label="Close toast"
+      render={render}
+      className={cn(
+        "relative shrink-0 text-muted-foreground after:absolute after:-inset-2 after:content-[''] hover:text-foreground",
+        className
+      )}
+      {...props}
+    >
+      {children ?? (
+        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} aria-hidden="true" />
+      )}
+    </ToastPrimitive.Close>
+  )
+}
+
+function ToastIcon({ type }: { type: string | undefined }) {
+  let icon: React.ReactNode = null
+
+  if (type === "success") {
+    icon = (
+      <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={2} aria-hidden="true" />
+    )
+  }
+
+  if (type === "info") {
+    icon = (
+      <HugeiconsIcon icon={InformationCircleIcon} strokeWidth={2} aria-hidden="true" />
+    )
+  }
+
+  if (type === "warning") {
+    icon = (
+      <HugeiconsIcon icon={Alert02Icon} strokeWidth={2} aria-hidden="true" />
+    )
+  }
+
+  if (type === "error") {
+    icon = (
+      <HugeiconsIcon icon={MultiplicationSignCircleIcon} strokeWidth={2} className="text-destructive" aria-hidden="true" />
+    )
+  }
+
+  if (type === "loading") {
+    icon = (
+      <HugeiconsIcon icon={Loading03Icon} strokeWidth={2} className="animate-spin" aria-hidden="true" />
+    )
+  }
+
+  if (!icon) {
+    return null
+  }
+
+  return (
+    <span
+      data-slot="toast-icon"
+      className="shrink-0 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4"
+    >
+      {icon}
+    </span>
+  )
+}
+
+function ToastList() {
+  const { toasts } = ToastPrimitive.useToastManager()
+
+  return toasts.map((toastItem) => (
+    <Toast key={toastItem.id} toast={toastItem}>
+      <ToastContent>
+        <ToastIcon type={toastItem.type} />
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <ToastTitle />
+          <ToastDescription />
+        </div>
+        <ToastAction />
+        <ToastClose />
+      </ToastContent>
+    </Toast>
+  ))
+}
+
+function Toaster({
+  children,
+  toastManager = toast,
+  position = "bottom-end",
+  pinned,
+  ...props
+}: ToastPrimitive.Provider.Props & {
+  /** agent-ui: the window's bottom end, or its top end. */
+  position?: ToastPosition
+  /**
+   * agent-ui: a card that stays where the toasts show, not a toast (e.g.
+   * asking to allow notifications), the toasts beside it, away from the
+   * window's edge.
+   */
+  pinned?: React.ReactNode
+}) {
+  return (
+    <ToastProvider toastManager={toastManager} {...props}>
+      {children}
+      <ToastPortal>
+        <ToastViewport position={position}>
+          {pinned && (
+            <div data-slot="toast-pinned" className="pointer-events-auto">
+              {pinned}
+            </div>
+          )}
+          {/* The toasts' stack, from its edge nearest the window's. */}
+          <div data-slot="toast-stack" className="relative">
+            <ToastList />
+          </div>
+        </ToastViewport>
+      </ToastPortal>
+    </ToastProvider>
+  )
+}
+
+const createToastManager = ToastPrimitive.createToastManager
+const useToastManager = ToastPrimitive.useToastManager
+
+export {
+  Toaster,
+  Toast,
+  ToastAction,
+  ToastClose,
+  ToastContent,
+  ToastDescription,
+  ToastPortal,
+  ToastProvider,
+  ToastTitle,
+  ToastViewport,
+  type ToastPosition,
+  createToastManager,
+  toast,
+  useToastManager,
+}
