@@ -255,6 +255,7 @@ function ComposerSelectContent({
   title,
   doneLabel = "Done",
   initialFocus,
+  footer,
   className,
   children,
 }: {
@@ -262,6 +263,12 @@ function ComposerSelectContent({
   title: string
   /** The sheet's button that closes it, on a phone. */
   doneLabel?: string
+  /**
+   * Under the list, past a hairline, kept in sight while the list
+   * scrolls: a line of small grey text about the choice, with a link or
+   * a button in it ("Applies to this conversation · Learn more").
+   */
+  footer?: React.ReactNode
   /** Where the focus goes as it opens; else the chosen item, or the first. */
   initialFocus?: React.RefObject<HTMLElement | null>
   className?: string
@@ -290,6 +297,11 @@ function ComposerSelectContent({
         <div ref={body} className="min-h-0 flex-1 overflow-y-auto">
           {children}
         </div>
+        {footer !== undefined && (
+          <ComposerSelectFooter className="px-4 py-3 pb-safe-or-3">
+            {footer}
+          </ComposerSelectFooter>
+        )}
       </DrawerContent>
     )
   }
@@ -312,7 +324,33 @@ function ComposerSelectContent({
       <div ref={body} className="min-h-0 overflow-y-auto overscroll-contain">
         {children}
       </div>
+      {footer !== undefined && (
+        <ComposerSelectFooter className="px-3 py-2">
+          {footer}
+        </ComposerSelectFooter>
+      )}
     </PopoverContent>
+  )
+}
+
+/**
+ * A picker's footer: small grey text past a hairline, its links and
+ * buttons underlined, darker under the pointer, ringed for the keyboard.
+ */
+function ComposerSelectFooter({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="composer-select-footer"
+      className={cn(
+        "shrink-0 border-t text-xs text-pretty text-muted-foreground",
+        "[&_:is(a,button)]:rounded-xs [&_:is(a,button)]:underline [&_:is(a,button)]:underline-offset-4 [&_:is(a,button)]:outline-none [&_:is(a,button)]:hover:text-foreground [&_:is(a,button)]:focus-visible:ring-3 [&_:is(a,button)]:focus-visible:ring-ring/50",
+        className
+      )}
+      {...props}
+    />
   )
 }
 
@@ -717,6 +755,7 @@ function ComposerModePicker({
   title = "Permissions",
   label = (mode) => `Permissions: ${mode}`,
   doneLabel,
+  footer,
   open,
   defaultOpen,
   onOpenChange,
@@ -731,6 +770,11 @@ function ComposerModePicker({
   label?: (mode: string) => string
   /** The sheet's button that closes it on a phone: "Done". */
   doneLabel?: string
+  /**
+   * Under the modes, in small grey text: a line about them with a link
+   * or a button ("Applies to this conversation · Learn more").
+   */
+  footer?: React.ReactNode
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
@@ -764,6 +808,7 @@ function ComposerModePicker({
       <ComposerSelectContent
         title={title}
         {...(doneLabel !== undefined ? { doneLabel } : {})}
+        footer={footer}
         className="sm:w-84"
       >
         <ComposerSelectList aria-label={title}>

@@ -1581,6 +1581,12 @@ A mode that lets the agent act unasked is `tone: "destructive"` in
 destructive colour, its icon too, and its icon so in the list, so it is
 not mistaken for a safer one.
 
+A line about the modes goes in its `footer`, under them past a
+hairline: small grey text with a link or a button in it ("Applies to
+this conversation only · Learn more"), underlined, after the modes by
+Tab. Any picker has it as `ComposerSelectContent`'s `footer`; it stays
+in sight while the list scrolls, and at a sheet's foot on a phone.
+
 #### A narrow toolbar
 
 A narrower toolbar gives up room in steps, by its own width, not the

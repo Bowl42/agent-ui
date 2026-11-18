@@ -365,6 +365,113 @@ export const DestructiveMode: Story = {
   },
 }
 
+/** The modes of `ModeFooter` and `PhoneModeFooter`. */
+function FooterPicker() {
+  const [mode, setMode] = React.useState("ask")
+  return (
+    <div className="w-xl max-w-full">
+      <Composer>
+        <ComposerEditor aria-label="Message" placeholder="Ask anything" />
+        <ComposerToolbar>
+          <ComposerModePicker
+            modes={[
+              {
+                value: "ask",
+                label: "Ask first",
+                description: "Asks before it edits or runs a command",
+                icon: <HugeiconsIcon icon={SecurityCheckIcon} />,
+              },
+              {
+                value: "full",
+                label: "Full access",
+                description:
+                  "Edits files, runs commands and uses the network without asking",
+                icon: <HugeiconsIcon icon={ShieldEnergyIcon} />,
+                tone: "destructive",
+              },
+            ]}
+            value={mode}
+            onValueChange={setMode}
+            footer={
+              <>
+                Applies to this conversation only ·{" "}
+                <a href="https://example.com/modes">Learn more</a>
+              </>
+            }
+          />
+          <ComposerSubmit />
+        </ComposerToolbar>
+      </Composer>
+    </div>
+  )
+}
+
+/**
+ * A line under the modes (`footer`): small grey text about them past a
+ * hairline, its link underlined, after the modes by Tab, the modes still
+ * in the destructive colour where one is.
+ */
+export const ModeFooter: Story = {
+  render: () => <FooterPicker />,
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Permissions: Ask first" })
+    )
+    const list = await screen.findByRole("listbox")
+    const footer = await waitFor(() => {
+      const found = document.querySelector<HTMLElement>(
+        "[data-slot=composer-select-footer]"
+      )
+      expect(found).toBeVisible()
+      return found!
+    })
+    const link = within(footer).getByRole("link", { name: "Learn more" })
+    await expect(footer).toHaveTextContent("Applies to this conversation only")
+    // Under the list, as wide as the popup, past its hairline.
+    await expect(footer.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      list.getBoundingClientRect().bottom - 1
+    )
+    await expect(getComputedStyle(footer).borderTopWidth).toBe("1px")
+    await expect(getComputedStyle(footer).fontSize).toBe("12px")
+    await expect(getComputedStyle(link).textDecorationLine).toBe("underline")
+    // Grey text, not the list's.
+    await expect(getComputedStyle(footer).color).not.toBe(
+      getComputedStyle(list).color
+    )
+    // Tab goes from the chosen mode to the link.
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        within(list).getByRole("option", { name: /^Ask first/ })
+      )
+    )
+    await userEvent.tab()
+    await expect(link).toHaveFocus()
+  },
+}
+
+/** The footer at the sheet's foot on a phone, above the home indicator. */
+export const PhoneModeFooter: Story = {
+  ...Phone,
+  render: () => <FooterPicker />,
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Permissions: Ask first" })
+    )
+    const sheet = await screen.findByRole("dialog", { name: "Permissions" })
+    const footer = sheet.querySelector<HTMLElement>(
+      "[data-slot=composer-select-footer]"
+    )!
+    await waitFor(() => expect(footer).toBeVisible())
+    await expect(
+      within(footer).getByRole("link", { name: "Learn more" })
+    ).toBeVisible()
+    const list = within(sheet).getByRole("listbox")
+    await expect(footer.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      list.getBoundingClientRect().bottom - 1
+    )
+  },
+}
+
 /**
  * The mode picker in the app's words, on a phone too: its sheet's
  * title, and its Done button.
