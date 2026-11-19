@@ -154,13 +154,16 @@ const defaultViewerLabels: ViewerLabels = {
  * above (back, its path, its own tools, add to chat, download, more), its
  * content to the edges, and a status bar below where its controls need
  * one. A container (`@container/viewer`) for what is narrow in it.
+ * Under a finger it takes no double tap to zoom the page: a tap on its
+ * buttons is a click at once, however quick the next (its content may
+ * take pinches and double taps of its own).
  */
 function Viewer({ className, ...props }: React.ComponentProps<"section">) {
   return (
     <section
       data-slot="viewer"
       className={cn(
-        "@container/viewer flex h-full min-h-0 min-w-0 flex-col bg-background text-sm",
+        "@container/viewer flex h-full min-h-0 min-w-0 touch-manipulation flex-col bg-background text-sm",
         className
       )}
       {...props}
@@ -1381,7 +1384,9 @@ function ViewerSiblings({
           aria-label={labels.previous}
           data-slot="viewer-previous"
           className={cn(side, "start-3")}
-          onClick={onPrevious}
+          // Called with nothing: not the click, which an app's handler
+          // could take for an argument of its own.
+          onClick={() => onPrevious()}
         >
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
@@ -1397,7 +1402,9 @@ function ViewerSiblings({
           aria-label={labels.next}
           data-slot="viewer-next"
           className={cn(side, "end-3")}
-          onClick={onNext}
+          // Called with nothing: not the click, which an app's handler
+          // could take for an argument of its own.
+          onClick={() => onNext()}
         >
           <HugeiconsIcon
             icon={ArrowRight01Icon}

@@ -397,8 +397,15 @@ export const ImageAmongOthers: Story = {
     const where = await canvas.findByText("30 / 60")
     await expect(where).toBeVisible()
     await expect(where).toHaveAttribute("data-slot", "viewer-position")
+    // A click on Next goes on, with no argument (not the click), the
+    // zoom as it was; twice quickly, twice, and still no zoom.
+    const percent = zoomOf(canvasElement)
     await userEvent.click(canvas.getByRole("button", { name: "Next image" }))
     await expect(media.onNext).toHaveBeenCalledTimes(1)
+    await expect(media.onNext).toHaveBeenLastCalledWith()
+    await userEvent.dblClick(canvas.getByRole("button", { name: "Next image" }))
+    await expect(media.onNext).toHaveBeenCalledTimes(3)
+    await expect(zoomOf(canvasElement)).toBe(percent)
     await userEvent.click(
       canvas.getByRole("button", { name: "Previous image" })
     )
@@ -407,7 +414,7 @@ export const ImageAmongOthers: Story = {
       .querySelector<HTMLElement>("[data-slot=media-viewer-stage]")!
       .focus()
     await userEvent.keyboard("{ArrowRight}")
-    await expect(media.onNext).toHaveBeenCalledTimes(2)
+    await expect(media.onNext).toHaveBeenCalledTimes(4)
     // Zoomed in past its place, the arrows scroll it instead.
     await userEvent.keyboard("++++")
     await userEvent.keyboard("{ArrowLeft}")
@@ -511,6 +518,113 @@ export const ImageTouch: Story = {
     touches(stage, "touchstart", [{ x: middle.x + 80, y: middle.y }])
     touches(stage, "touchend", [], [{ x: middle.x - 40, y: middle.y + 10 }])
     await expect(media.onNext).toHaveBeenCalledTimes(1)
+  },
+}
+
+/**
+ * On a touch screen, a tap on a side button is the button's: taps in
+ * quick succession on Next go on once each and never zoom (the page's
+ * double tap neither), a drag from it is no swipe, and a control over
+ * the stage is its own as well.
+ */
+export const ImageTouchSideButtons: Story = {
+  args: {
+    media: {
+      ...image,
+      position: { index: 30, count: 60 },
+      onPrevious: fn(),
+      onNext: fn(),
+    },
+  },
+  play: async ({ args, canvas, canvasElement }) => {
+    const media = args.media as typeof image & {
+      onPrevious: ReturnType<typeof fn>
+      onNext: ReturnType<typeof fn>
+    }
+    const stage = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=media-viewer-stage]"
+    )!
+    try {
+      new Touch({ identifier: 0, target: stage })
+    } catch {
+      return
+    }
+    const next = canvas.getByRole("button", { name: "Next image" })
+    await waitFor(() => expect(zoomOf(canvasElement)).toMatch(/%$/))
+    // No double tap of the browser's zooms the page from a button: the
+    // viewer takes none (touch-action holds for all in it).
+    await expect(
+      getComputedStyle(next.closest("[data-slot=viewer]")!).touchAction
+    ).toBe("manipulation")
+    const percent = zoomOf(canvasElement)
+    const box = next.getBoundingClientRect()
+    const point = { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+    // A tap as a touch screen makes one: its touches, then (unless the
+    // touchend's default is prevented) a click.
+    const tap = () => {
+      const touch = new Touch({
+        identifier: 0,
+        target: next,
+        clientX: point.x,
+        clientY: point.y,
+      })
+      next.dispatchEvent(
+        new TouchEvent("touchstart", {
+          touches: [touch],
+          changedTouches: [touch],
+          bubbles: true,
+          cancelable: true,
+        })
+      )
+      const clicks = next.dispatchEvent(
+        new TouchEvent("touchend", {
+          touches: [],
+          changedTouches: [touch],
+          bubbles: true,
+          cancelable: true,
+        })
+      )
+      if (clicks) next.click()
+      return clicks
+    }
+    await expect(tap()).toBe(true)
+    await expect(tap()).toBe(true)
+    await expect(media.onNext).toHaveBeenCalledTimes(2)
+    await expect(media.onNext).toHaveBeenLastCalledWith()
+    await expect(zoomOf(canvasElement)).toBe(percent)
+    // A drag from it across the image: not a swipe.
+    touches(next, "touchstart", [point])
+    touches(next, "touchend", [], [{ x: point.x - 200, y: point.y }])
+    await expect(media.onNext).toHaveBeenCalledTimes(2)
+    await expect(media.onPrevious).not.toHaveBeenCalled()
+    // A control the app puts over the stage is its own too: two taps on
+    // it zoom nothing.
+    const overlay = document.createElement("button")
+    overlay.textContent = "Compare"
+    overlay.style.cssText = "position:absolute;top:8px;left:8px"
+    stage.append(overlay)
+    const over = overlay.getBoundingClientRect()
+    const onOverlay = { x: over.left + 4, y: over.top + 4 }
+    const tapOverlay = () => {
+      touches(overlay, "touchstart", [onOverlay])
+      touches(overlay, "touchend", [], [onOverlay])
+    }
+    tapOverlay()
+    tapOverlay()
+    await expect(zoomOf(canvasElement)).toBe(percent)
+    overlay.remove()
+    // The image itself still takes a double tap.
+    const middle = {
+      x: stage.getBoundingClientRect().left + stage.clientWidth / 3,
+      y: stage.getBoundingClientRect().top + stage.clientHeight / 2,
+    }
+    const tapImage = () => {
+      touches(stage, "touchstart", [middle])
+      touches(stage, "touchend", [], [middle])
+    }
+    tapImage()
+    tapImage()
+    await waitFor(() => expect(zoomOf(canvasElement)).not.toBe(percent))
   },
 }
 

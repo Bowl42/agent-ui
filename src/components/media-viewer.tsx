@@ -273,6 +273,21 @@ type MediaViewerAudio = {
 type MediaViewerProps = MediaViewerFrameProps &
   (MediaViewerImage | MediaViewerVideo | MediaViewerAudio)
 
+/**
+ * Whether a touch began on a control inside `stage` (a side button, a
+ * badge, a toolbar's or an overlay's button, a slider): its own, a tap
+ * a click and never a gesture of the stage's.
+ */
+function onControl(stage: Element, event: TouchEvent) {
+  const control =
+    event.target instanceof Element
+      ? event.target.closest(
+          "button, a[href], input, select, textarea, label, [role=button], [role=slider], [role=link], [role=menuitem], [role=tab], [contenteditable=true]"
+        )
+      : null
+  return control !== null && control !== stage && stage.contains(control)
+}
+
 /** A media element's state, and what changes it. */
 function useMedia<Element extends HTMLMediaElement>() {
   const ref = React.useRef<Element>(null)
@@ -1432,7 +1447,19 @@ function ImageView({
           }
         : null
     }
+    // A touch on a control is the control's, to its end.
+    let control = false
     const start = (event: TouchEvent) => {
+      if (onControl(node, event)) {
+        control = true
+        pinch = null
+        swipe = null
+        tap = null
+        pinned.current = null
+        return
+      }
+      if (control && event.touches.length > 1) return
+      control = false
       const { zoomable } = gesture.current
       // Marking: its fingers draw.
       if (getComputedStyle(scroller()).touchAction === "none") return
@@ -1448,7 +1475,7 @@ function ImageView({
       } else swipe = null
     }
     const move = (event: TouchEvent) => {
-      if (!pinch || event.touches.length < 2) return
+      if (control || !pinch || event.touches.length < 2) return
       event.preventDefault()
       const at = between(event.touches[0]!, event.touches[1]!)
       if (pinned.current) {
@@ -1464,6 +1491,10 @@ function ImageView({
       else gesture.current.zoomTo(next)
     }
     const end = (event: TouchEvent) => {
+      if (control) {
+        if (event.touches.length === 0) control = false
+        return
+      }
       if (pinch) {
         if (event.touches.length < 2) {
           pinch = null
@@ -1511,6 +1542,7 @@ function ImageView({
       }
     }
     const cancel = () => {
+      control = false
       pinch = null
       swipe = null
       pinned.current = null

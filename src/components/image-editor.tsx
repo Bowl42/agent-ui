@@ -88,6 +88,21 @@ const touch =
 // has no icon size), its place as large.
 const iconToggle = cn("px-0", touch)
 
+/**
+ * Whether a touch began on a control inside `stage` (a side button, a
+ * badge, a toolbar's or an overlay's button, a slider): its own, a tap
+ * a click and never a gesture of the stage's.
+ */
+function onControl(stage: Element, event: TouchEvent) {
+  const control =
+    event.target instanceof Element
+      ? event.target.closest(
+          "button, a[href], input, select, textarea, label, [role=button], [role=slider], [role=link], [role=menuitem], [role=tab], [contenteditable=true]"
+        )
+      : null
+  return control !== null && control !== stage && stage.contains(control)
+}
+
 /** Follows the pointer outside the frame, if it is one the page has. */
 function capture(event: React.PointerEvent<HTMLElement>) {
   try {
@@ -676,7 +691,18 @@ function ImageEditor({
       y: (a.clientY + b.clientY) / 2,
       distance: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
     })
+    // A touch on a control is the control's, to its end.
+    let control = false
     const start = (event: TouchEvent) => {
+      if (onControl(element, event)) {
+        control = true
+        pinch = null
+        down = null
+        tap = null
+        return
+      }
+      if (control && event.touches.length > 1) return
+      control = false
       const scale = touchScale()
       if (scale === null) return
       if (event.touches.length === 2) {
@@ -690,12 +716,16 @@ function ImageEditor({
       } else down = null
     }
     const move = (event: TouchEvent) => {
-      if (!pinch || event.touches.length < 2) return
+      if (control || !pinch || event.touches.length < 2) return
       event.preventDefault()
       const at = between(event.touches[0]!, event.touches[1]!)
       touchZoom((pinch.scale * at.distance) / pinch.distance, at)
     }
     const end = (event: TouchEvent) => {
+      if (control) {
+        if (event.touches.length === 0) control = false
+        return
+      }
       if (pinch) {
         if (event.touches.length < 2) pinch = null
         return
@@ -718,6 +748,7 @@ function ImageEditor({
       touchZoom("toggle", { x: finger.clientX, y: finger.clientY })
     }
     const cancel = () => {
+      control = false
       pinch = null
       down = null
     }
