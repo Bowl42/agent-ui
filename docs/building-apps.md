@@ -980,6 +980,15 @@ the `--motion-*` properties (`--motion-mark`, 1200ms, is how long
 - `FloatingButton` fades and grows in; with `visible` it stays rendered
   and fades and shrinks out too.
 
+What will move starts where it ends, so it need not move:
+`AgentAppStart` puts its children (the composer, and a notice or an
+alert over it, 24px apart) in an `AgentAppDock`, where the
+conversation's composer will be, on a phone, a foldable on its side
+and a desktop alike, and centres its heading in the room above; sending
+the first message, the app swaps it for the conversation and its dock
+and nothing of the composer moves. In a short window the heading's room
+shrinks and scrolls first.
+
 No curve overshoots (a spring's bounce): what arrives settles on
 `--ease-enter`, fast then still, so a popup is read where it lands and
 not watched.
@@ -2885,7 +2894,8 @@ uses this registry's scroller hooks.
   (8px). Under the pointer the falloff centres on the row pointed at,
   and on the focused one from the keyboard; it returns to the current
   one as they leave. A section or a mark is a step behind a turn at the
-  same distance. `resting="quiet"` halves the lengths and greys the
+  same distance. Every tick (and a failed turn's diamond) starts at the
+  rail's outer edge, its `side`, and grows towards the content. `resting="quiet"` halves the lengths and greys the
   ticks until the pointer or focus is on it. The first non-empty line of
   `label` names the tick and its tooltip. `labels` supplies the
   navigation's words.

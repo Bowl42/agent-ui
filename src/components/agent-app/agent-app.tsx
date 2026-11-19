@@ -1158,11 +1158,14 @@ function AgentAppDock({
 }
 
 /**
- * A new conversation's page: what to ask, a heading 22px and semibold
- * (and a line under it, if the app has one), over its composer in the
- * column, the two in the middle of the main
- * area, a little above its centre. The header has no other heading for
- * it than its title ("New chat").
+ * A new conversation's page: its composer (and what the app puts over
+ * it: a notice, a setup alert) already where the conversation's will be,
+ * in an `AgentAppDock`, so sending the first message moves nothing; over
+ * it, centred in the room left, what to ask, a heading 22px and semibold
+ * (and a line under it, if the app has one). Where the window is short,
+ * the heading's room shrinks and scrolls before the composer is pushed
+ * off. The header has no other heading for it than its title ("New
+ * chat").
  */
 function AgentAppStart({
   title,
@@ -1179,29 +1182,34 @@ function AgentAppStart({
   return (
     <div
       data-slot="agent-app-start"
-      // A conversation's scrollbar, so its column is where theirs is.
-      className={cn(
-        "flex min-h-0 flex-1 scrollbar-thin scrollbar-gutter-stable flex-col justify-center overflow-y-auto pb-16 group-data-phone/sidebar-wrapper:justify-end group-data-phone/sidebar-wrapper:pb-2",
-        className
-      )}
+      className={cn("flex min-h-0 flex-1 flex-col overflow-y-auto", className)}
       {...props}
     >
-      <AgentAppColumn className="flex flex-col gap-6 group-data-phone/sidebar-wrapper:px-2">
-        {description ? (
-          <div
-            data-slot="agent-app-start-heading"
-            className="flex flex-col gap-2 text-center"
-          >
-            <h2 className="text-display font-medium">{title}</h2>
-            <p className="text-sm text-pretty text-muted-foreground">
-              {description}
-            </p>
-          </div>
-        ) : (
-          <h2 className="text-center text-display font-medium">{title}</h2>
-        )}
-        {children}
-      </AgentAppColumn>
+      {/* Centred by its margins, not justify-center: shorter than its
+          heading, it scrolls from the heading's top. */}
+      <div
+        data-slot="agent-app-start-room"
+        className="flex min-h-0 flex-1 scrollbar-thin flex-col overflow-y-auto py-6"
+      >
+        <AgentAppColumn className="my-auto group-data-phone/sidebar-wrapper:px-2">
+          {description ? (
+            <div
+              data-slot="agent-app-start-heading"
+              className="flex flex-col gap-2 text-center"
+            >
+              <h2 className="text-display font-medium">{title}</h2>
+              <p className="text-sm text-pretty text-muted-foreground">
+                {description}
+              </p>
+            </div>
+          ) : (
+            <h2 className="text-center text-display font-medium">{title}</h2>
+          )}
+        </AgentAppColumn>
+      </div>
+      <AgentAppDock className="before:hidden">
+        <div className="flex flex-col gap-6">{children}</div>
+      </AgentAppDock>
     </div>
   )
 }

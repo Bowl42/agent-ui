@@ -317,6 +317,17 @@ export const Falloff: Story = {
     )
     await waitFor(() => expect(ticks.map(width)).toEqual(expected(last)))
     await expect(width(ticks[last]!)).toBe(24)
+    // All from one edge, the rail's outer one (its side's), growing
+    // towards the content: their starts one straight line.
+    const outer = getComputedStyle(nav).direction === "rtl" ? "left" : "right"
+    const edgeOf = (tick: HTMLElement) =>
+      line(tick).getBoundingClientRect()[outer]
+    const bars = ticks.filter((tick) => tick.dataset.kind !== "error")
+    const edges = new Set(bars.map((tick) => Math.round(edgeOf(tick))))
+    await expect(edges.size).toBe(1)
+    // A failed turn's diamond at the same edge (its corner a little past).
+    for (const tick of ticks.filter((tick) => tick.dataset.kind === "error"))
+      await expect(Math.abs(edgeOf(tick) - edgeOf(bars[0]!))).toBeLessThan(2)
     const ink = (tick: HTMLElement) =>
       getComputedStyle(line(tick)).backgroundColor
     const text = getComputedStyle(nav).color
@@ -331,6 +342,29 @@ export const Falloff: Story = {
     await expect(width(ticks[at]!)).toBe(24)
     await userEvent.unhover(nav)
     await waitFor(() => expect(ticks.map(width)).toEqual(expected(last)))
+  },
+}
+
+/** At the start side, the ticks start at its left edge and grow right. */
+export const FalloffAtStart: Story = {
+  render: () => <Conversation side="start" />,
+  play: async ({ canvasElement }) => {
+    const nav = await map(canvasElement)
+    const lines = [
+      ...nav.querySelectorAll<HTMLElement>(
+        "button[data-kind]:not([data-kind=error]) > span"
+      ),
+    ]
+    await waitFor(() =>
+      expect(
+        new Set(
+          lines.map((line) => Math.round(line.getBoundingClientRect().left))
+        ).size
+      ).toBe(1)
+    )
+    const widths = lines.map((line) => line.getBoundingClientRect().width)
+    await expect(Math.max(...widths)).toBe(24)
+    await expect(Math.min(...widths)).toBeLessThan(24)
   },
 }
 

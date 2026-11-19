@@ -28,6 +28,7 @@ import {
   AgentAppPanelExpand,
   AgentAppPanelTrigger,
   AgentAppPanels,
+  AgentAppDock,
   AgentAppStart,
   useAgentAppPanelBar,
 } from "@/components/agent-app/agent-app"
@@ -2050,7 +2051,8 @@ export const SettingsPage: Story = {
 
 /**
  * A new conversation's page with a line under its heading: centred,
- * muted, 8px under it, the two one block over the composer.
+ * muted, 8px under it, the two centred over the composer, which is at
+ * the foot where the conversation's will be.
  */
 export const StartDescription: Story = {
   args: { sidebar: null },
@@ -2064,7 +2066,7 @@ export const StartDescription: Story = {
       </AgentAppStart>
     </div>
   ),
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     const heading = canvas.getByRole("heading", {
       name: "What should we work on?",
     })
@@ -2079,11 +2081,108 @@ export const StartDescription: Story = {
       description.getBoundingClientRect().top -
         heading.getBoundingClientRect().bottom
     ).toBe(8)
-    // The composer as far under the two as under a heading alone.
+    // The two centred in the room over the composer.
+    const room = canvasElement
+      .querySelector("[data-slot=agent-app-start-room]")!
+      .getBoundingClientRect()
+    const block = canvasElement
+      .querySelector("[data-slot=agent-app-start-heading]")!
+      .getBoundingClientRect()
     await expect(
-      canvas.getByRole("textbox", { name: "Message" }).getBoundingClientRect()
-        .top - description.getBoundingClientRect().bottom
-    ).toBe(24)
+      Math.abs((block.top + block.bottom) / 2 - (room.top + room.bottom) / 2)
+    ).toBeLessThanOrEqual(1)
+    // The composer at the foot, 24px up, as in a conversation's dock.
+    const message = canvas
+      .getByRole("textbox", { name: "Message" })
+      .getBoundingClientRect()
+    await expect(innerHeight - message.bottom).toBe(24)
+  },
+}
+
+/**
+ * Sending the first message moves nothing: the start page's composer,
+ * and the notice over it, are where the conversation's dock puts them.
+ */
+export const StartWhereTheDockIs: Story = {
+  args: { sidebar: null },
+  render: function Render() {
+    const [sent, setSent] = React.useState(false)
+    const composer = (
+      <>
+        <p className="text-sm text-muted-foreground">
+          Full access is on for this conversation
+        </p>
+        <textarea aria-label="Message" className="h-24 rounded-lg border" />
+        <button type="button" onClick={() => setSent(true)}>
+          Send
+        </button>
+      </>
+    )
+    return (
+      <div className="flex h-svh flex-col">
+        {sent ? (
+          <>
+            <div className="min-h-0 flex-1" />
+            <AgentAppDock>
+              <div className="flex flex-col gap-6">{composer}</div>
+            </AgentAppDock>
+          </>
+        ) : (
+          <AgentAppStart title="What should we work on?">
+            {composer}
+          </AgentAppStart>
+        )}
+      </div>
+    )
+  },
+  play: async ({ canvas }) => {
+    const rects = () =>
+      ["Message", "Full access is on for this conversation"].map((name) => {
+        const element =
+          name === "Message"
+            ? canvas.getByRole("textbox", { name })
+            : canvas.getByText(name)
+        const { top, left, width } = element.getBoundingClientRect()
+        return { top, left, width }
+      })
+    const before = rects()
+    await userEvent.click(canvas.getByRole("button", { name: "Send" }))
+    await waitFor(() =>
+      expect(canvas.queryByRole("heading", { level: 2 })).toBeNull()
+    )
+    await expect(rects()).toEqual(before)
+  },
+}
+
+/**
+ * In a short window the heading's room shrinks and scrolls; the
+ * composer stays in sight at the foot.
+ */
+export const StartShortWindow: Story = {
+  args: { sidebar: null },
+  render: () => (
+    <div className="flex h-60 flex-col">
+      <AgentAppStart
+        title="What should we work on?"
+        description="Ask a question, or drop files to start from."
+      >
+        <textarea aria-label="Message" className="h-32 rounded-lg border" />
+      </AgentAppStart>
+    </div>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const box = canvasElement
+      .querySelector("[data-slot=agent-app-start]")!
+      .getBoundingClientRect()
+    const message = canvas
+      .getByRole("textbox", { name: "Message" })
+      .getBoundingClientRect()
+    await expect(message.bottom).toBeLessThanOrEqual(box.bottom - 24 + 0.5)
+    await expect(message.top).toBeGreaterThanOrEqual(box.top)
+    const room = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=agent-app-start-room]"
+    )!
+    await expect(room.scrollHeight).toBeGreaterThan(room.clientHeight)
   },
 }
 

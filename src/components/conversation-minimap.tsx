@@ -560,7 +560,10 @@ function ConversationMinimap({
                 buttons.current[next]?.focus({ preventScroll: true })
               }}
               className={cn(
-                "group/tick flex min-h-0 w-6 shrink cursor-pointer items-center justify-center rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                "group/tick flex min-h-0 w-6 shrink cursor-pointer items-center rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                // From the rail's outer edge, growing towards the content:
+                // their starts one straight line.
+                side === "start" ? "justify-start" : "justify-end",
                 // grid: mark
                 isSection ? "h-1.5" : "h-2"
               )}

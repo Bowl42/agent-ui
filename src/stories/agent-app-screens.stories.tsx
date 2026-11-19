@@ -1337,6 +1337,29 @@ export const Phone: Story = {
   },
 }
 
+/**
+ * A new conversation on a phone: the composer at the foot, where the
+ * conversation's is, the heading centred over it.
+ */
+export const PhoneNewChat: Story = {
+  ...viewport("phone", 390, 844),
+  args: { sidebar: null },
+  render: () => <Screen screen="new" phone />,
+  play: async ({ canvas, canvasElement }) => {
+    const editor = canvas.getByRole("textbox", { name: "Message" })
+    const dock = canvasElement.querySelector(
+      "[data-slot=agent-app-start] [data-slot=agent-app-dock]"
+    )!
+    await expect(dock).toContainElement(editor)
+    const main = canvasElement
+      .querySelector("[data-slot=agent-app-start]")!
+      .getBoundingClientRect()
+    await expect(
+      Math.abs(dock.getBoundingClientRect().bottom - main.bottom)
+    ).toBeLessThan(1)
+  },
+}
+
 /** On a phone, a turn that asks first: the question in thumb's reach. */
 export const PhoneRunning: Story = {
   ...viewport("phone", 390, 844),
