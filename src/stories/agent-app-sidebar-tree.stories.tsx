@@ -382,6 +382,38 @@ export const ChildrenCountForTheirProject: Story = {
 }
 
 /**
+ * Each project a group: 16px from the one before, its conversations
+ * close under it; its row a heading, its name smaller, medium and muted,
+ * its conversations' titles in the text's colour.
+ */
+export const ProjectsAsGroups: Story = {
+  render: () => <Arriving />,
+  play: async () => {
+    await waitFor(() =>
+      expect(
+        document.querySelectorAll("[data-slot=project]").length
+      ).toBeGreaterThan(1)
+    )
+    const [first, second] = [
+      ...document.querySelectorAll<HTMLElement>("[data-slot=project]"),
+    ]
+    await expect(getComputedStyle(first!).marginTop).toBe("0px")
+    await expect(getComputedStyle(second!).marginTop).toBe("16px")
+    const head = second!.querySelector<HTMLElement>(
+      "[data-slot=project-row] > [data-sidebar=menu-button]"
+    )!
+    const title = second!.querySelector<HTMLElement>(
+      "[data-slot=conversation] [data-sidebar=menu-button]"
+    )!
+    const style = getComputedStyle(head)
+    await expect(style.fontSize).toBe("13px")
+    await expect(style.fontWeight).toBe("500")
+    await expect(style.color).not.toBe(getComputedStyle(title).color)
+    await expect(getComputedStyle(title).fontSize).toBe("14px")
+  },
+}
+
+/**
  * Under a finger, from 640px: a row of two lines (its `detail` under its
  * title) as tall as they need, not the one-line row's 40px.
  */

@@ -4433,7 +4433,11 @@ fixed after, so a conversation never moves to another project
     project, to theirs (`{ noProject: true }`). Projects are open; the
     reader folds one, and it stays folded (`use-fold`, kept by a
     `FoldProvider`) until the reader opens it or arrives in it (its
-    page, or one of its conversations).
+    page, or one of its conversations). Each project is a group: 16px
+    from the one before, its row a heading (its name 13px, medium,
+    muted; the text's colour on hover or on its page) over its
+    conversations, so they read as its own though their icons share
+    its column.
 
   Pass `groups` for places projects live. Their projects and loose
   conversations merge by default; with multiple groups segmented `Tabs`

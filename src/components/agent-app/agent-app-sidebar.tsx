@@ -398,6 +398,14 @@ const rowMeta = cn(
  * A row with facts at its end: they take the place of its button, which
  * the row leaves room for only while it shows.
  */
+/**
+ * A project's row over its conversations, as a group's heading: its
+ * name smaller, medium and muted (the text's colour on hover or on its
+ * page), its conversations' titles in the text's.
+ */
+const projectHead =
+  "text-2sm font-medium text-muted-foreground hover:text-sidebar-foreground data-active:font-medium data-active:text-sidebar-foreground max-sm:text-sm"
+
 const metaRoom =
   "group-has-data-[sidebar=menu-action]/menu-item:pr-2 group-has-data-[sidebar=menu-action]/menu-item:group-hover/menu-item:pr-8 group-has-data-[sidebar=menu-action]/menu-item:group-focus-within/menu-item:pr-8 group-has-data-[sidebar=menu-action]/menu-item:group-has-data-popup-open/menu-item:pr-8 group-has-data-[sidebar=menu-action]/menu-item:not-pointer-fine:pr-8"
 
@@ -965,7 +973,9 @@ function ProjectRow({
     <Collapsible
       open={open}
       onOpenChange={setOpen}
-      render={<li data-slot="project" className="not-first:mt-1" />}
+      // 16px from the project before, its rows close under it: each
+      // project a group, though its rows' icons share the column.
+      render={<li data-slot="project" className="not-first:mt-4" />}
     >
       <div data-slot="project-row" className="group/menu-item relative">
         <CollapsibleTrigger
@@ -975,6 +985,7 @@ function ProjectRow({
               aria-current={page ? "page" : undefined}
               className={cn(
                 row,
+                projectHead,
                 // Room for its buttons only while they show.
                 newHere && items ? twoActionsMeta : metaRoom,
                 !open && stands(status) && running
