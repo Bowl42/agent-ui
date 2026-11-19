@@ -171,7 +171,7 @@ const answered = (id: string, question: string, answer: string): Exchange => ({
 })
 
 const projectList: AppProject[] = [
-  { id: "agent-ui", path: "~/code/agent-ui" },
+  { id: "agentui", path: "~/code/agentui" },
   { id: "vesper", path: "~/code/vesper" },
   { id: "web-api", path: "~/web/api" },
   { id: "cli-api", path: "~/cli/api" },
@@ -187,7 +187,7 @@ function initialConversations(): Conversation[] {
     {
       id: "deploy",
       title: "Fix the slow deploy",
-      project: "agent-ui",
+      project: "agentui",
       updated: 100,
       exchanges: [
         answered(
@@ -200,7 +200,7 @@ function initialConversations(): Conversation[] {
     {
       id: "clamp",
       title: "Clamp styles",
-      project: "agent-ui",
+      project: "agentui",
       updated: 90,
       exchanges: [
         answered(
@@ -267,12 +267,12 @@ function initialConversations(): Conversation[] {
       updated: 5 - index,
       exchanges: [answered(`loose:${index}:1`, "Something.", "Done.")],
     })
-  // Enough in agent-ui that its page lists more than the sidebar.
+  // Enough in agentui that its page lists more than the sidebar.
   for (let index = 0; index < 10; index++)
     list.push({
       id: `older:${index}`,
       title: `Older conversation ${index + 1}`,
-      project: "agent-ui",
+      project: "agentui",
       updated: 10 - index,
       exchanges: [answered(`older:${index}:1`, "Something.", "Done.")],
     })
@@ -302,7 +302,7 @@ function PanelBrowser(props: React.ComponentProps<typeof Browser>) {
 const filesPage: BrowserPage = {
   id: "files",
   title: "Files",
-  location: "~/agent-ui",
+  location: "~/agentui",
   content: {
     type: "files",
     files: [
@@ -1359,10 +1359,10 @@ export const Sidebar: Story = {
     const deploy = sidebar().getByRole("link", { name: "Fix the slow deploy" })
     await expect(deploy).toHaveAttribute("aria-current", "page")
     const header = within(canvas.getByRole("banner"))
-    await expect(header.getByText("agent-ui")).toBeVisible()
+    await expect(header.getByText("agentui")).toBeVisible()
     await expect(header.getByText("Fix the slow deploy")).toBeVisible()
 
-    // Five of agent-ui's twelve, and a way to its page.
+    // Five of agentui's twelve, and a way to its page.
     await expect(
       projects.getByRole("link", { name: "Show all (12)" })
     ).toBeVisible()
@@ -1379,7 +1379,7 @@ export const Sidebar: Story = {
       .getByRole("link", { name: "Fix the slow deploy" })
       .querySelector("span")!
     await expect(left(deployTitle)).toBe(
-      left(projects.getByText("agent-ui", { selector: "span" }))
+      left(projects.getByText("agentui", { selector: "span" }))
     )
     await expect(
       left(sidebar().getByText("Translate a document", { selector: "span" }))
@@ -1400,17 +1400,17 @@ export const Sidebar: Story = {
 
     // Focus on a project shows its buttons, not its conversations' (as
     // hovering does: synthetic events cannot hover).
-    projects.getByRole("button", { name: /^agent-ui/ }).focus()
+    projects.getByRole("button", { name: /^agentui/ }).focus()
     // Its name keeps clear of both, 24px each.
     await waitFor(() =>
       expect(
-        getComputedStyle(projects.getByRole("button", { name: /^agent-ui/ }))
+        getComputedStyle(projects.getByRole("button", { name: /^agentui/ }))
           .paddingRight
       ).toBe("60px")
     )
     await expect(
       getComputedStyle(
-        projects.getByRole("button", { name: "More for agent-ui" })
+        projects.getByRole("button", { name: "More for agentui" })
       ).opacity
     ).toBe("1")
     await expect(
@@ -1470,7 +1470,7 @@ export const Sidebar: Story = {
     await expect(
       sidebar().getByRole("link", { name: "A quick question" })
     ).toHaveAttribute("aria-current", "page")
-    await expect(header.queryByText("agent-ui")).toBeNull()
+    await expect(header.queryByText("agentui")).toBeNull()
   },
 }
 
@@ -1511,7 +1511,7 @@ export const NewTab: Story = {
         <AgentAppHeader
           project={projectList[0]!}
           title="Fix the slow deploy"
-          projectHref="#/p/agent-ui"
+          projectHref="#/p/agentui"
           onProjectSelect={(event) => {
             event.preventDefault()
             projectSelected()
@@ -1554,7 +1554,7 @@ export const NewTab: Story = {
         .querySelector<HTMLElement>("[data-slot=item] a[href]")!,
     ]
     const project = within(canvas.getByRole("banner")).getByRole("link", {
-      name: /^agent-ui/,
+      name: /^agentui/,
     })
     for (const init of [
       { metaKey: true },
@@ -1592,7 +1592,7 @@ export const NewConversation: Story = {
     await userEvent.click(
       sidebar().getByRole("button", { name: "New conversation" })
     )
-    const picker = canvas.getByRole("combobox", { name: "Project: agent-ui" })
+    const picker = canvas.getByRole("combobox", { name: "Project: agentui" })
     await expect(
       within(canvas.getByRole("banner")).getByText("New conversation")
     ).toBeVisible()
@@ -1630,7 +1630,7 @@ export const NewConversation: Story = {
     await expect(row).toHaveAttribute("aria-current", "page")
     await expect(row.closest("[data-slot=project]")).toHaveTextContent("cli")
     await waitFor(() => expect(row).toHaveAccessibleName("Add a health check"))
-    // agent-ui, where the reader was, is still open.
+    // agentui, where the reader was, is still open.
     await expect(
       sidebar().getByRole("link", { name: "Fix the slow deploy" })
     ).toBeVisible()
@@ -1652,13 +1652,13 @@ export const ShowAll: Story = {
     await userEvent.click(
       sidebar().getByRole("link", { name: "Show all (12)" })
     )
-    const title = canvas.getByRole("heading", { level: 1, name: "agent-ui" })
+    const title = canvas.getByRole("heading", { level: 1, name: "agentui" })
     await expect(title).toBeVisible()
     // The page's column is the conversation's: it starts there too.
     await expect(
       Math.abs(title.getBoundingClientRect().left - column)
     ).toBeLessThan(1)
-    await expect(canvas.getByText("~/code/agent-ui")).toBeVisible()
+    await expect(canvas.getByText("~/code/agentui")).toBeVisible()
     await expect(
       sidebar().getByRole("link", { name: "Show all (12)" })
     ).toHaveAttribute("aria-current", "page")
@@ -1713,7 +1713,7 @@ export const ShowAll: Story = {
       })
     )
     await expect(
-      canvas.getByRole("combobox", { name: "Project: agent-ui" })
+      canvas.getByRole("combobox", { name: "Project: agentui" })
     ).toBeVisible()
   },
 }
@@ -3477,7 +3477,7 @@ export const PhoneHeaderAndAreas: Story = {
     const heading = within(header).getByRole("heading", { level: 1 })
     await expect(heading).toHaveTextContent("Fix the slow deploy")
     await expect(getComputedStyle(heading).fontSize).toBe("15px")
-    await expect(within(header).getByText("agent-ui")).toBeVisible()
+    await expect(within(header).getByText("agentui")).toBeVisible()
     // Under a finger.
     for (const button of within(header).getAllByRole("button")) {
       const { width, height } = coarseHitSize(button)
@@ -4473,9 +4473,9 @@ export const RowDetails: Story = {
       )
     // Its icon in the project's folder's place, its title under the
     // project's name; with none, the title there too.
-    const project = canvas.getByRole("button", { name: /^agent-ui/ })
+    const project = canvas.getByRole("button", { name: /^agentui/ })
     const folder = project.querySelector("svg")!
-    const name = within(project).getByText("agent-ui")
+    const name = within(project).getByText("agentui")
     await expect(
       box(deploy.querySelector("[data-slot=conversation-icon]")!).left
     ).toBe(box(folder).left)
@@ -4585,7 +4585,7 @@ export const ProjectPickerField: Story = {
   args: { sidebar: null },
   parameters: { layout: "centered" },
   render: function Render() {
-    const [value, setValue] = React.useState<string | null>("agent-ui")
+    const [value, setValue] = React.useState<string | null>("agentui")
     return (
       <Field className="w-72">
         <FieldLabel htmlFor="project">Project</FieldLabel>
@@ -4602,7 +4602,7 @@ export const ProjectPickerField: Story = {
   },
   play: async ({ canvas }) => {
     const picker = canvas.getByRole("combobox", { name: "Project" })
-    await expect(picker).toHaveTextContent("agent-ui")
+    await expect(picker).toHaveTextContent("agentui")
     await expect(picker.getBoundingClientRect().width).toBe(288)
     await userEvent.click(picker)
     const list = await body.findByRole("listbox")

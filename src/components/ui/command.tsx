@@ -18,7 +18,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { SearchIcon, Tick02Icon } from "@hugeicons/core-free-icons"
 
-// agent-ui: cmdk 1.1.1 is always given the value (held here when the app
+// agentui: cmdk 1.1.1 is always given the value (held here when the app
 // gives only `defaultValue`; `onValueChange` hears every change either
 // way), and three of its faults are mended:
 // - Controlled, it scrolls to the highlighted option and names it as the
@@ -159,7 +159,7 @@ function CommandDialog({
   ...props
 }: Omit<React.ComponentProps<typeof Dialog>, "children"> & {
   /**
-   * agent-ui: as tall as its results, from a third of the way down
+   * agentui: as tall as its results, from a third of the way down
    * ("auto"); or 32rem tall, centred, whatever its results, so it does not
    * jump as they change ("fixed"), its list filling it; "wide", the same
    * at 42rem wide, for a palette of groups and shortcuts. Never taller
@@ -188,7 +188,7 @@ function CommandDialog({
           className
         )}
         showCloseButton={showCloseButton}
-        // agent-ui: where it is, on a phone too.
+        // agentui: where it is, on a phone too.
         sheet={false}
       >
         {children}
@@ -203,11 +203,11 @@ function CommandInput({
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div data-slot="command-input-wrapper" className="p-1 pb-0">
-      {/* agent-ui: the page's colour inside a hairline, as a search field
+      {/* agentui: the page's colour inside a hairline, as a search field
           is drawn (white on a light popover, a step under it in dark): the
           input grey at 30% for both its fill and its border drew a darker
           rim, like an inset shadow. */}
-      {/* agent-ui: its search icon and its text on the rows' columns, an
+      {/* agentui: its search icon and its text on the rows' columns, an
           item's icon and text: the addon's padding less the field's 1px
           edge. */}
       <InputGroup className="h-8! rounded-lg! border-border bg-background shadow-none! *:data-[slot=input-group-addon]:pl-[calc(--spacing(2)-1px)]! dark:bg-background">
@@ -272,7 +272,7 @@ function CommandGroup({
   )
 }
 
-// agent-ui: a listbox may only contain options and groups, and cmdk's Separator
+// agentui: a listbox may only contain options and groups, and cmdk's Separator
 // always has role="separator", so this is a plain rule hidden from assistive
 // technology. Like cmdk's, it hides while there is a search.
 function CommandSeparator({
@@ -300,7 +300,7 @@ function CommandItem({
   return (
     <CommandPrimitive.Item
       data-slot="command-item"
-      // agent-ui: rows 32px tall with an 8px radius, the same in every menu.
+      // agentui: rows 32px tall with an 8px radius, the same in every menu.
       className={cn(
         "group/command-item relative flex min-h-8 cursor-default items-center gap-2 rounded-md px-2 py-1 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-selected:bg-muted data-selected:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-selected:*:[svg]:text-foreground",
         className

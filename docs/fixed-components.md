@@ -1,7 +1,7 @@
 # Fixed components
 
 Each is shadcn's `base-nova` file with the smallest change that fixes it,
-marked in the code with an `// agent-ui:` comment. They are temporary: once
+marked in the code with an `// agentui:` comment. They are temporary: once
 shadcn ships a fix, the item is deleted and apps take shadcn's file again
 (`shadcn add <name> --overwrite`).
 
@@ -128,7 +128,7 @@ A dialog's radius and no border, as `shadow-lg` (the theme's `shadow-float`) has
 
 ## `tooltip`
 
-24px tall, a 6px radius, 11px words (`text-2xs`) and no arrow: a small label, as in the rest of agent-ui.
+24px tall, a 6px radius, 11px words (`text-2xs`) and no arrow: a small label, as in the rest of agentui.
 
 ## `trace`
 

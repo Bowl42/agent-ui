@@ -5,7 +5,7 @@ import { create } from "storybook/theming"
 addons.setConfig({
   theme: create({
     base: "light",
-    brandTitle: "agent-ui",
-    brandUrl: "https://github.com/Bowl42/agent-ui",
+    brandTitle: "agentui",
+    brandUrl: "https://github.com/Bowl42/agentui",
   }),
 })

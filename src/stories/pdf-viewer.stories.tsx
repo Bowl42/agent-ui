@@ -10,9 +10,9 @@ function Page({ number }: { number: number }) {
   return (
     <div className="px-14 py-16 text-[14px] leading-[22px]">
       <h4 className="mb-1 text-[23px] leading-8 font-semibold tracking-tight">
-        {number === 1 ? "agent-ui" : `Release v0.1.9 · ${number}`}
+        {number === 1 ? "agentui" : `Release v0.1.9 · ${number}`}
       </h4>
-      <p className="mb-6 text-zinc-500">agent-ui · November 2026</p>
+      <p className="mb-6 text-zinc-500">agentui · November 2026</p>
       <p className="mb-3 text-zinc-700">
         This release moves the conversation and the right panel onto one surface
         and adds a rail of the app's areas beside the sidebar.

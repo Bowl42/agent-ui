@@ -158,7 +158,7 @@ const commands: ComposerSuggestion[] = [
 ]
 
 const projects: AppProject[] = [
-  { id: "agent-ui", path: "~/src/agent-ui" },
+  { id: "agentui", path: "~/src/agentui" },
   { id: "docs", path: "~/src/docs" },
 ]
 
@@ -214,7 +214,7 @@ function Demo({
   options = true,
 }: DemoProps) {
   const [value, setValue] = React.useState(initial)
-  const [project, setProject] = React.useState<string | null>("agent-ui")
+  const [project, setProject] = React.useState<string | null>("agentui")
   const [query, setQuery] = React.useState<string | null>(null)
   const [commandQuery, setCommandQuery] = React.useState<string | null>(null)
 
@@ -389,7 +389,7 @@ export const NewChat: Story = {
   args: { newChat: true, placeholder: "What should we work on?" },
   play: async ({ canvas }) => {
     await expect(
-      canvas.getByRole("combobox", { name: "Project: agent-ui" })
+      canvas.getByRole("combobox", { name: "Project: agentui" })
     ).toBeVisible()
     // A pill's icon 14px, a grey lighter than its value; its chevron 12px.
     const pill = canvas.getByRole("button", { name: "Runs on Local" })

@@ -15,7 +15,7 @@ import {
   CancelCircleIcon,
 } from "@hugeicons/core-free-icons"
 
-// agent-ui: a card's corners (rounded-xl) and a hairline border, not the
+// agentui: a card's corners (rounded-xl) and a hairline border, not the
 // rounded-lg and the heavy border-input of a form field. Code at 12px on
 // 20px lines, as an interface at 13px reads it, not at the prose's 14px.
 // Clipped, not hidden, so a header can stick while the block scrolls by.
@@ -24,7 +24,7 @@ const codeBlockVariants = cva(
   {
     variants: {
       variant: {
-        // agent-ui: on the page's surface in both themes, not a lighter
+        // agentui: on the page's surface in both themes, not a lighter
         // panel in dark. The destructive block (failed output) is told in
         // greys, by weight: its text and title heavier, not red.
         default:
@@ -39,7 +39,7 @@ const codeBlockVariants = cva(
   }
 )
 
-// agent-ui: a long block folds to `lines` lines in its own card.
+// agentui: a long block folds to `lines` lines in its own card.
 type CodeBlockLabels = {
   /** The fold's bar, closed: "Show all". */
   more: string
@@ -76,7 +76,7 @@ const CodeBlockContext = React.createContext<{
   labels: CodeBlockLabels
 } | null>(null)
 
-// agent-ui: the lines its content renders (`cut`); the rest is one
+// agentui: the lines its content renders (`cut`); the rest is one
 // plain text (`CodeBlockRest`), hidden until found while folded.
 const CodeBlockCutContext = React.createContext<{
   cut: number | undefined
@@ -87,7 +87,7 @@ const CodeBlockCutContext = React.createContext<{
   grow: () => void
 } | null>(null)
 
-// agent-ui: open, a long block's lines are rendered this many at a time,
+// agentui: open, a long block's lines are rendered this many at a time,
 // a few screens', as the rest nears the view.
 const codeBlockStep = 250
 
@@ -141,7 +141,7 @@ function textParts(text: string, size: number) {
   }
 }
 
-// agent-ui: one observer for every folding block, its code: its callback
+// agentui: one observer for every folding block, its code: its callback
 // runs after layout, so many blocks mounting at once force no layout, and
 // they are all set in the one render after it.
 const foldReaders = new Map<Element, () => void>()
@@ -249,13 +249,13 @@ function CodeBlock({
 }: React.ComponentProps<"div"> &
   VariantProps<typeof codeBlockVariants> & {
     size?: "default" | "sm"
-    // agent-ui: longer than `lines` lines, it shows those, fading out, and
+    // agentui: longer than `lines` lines, it shows those, fading out, and
     // a bar across its foot that shows it all, saying how many lines it
     // has; open, the bar folds it again, as does a button in its header,
     // which stays at the top while the block scrolls by.
     lines?: number | undefined
     /**
-     * agent-ui: its code's colours: the theme's syntax colours (by
+     * agentui: its code's colours: the theme's syntax colours (by
      * default), or greys ("graphite": keywords by weight, strings a step
      * lighter). `data-code-tone="graphite"` on any element sets it for
      * the code in it.
@@ -375,7 +375,7 @@ function CodeBlock({
     []
   )
 
-  // agent-ui: find in the page reaching its rest (hidden until found)
+  // agentui: find in the page reaching its rest (hidden until found)
   // opens it, before the browser scrolls to what it found.
   const reveal = React.useEffectEvent((event: Event) => {
     const code = observed.current?.code
@@ -444,7 +444,7 @@ function CodeBlock({
               } as React.CSSProperties)
             : style
       }
-      // agent-ui: something focused in the folded part, or scrolled to
+      // agentui: something focused in the folded part, or scrolled to
       // there (find in the page), opens it (WCAG 2.4.11).
       onFocusCapture={(event) => {
         onFocusCapture?.(event)
@@ -504,7 +504,7 @@ function CodeBlockHeader({
     <div
       data-slot="code-block-header"
       className={cn(
-        // agent-ui: a 36px bar (32px small) over a divider, not loose
+        // agentui: a 36px bar (32px small) over a divider, not loose
         // text above the code. A long block open, it stays at the top of
         // what scrolls while the block passes under it.
         "flex h-9 min-w-0 shrink-0 items-center gap-2 border-b border-border ps-3 pe-2 text-muted-foreground group-data-[fold=open]/code-block:sticky group-data-[fold=open]/code-block:top-0 group-data-[fold=open]/code-block:z-10 group-data-[fold=open]/code-block:bg-background group-data-[size=sm]/code-block:h-8 group-data-[size=sm]/code-block:ps-2 group-data-[size=sm]/code-block:pe-1 *:has-[>[data-slot=code-block-title]]:min-w-0",
@@ -535,7 +535,7 @@ function CodeBlockTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="code-block-title"
       className={cn(
-        // agent-ui: the file or language in grey mono, a label of the
+        // agentui: the file or language in grey mono, a label of the
         // code, not a heading in the foreground.
         "min-w-0 truncate font-mono text-xs text-muted-foreground group-data-[variant=destructive]/code-block:font-medium group-data-[variant=destructive]/code-block:text-foreground [&_svg]:pointer-events-none [&_svg]:inline-block [&_svg]:align-middle [&_svg:not([class*='size-'])]:size-3.5 *:[svg]:me-1",
         className
@@ -553,10 +553,10 @@ function CodeBlockActions({
     <div
       data-slot="code-block-actions"
       className={cn(
-        // agent-ui: one size for its buttons and toggles, 28px with 16px
+        // agentui: one size for its buttons and toggles, 28px with 16px
         // icons, not each its own; pressed, tinted by the foreground, as
         // the muted tint is the dark theme's surface here and vanished.
-        // agent-ui: with no header they float over the code, raised by
+        // agentui: with no header they float over the code, raised by
         // shadow-float as everything that floats, not a ring.
         "ms-auto flex shrink-0 items-center gap-1 [&>[aria-pressed]]:px-1 [&>[aria-pressed]_svg:not([class*='size-'])]:size-4 [&>[data-slot][aria-pressed=true]]:bg-foreground/5 dark:[&>[data-slot][aria-pressed=true]]:bg-foreground/10 [[data-slot=code-block]>&]:absolute [[data-slot=code-block]>&]:end-2 [[data-slot=code-block]>&]:top-2 [[data-slot=code-block]>&]:z-10 [[data-slot=code-block]>&]:m-0 [[data-slot=code-block]>&]:opacity-0 [[data-slot=code-block]>&]:transition-opacity [[data-slot=code-block]>&]:group-focus-within/code-block:opacity-100 [[data-slot=code-block]>&]:group-hover/code-block:opacity-100 group-data-[size=sm]/code-block:[[data-slot=code-block]>&]:end-1 group-data-[size=sm]/code-block:[[data-slot=code-block]>&]:top-1 [[data-slot=code-block]>&]:pointer-coarse:opacity-100 [[data-slot=code-block]>&]:*:[button]:bg-background [[data-slot=code-block]>&]:*:[button]:shadow-float dark:[[data-slot=code-block]>&]:*:[button]:bg-muted",
         className
@@ -566,7 +566,7 @@ function CodeBlockActions({
   )
 }
 
-// agent-ui: the copy button's words' type, exported, so an app's
+// agentui: the copy button's words' type, exported, so an app's
 // translation names every key.
 type CodeBlockCopyButtonLabels = {
   copy: string
@@ -579,7 +579,7 @@ type CodeBlockCopyButtonLabels = {
 function CodeBlockCopyButton({
   value,
   variant = "ghost",
-  // agent-ui: the size of the header's other buttons (as the app's
+  // agentui: the size of the header's other buttons (as the app's
   // CopyButton), not smaller than them.
   size = "icon-sm",
   className,
@@ -588,10 +588,10 @@ function CodeBlockCopyButton({
   ...props
 }: React.ComponentProps<typeof Button> & {
   value: string
-  // agent-ui: the button's name and the announcement, for other languages.
+  // agentui: the button's name and the announcement, for other languages.
   labels?: Partial<CodeBlockCopyButtonLabels>
 }) {
-  // agent-ui: what was copied or refused, so a value that has changed since
+  // agentui: what was copied or refused, so a value that has changed since
   // (e.g. streaming) is not announced as copied, even if the copy finishes
   // late. A failure is said, as CopyButton says it.
   const [result, setResult] = React.useState<{
@@ -627,7 +627,7 @@ function CodeBlockCopyButton({
         className={cn(className)}
         onClick={(event) => {
           onClick?.(event)
-          // agent-ui: in a promise, so a page without a clipboard (plain
+          // agentui: in a promise, so a page without a clipboard (plain
           // http is not a secure context) fails as a refusal does, not
           // with a throw.
           Promise.resolve()
@@ -701,7 +701,7 @@ function CodeBlockContent({
           ? (child.props.lines ?? countLines(child.props.children))
           : 1
     })
-  // agent-ui: an id of its own, for a fold's buttons to name what they
+  // agentui: an id of its own, for a fold's buttons to name what they
   // show and hide.
   const ownId = React.useId()
   return (
@@ -711,20 +711,20 @@ function CodeBlockContent({
       data-wrap={wrap || undefined}
       data-numbered={lineNumbers || undefined}
       dir="ltr"
-      // agent-ui: code, output and diffs are not prose: a page translator
+      // agentui: code, output and diffs are not prose: a page translator
       // (Chrome's) leaves them as they are, not rewritten into nonsense.
       translate="no"
       tabIndex={0}
       style={{ counterReset: `line ${startLine - 1}`, ...style }}
       className={cn(
-        // agent-ui: the header and footer are matched as children (has-[>…]),
+        // agentui: the header and footer are matched as children (has-[>…]),
         // not anywhere inside: with a descendant :has(), every line added
         // makes the browser search and restyle the whole block.
-        // agent-ui: it fades at the edges it scrolls past, both ways
+        // agentui: it fades at the edges it scrolls past, both ways
         // (wrapped or not): the masks of both fades, each animated by its
         // own axis; with one fade a block that scrolls down was cut off.
         "[--scroll-fade-mask:var(--scroll-fade-inline),var(--scroll-fade-block)] supports-[animation-timeline:scroll()]:[animation-name:scroll-fade-reveal-s,scroll-fade-reveal-e,scroll-fade-reveal-t,scroll-fade-reveal-b] supports-[animation-timeline:scroll()]:[animation-timeline:scroll(self_inline),scroll(self_inline),scroll(self_y),scroll(self_y)]",
-        // agent-ui: folded, as tall as its block measured, its last lines
+        // agentui: folded, as tall as its block measured, its last lines
         // fading out, its sideways fades kept; before it is measured, its
         // code as tall as the lines it shows folded.
         "group-data-[fold=closed]/code-block:max-h-(--code-block-fold) group-data-[fold=closed]/code-block:overflow-y-hidden group-data-[fold=closed]/code-block:[--scroll-fade-mask:var(--scroll-fade-inline),var(--code-block-fold-mask)] group-data-[fold=pending]/code-block:box-content group-data-[fold=pending]/code-block:max-h-(--code-block-fold) group-data-[fold=pending]/code-block:overflow-y-hidden",
@@ -733,7 +733,7 @@ function CodeBlockContent({
       )}
       {...props}
     >
-      {/* agent-ui: blocks, not a grid, with or without numbers: a grid
+      {/* agentui: blocks, not a grid, with or without numbers: a grid
           of every line is laid out again on each line added, many times
           slower as code streams in. The numbers are in a gutter as wide
           as the last one's digits, and at least
@@ -762,7 +762,7 @@ const codeBlockLineVariants = cva(
     variants: {
       variant: {
         default: "",
-        // agent-ui: a diff in greys, as the theme is, not red and green:
+        // agentui: a diff in greys, as the theme is, not red and green:
         // an added line is told by its + and a light grey, a removed one
         // by its −, struck through in the faintest grey on no tint, as
         // text that is gone. Every syntax and ANSI colour stays at 4.5:1
@@ -770,7 +770,7 @@ const codeBlockLineVariants = cva(
         added: "bg-foreground/5 after:text-foreground after:content-['+']",
         removed:
           "text-subtle-foreground line-through decoration-subtle-foreground after:text-subtle-foreground after:content-['−']",
-        // agent-ui: tinted by the foreground: the muted tint is the dark
+        // agentui: tinted by the foreground: the muted tint is the dark
         // theme's surface here, and vanished; a step over an added line's.
         highlighted: "bg-foreground/10",
       },
@@ -790,7 +790,7 @@ function CodeBlockLine({
   ...props
 }: React.ComponentProps<"span"> &
   VariantProps<typeof codeBlockLineVariants> & {
-    // agent-ui: its own number, in a numbered block (e.g. a diff's line
+    // agentui: its own number, in a numbered block (e.g. a diff's line
     // in its file), not only the next one; the lines after it go on from
     // it. Also `data-number`, for a gutter of the app's own.
     number?: number | undefined
@@ -822,12 +822,12 @@ function CodeBlockLine({
   )
 }
 
-// agent-ui: a line whose props are unchanged is not rendered again, so
+// agentui: a line whose props are unchanged is not rendered again, so
 // output that streams in renders only its new lines, not every line.
 const MemoCodeBlockLine = React.memo(CodeBlockLine)
 
 /**
- * agent-ui: the lines past a fold as one plain text, not a line each: a
+ * agentui: the lines past a fold as one plain text, not a line each: a
  * folded block of thousands costs what it shows. Hidden until found, so
  * find in the page reaches it and opens the block. Open, it is shown in
  * line with the lines, and turns into them a step at a time as it nears

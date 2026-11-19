@@ -15,7 +15,7 @@ export const Horizontal: Story = {
   render: () => (
     <div className="flex w-sm flex-col gap-4 text-sm">
       <div className="flex flex-col gap-1">
-        <div className="leading-none font-medium">agent-ui</div>
+        <div className="leading-none font-medium">agentui</div>
         <div className="text-muted-foreground">
           Components for agent workspaces
         </div>

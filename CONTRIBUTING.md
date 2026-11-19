@@ -72,7 +72,7 @@ first, in a file with none. `pnpm registry:check` checks both.
 - **shadcn is the source.** Never hand-write a component shadcn has, and
   do not rename parts or props. `pnpm upstream` lists the files that differ
   from shadcn's registry: it must be exactly the fixed ones.
-- **No business logic.** agent-ui is for any app. A component of its own
+- **No business logic.** agentui is for any app. A component of its own
   (in `src/components`, outside `ui`) is a general pattern more than one
   app needs, named after the pattern, made of shadcn's parts, with view
   data and callbacks as props and English defaults for its text. Apps
@@ -85,15 +85,15 @@ first, in a file with none. `pnpm registry:check` checks both.
 - **Fix in the theme first.** Contrast and forced-colours fixes go in the
   `theme` item. Change a component only for a bug the theme cannot fix
   (behaviour, semantics, names): make the smallest change, mark each change
-  with an `// agent-ui:` comment saying why, add or update its item in
+  with an `// agentui:` comment saying why, add or update its item in
   `registry.json` with the fix in its description, and list it in the
   README and `docs/fixed-components.md`. Items that depend on a fixed item name it in full
-  (`Bowl42/agent-ui/input-group`): a bare name is shadcn's file and would
+  (`Bowl42/agentui/input-group`): a bare name is shadcn's file and would
   overwrite the fix (`pnpm registry:check` checks). Delete the item once
   shadcn ships the fix.
 - **Checking whether shadcn fixed it.** For each fixed item, run
   `pnpm dlx shadcn@latest add <name> --diff`. If shadcn's file already does
-  what every `// agent-ui:` change does, take shadcn's file
+  what every `// agentui:` change does, take shadcn's file
   (`add <name> --overwrite`), delete the item from `registry.json`, the
   README and `docs/fixed-components.md`, and say in the release notes that
   apps re-add it from shadcn.
@@ -148,14 +148,14 @@ first, in a file with none. `pnpm registry:check` checks both.
   files' content, this registry's dependencies named by their built
   file's URL at the tag)
   and tags the result; then it makes the GitHub release, its notes the
-  pull requests since the last. main keeps `Bowl42/agent-ui/<item>`.
+  pull requests since the last. main keeps `Bowl42/agentui/<item>`.
 - Edit the release's notes to say what an app must change, and every
   item to re-add together (an item moved, and every item that depends on
   it).
 - Apps install a release from its built registry, as the README says:
   each item by its URL at the tag, or as `@bowl42/<item>` with the
   `@bowl42` registry in their `components.json`, one plain request an
-  item. `Bowl42/agent-ui/<item>`
+  item. `Bowl42/agentui/<item>`
   works too, but the CLI then reads `registry.json` and each file with a
   GitHub request of its own, again for every dependency, one after
   another: minutes for a few dozen items.

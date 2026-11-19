@@ -859,7 +859,7 @@ type AgentAppHeaderLabels = {
 
 /**
  * The main area's header: the sidebar's button, then where the reader is,
- * "agent-ui / Fix the slow deploy", the project's directory in its
+ * "agentui / Fix the slow deploy", the project's directory in its
  * tooltip and a link to its page; then the app's actions.
  */
 function AgentAppHeader({
@@ -1032,7 +1032,7 @@ function AgentAppHeader({
                 </BreadcrumbItem>
               )}
               {project && !beside && title !== undefined && (
-                // A slash, as a path reads: "agent-ui / Fix the slow deploy".
+                // A slash, as a path reads: "agentui / Fix the slow deploy".
                 <BreadcrumbSeparator className="opacity-60">
                   /
                 </BreadcrumbSeparator>

@@ -4,7 +4,7 @@ import * as React from "react"
 import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible"
 import { cn } from "cn"
 
-// agent-ui: whether it is open, for its panel to know when it has opened.
+// agentui: whether it is open, for its panel to know when it has opened.
 const CollapsibleOpenContext = React.createContext<boolean | undefined>(
   undefined
 )
@@ -39,7 +39,7 @@ function CollapsibleTrigger({ ...props }: CollapsiblePrimitive.Trigger.Props) {
   )
 }
 
-// agent-ui: it opens and closes in height and fades with it, in the
+// agentui: it opens and closes in height and fades with it, in the
 // theme's motion-size (none where motion is reduced), clipped meanwhile.
 // Once open, as tall as what is in it, unclipped: rows added after it
 // opened, or text grown with the font size, are not cut off.

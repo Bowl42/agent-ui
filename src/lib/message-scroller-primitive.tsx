@@ -1,10 +1,10 @@
 import * as React from "react"
 
-// agent-ui: @shadcn/react 0.3.1's message-scroller primitive
+// agentui: @shadcn/react 0.3.1's message-scroller primitive
 // (https://github.com/shadcn-ui/ui, packages/react/src/message-scroller and
 // use-render at 503a3a5), MIT License, Copyright (c) 2023 shadcn. Its files
-// are joined here, as a registry installs one file; agent-ui's changes are
-// marked "agent-ui:", but for "| undefined" on optional props, for apps
+// are joined here, as a registry installs one file; agentui's changes are
+// marked "agentui:", but for "| undefined" on optional props, for apps
 // with exactOptionalPropertyTypes. Its code is kept as upstream wrote it,
 // refs read as it reads them, so these rules are off here.
 /* eslint-disable react-hooks/refs, react-hooks/exhaustive-deps */
@@ -243,7 +243,7 @@ const DEFAULT_SCROLL_MARGIN = 0
 // Two fractional scrollTop values within this range are treated as equal, to
 // absorb zoom and HiDPI rounding drift.
 const SCROLL_POSITION_EPSILON = 0.5
-// agent-ui: how long a scroll must have stopped before the place is noted.
+// agentui: how long a scroll must have stopped before the place is noted.
 const SCROLL_IDLE = 120
 
 // How long (ms) data-autoscrolling stays set during a programmatic smooth scroll
@@ -251,7 +251,7 @@ const SCROLL_IDLE = 120
 const AUTOSCROLLING_CLEAR_DELAY = 180
 
 // Viewport keys that count as deliberate scroll intent and release follow-bottom.
-// agent-ui: keys that scroll toward the start, which alone release
+// agentui: keys that scroll toward the start, which alone release
 // following: one toward the end, at the end, moves nothing, and no scroll
 // would re-arm it (Shift+Space is a page up).
 const USER_SCROLL_KEYS = new Set(["ArrowUp", "Home", "PageUp"])
@@ -684,7 +684,7 @@ function getLastScrollAnchor(items: HTMLElement[]) {
   return null
 }
 
-// agent-ui: whether a row's content is rendered: not an empty box (a row
+// agentui: whether a row's content is rendered: not an empty box (a row
 // whose content is not mounted, its height kept) nor skipped by its
 // content-visibility: auto while off screen (where the browser can tell).
 function isRendered(row: HTMLElement) {
@@ -697,7 +697,7 @@ function isRendered(row: HTMLElement) {
   )
 }
 
-// agent-ui: found by halving, not by reading every row from the top: rows
+// agentui: found by halving, not by reading every row from the top: rows
 // are in order down the content, so a few rects are read, not as many as
 // rows above the view (each a forced layout while layout is dirty).
 function getFirstVisibleMessageItem({
@@ -819,7 +819,7 @@ function getElementTop(element: HTMLElement, viewport: HTMLElement) {
   return elementRect.top - viewportRect.top + viewport.scrollTop
 }
 
-// agent-ui: its top in the content, which a scroll does not change.
+// agentui: its top in the content, which a scroll does not change.
 function getElementContentOffset(element: HTMLElement, content: HTMLElement) {
   return (
     element.getBoundingClientRect().top - content.getBoundingClientRect().top
@@ -857,7 +857,7 @@ function getContentBottom({
   const scrollTop = viewport.scrollTop
   let contentBottom = padding.start + padding.end
 
-  // agent-ui: rows are in order down the content, so the last one shown
+  // agentui: rows are in order down the content, so the last one shown
   // ends it: one rect read, not one a row (each a forced layout while
   // layout is dirty), and the rows not copied. Rows not shown (no box)
   // are passed over.
@@ -1011,7 +1011,7 @@ function useMessageScrollerRefs({
   } | null>(null)
   // The row to hold steady on the next prepend: the first visible row, or a jump
   // target seeded by scrollToElement. restorePrependedAnchor reads only this.
-  // agent-ui: by its offset in the content, which a scroll does not change,
+  // agentui: by its offset in the content, which a scroll does not change,
   // so it holds however far the reader scrolled since it was noted.
   const prependRestoreRef = React.useRef<{
     element: HTMLElement
@@ -1600,7 +1600,7 @@ function useMessageScrollerController({
     }
 
     stateFrameRef.current = window.requestAnimationFrame(() => {
-      // agent-ui: while the reader scrolls freely, read once the frame is
+      // agentui: while the reader scrolls freely, read once the frame is
       // painted, not before its layout (see syncAfterScroll).
       if (modeRef.current === "free-scrolling") {
         window.setTimeout(() => {
@@ -1670,7 +1670,7 @@ function useMessageScrollerController({
       return false
     }
 
-    // agent-ui: by how far the rows put before it moved it down the content
+    // agentui: by how far the rows put before it moved it down the content
     // (the browser's scroll anchoring is off, so it has not).
     const offset = getElementContentOffset(anchor.element, content)
     const delta = offset - anchor.offset
@@ -1687,7 +1687,7 @@ function useMessageScrollerController({
     return true
   }, [scheduleStateCommit, scheduleVisibilitySync])
 
-  // agent-ui: while the reader scrolls freely, what they look at stays
+  // agentui: while the reader scrolls freely, what they look at stays
   // where it is as the content above it changes size: messages coming
   // into view render at their real height, not the guess they had, and the
   // browser's own scroll anchoring is off (WebKit has none, and Firefox's
@@ -1988,11 +1988,11 @@ function useMessageScrollerController({
       return
     }
 
-    // agent-ui: rows added or gone above the place keep it.
+    // agentui: rows added or gone above the place keep it.
     const held = holdPlace()
 
     const items = getMessageScrollerItems(content, spacerRef.current)
-    // agent-ui: every row's size watched, the app's with no messageId too
+    // agentui: every row's size watched, the app's with no messageId too
     // (they are not registered): one above the view mounting (windowed,
     // first measured) keeps the place as a registered one does.
     for (const item of items) observeRowSize(item, true)
@@ -2262,7 +2262,7 @@ function useMessageScrollerController({
   )
 
   const setRootElement = useElementRef(rootRef, mirrorStateAttributes)
-  // agent-ui: the browser's scroll anchoring off, as holdPlace keeps the
+  // agentui: the browser's scroll anchoring off, as holdPlace keeps the
   // place in every browser.
   const mountViewport = React.useCallback(() => {
     if (viewportRef.current) viewportRef.current.style.overflowAnchor = "none"
@@ -2285,7 +2285,7 @@ function useMessageScrollerController({
     []
   )
 
-  // agent-ui: once a frame, not on every scroll event: a trackpad gives
+  // agentui: once a frame, not on every scroll event: a trackpad gives
   // several a frame, and each read the rows' rects, forcing a layout of the
   // whole conversation wherever layout was dirty (a hover, a commit).
   const scrollFrameRef = React.useRef<number | null>(null)
@@ -2298,7 +2298,7 @@ function useMessageScrollerController({
     }
 
     scrollFrameRef.current = window.requestAnimationFrame(() => {
-      // agent-ui: while the reader scrolls freely, nothing is read before
+      // agentui: while the reader scrolls freely, nothing is read before
       // the frame's layout, where a row just mounted would force one: the
       // state (the edges reached) is read once the frame is painted, on
       // the layout it drew; the place and the prepend anchor are noted
@@ -2600,7 +2600,7 @@ function MessageScrollerViewport({
     onScroll?.(event)
   }
 
-  // agent-ui: only a gesture toward the start releases following. One
+  // agentui: only a gesture toward the start releases following. One
   // toward the end (a wheel down, a sideways one over a wide code block,
   // End) at the end moves nothing, so no scroll would follow to re-arm
   // it: the reply would grow on below the reader.
@@ -2742,7 +2742,7 @@ function MessageScrollerContent({
     // "ResizeObserver loop completed with undelivered notifications".
     let frame = 0
 
-    // agent-ui: the place is kept by the rows' own observer (keepPlaceOnResize).
+    // agentui: the place is kept by the rows' own observer (keepPlaceOnResize).
     const observer = new ResizeObserver(() => {
       window.cancelAnimationFrame(frame)
       frame = window.requestAnimationFrame(handleResize)

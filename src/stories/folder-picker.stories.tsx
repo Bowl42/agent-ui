@@ -407,7 +407,7 @@ export const Phone: Story = {
     await expect(picker.getByRole("textbox", { name: "Path" })).toHaveValue("~")
     await userEvent.keyboard("{Home}{Enter}")
     await waitFor(() =>
-      expect(picker.getByRole("option", { name: "agent-ui" })).toHaveFocus()
+      expect(picker.getByRole("option", { name: "agentui" })).toHaveFocus()
     )
     await userEvent.keyboard("{ArrowLeft}")
     await waitFor(() =>
@@ -619,7 +619,7 @@ export const TypePath: Story = {
       expect(picker.getByRole("listbox", { name: "code" })).toBeVisible()
     })
     await userEvent.keyboard("a")
-    await completed("agent-ui", "~/code/agent-ui", 8)
+    await completed("agentui", "~/code/agentui", 8)
     await userEvent.clear(input)
     await userEvent.type(input, "~/code/s")
     await completed("samples", "~/code/samples", 8)
@@ -636,7 +636,7 @@ export const TypePath: Story = {
     await expect(codeRows()).toEqual(["samples"])
     await userEvent.keyboard("{Backspace}")
     await waitFor(() =>
-      expect(codeRows()).toEqual(["agent-ui", "samples", "vesper"])
+      expect(codeRows()).toEqual(["agentui", "samples", "vesper"])
     )
     await expect(picker.queryByText(/of 3 items/)).not.toBeInTheDocument()
     await userEvent.keyboard("s{Tab}")
@@ -686,10 +686,10 @@ export const TypePath: Story = {
       screen.getByRole("dialog", { name: "Choose a folder" })
     ).toBeVisible()
     await userEvent.clear(input)
-    await userEvent.type(input, "~/code/agent-ui{Enter}")
+    await userEvent.type(input, "~/code/agentui{Enter}")
     await waitFor(() => {
-      expect(args.onNavigate).toHaveBeenLastCalledWith("~/code/agent-ui")
-      expect(picker.getByRole("option", { name: "agent-ui" })).toHaveAttribute(
+      expect(args.onNavigate).toHaveBeenLastCalledWith("~/code/agentui")
+      expect(picker.getByRole("option", { name: "agentui" })).toHaveAttribute(
         "aria-selected",
         "true"
       )
@@ -805,7 +805,7 @@ function UnloadedDemo({ phone = false }: { phone?: boolean }) {
                       ...parent,
                       children: (phone
                         ? ["examples", "templates"]
-                        : ["agent-ui", "vesper"]
+                        : ["agentui", "vesper"]
                       ).map((name) => ({
                         id: `${entry.id}/${name}`,
                         name,
@@ -858,7 +858,7 @@ export const TypePathUnloaded: Story = {
       expect(input.selectionEnd).toBe(13)
     })
     await expect(
-      picker.queryByRole("option", { name: "agent-ui" })
+      picker.queryByRole("option", { name: "agentui" })
     ).not.toBeInTheDocument()
     await expect(picker.getByText("1 of 2 items")).toBeVisible()
   },
@@ -877,12 +877,12 @@ export const PhoneTypedPath: Story = {
     await userEvent.clear(field)
     await userEvent.type(field, "~/code/")
     await waitFor(() =>
-      expect(picker.getByRole("option", { name: "agent-ui" })).toBeVisible()
+      expect(picker.getByRole("option", { name: "agentui" })).toBeVisible()
     )
-    await userEvent.type(field, "agent-ui")
+    await userEvent.type(field, "agentui")
     await userEvent.click(picker.getByRole("button", { name: "Choose" }))
     await expect(args.onChoose).toHaveBeenLastCalledWith(
-      expect.objectContaining({ id: "~/code/agent-ui" })
+      expect.objectContaining({ id: "~/code/agentui" })
     )
   },
 }

@@ -16,11 +16,11 @@ import { ArrowDown01Icon, Cancel01Icon, SearchIcon, Tick02Icon } from "@hugeicon
 
 const Combobox = ComboboxPrimitive.Root
 
-// agent-ui: whether an input is in the list's popup, where it is a search
+// agentui: whether an input is in the list's popup, where it is a search
 // row, not a field.
 const ComboboxPopupContext = React.createContext(false)
 
-// agent-ui: no fill in dark, its border alone (3:1) outlining it, so a
+// agentui: no fill in dark, its border alone (3:1) outlining it, so a
 // field is not a grey slab on a card or a dialog.
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />
@@ -47,7 +47,7 @@ function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
   return (
     <ComboboxPrimitive.Clear
       data-slot="combobox-clear"
-      // agent-ui: an icon-only button needs a name.
+      // agentui: an icon-only button needs a name.
       aria-label="Clear"
       render={<InputGroupButton variant="ghost" size="icon-xs" />}
       className={cn(className)}
@@ -69,13 +69,13 @@ function ComboboxInput({
   showTrigger?: boolean
   showClear?: boolean
 }) {
-  // agent-ui: in the popup, a search field, as a command menu's: a search
+  // agentui: in the popup, a search field, as a command menu's: a search
   // icon, a row's height on a muted ground 4px in from the popup's edges,
   // no edge nor ring, no rule under it; no trigger, the list being open.
   const inPopup = React.useContext(ComboboxPopupContext)
   const showTrigger = showTriggerProp ?? !inPopup
   return (
-    // agent-ui: the group is Base UI's input group, which the list anchors
+    // agentui: the group is Base UI's input group, which the list anchors
     // to: it lines up with the field's edges, not the input's (an addon
     // before the input pushed it in).
     <ComboboxPrimitive.InputGroup
@@ -106,7 +106,7 @@ function ComboboxInput({
             variant="ghost"
             render={<ComboboxTrigger />}
             data-slot="input-group-button"
-            // agent-ui: an icon-only button needs a name; the input already
+            // agentui: an icon-only button needs a name; the input already
             // opens the list, so the trigger leaves the tab order.
             aria-label="Show options"
             tabIndex={-1}
@@ -148,7 +148,7 @@ function ComboboxContent({
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"
           data-chips={!!anchor}
-          // agent-ui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double;
+          // agentui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double;
           // anchored to the whole input group, the list is as wide as it; an
           // input in it a search row (`ComboboxInput`).
           className={cn("group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md motion-pop data-[chips=true]:min-w-(--anchor-width) data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className )}
@@ -179,7 +179,7 @@ function ComboboxItem({
   indicator = "check",
   ...props
 }: ComboboxPrimitive.Item.Props & {
-  // agent-ui: in a list of many to choose, a checkbox before each item,
+  // agentui: in a list of many to choose, a checkbox before each item,
   // there before it is chosen; drawn as `Checkbox` is, not one (the item
   // is the option, chosen or not).
   indicator?: "check" | "checkbox"
@@ -188,7 +188,7 @@ function ComboboxItem({
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
       data-indicator={indicator}
-      // agent-ui: rows 32px tall, the same in every menu. Highlighted, its
+      // agentui: rows 32px tall, the same in every menu. Highlighted, its
       // own text in the accent's colour, not what it holds: a line under
       // its label stays grey, as the tick does (the chosen one is told by
       // it, the highlighted one by its fill).
@@ -270,7 +270,7 @@ function ComboboxSeparator({
   return (
     <ComboboxPrimitive.Separator
       data-slot="combobox-separator"
-      // agent-ui: 6px either side of the rule, 13px between groups; in
+      // agentui: 6px either side of the rule, 13px between groups; in
       // from the popup's edges as the rows' text, not across it.
       className={cn("mx-2 my-1 h-px bg-border", className)}
       {...props}
@@ -318,7 +318,7 @@ function ComboboxChip({
           render={<Button variant="ghost" size="icon-xs" />}
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
-          // agent-ui: an icon-only button needs a name.
+          // agentui: an icon-only button needs a name.
           aria-label="Remove"
         >
           <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="pointer-events-none" />

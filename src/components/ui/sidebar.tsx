@@ -70,7 +70,7 @@ function SidebarProvider({
   /** A sheet at any width, as on a phone. */
   sheet?: boolean
 }) {
-  // agent-ui: `sheet` makes the sidebar a sheet wider than a phone too,
+  // agentui: `sheet` makes the sidebar a sheet wider than a phone too,
   // e.g. where the page has no room for it beside the main area.
   // A phone is narrower than Tailwind's `sm` (640px), as useIsMobile's,
   // so `sm:` where shadcn has `md:`; the actions' hit
@@ -175,9 +175,9 @@ function Sidebar({
   collapsible?: "offcanvas" | "icon" | "none"
   /** The sheet's, where the sidebar is one. */
   sheetClassName?: string
-  /** agent-ui: the sheet's name, said, for other languages. */
+  /** agentui: the sheet's name, said, for other languages. */
   sheetTitle?: string
-  /** agent-ui: the sheet's description, said; none with null. */
+  /** agentui: the sheet's description, said; none with null. */
   sheetDescription?: string | null
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
@@ -203,14 +203,14 @@ function Sidebar({
       <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
         <SheetContent
           ref={sheetRef}
-          // agent-ui: focus on the sheet, not its first button: a button's
+          // agentui: focus on the sheet, not its first button: a button's
           // tooltip would show unasked and take the first Escape.
           initialFocus={sheetRef}
           dir={dir}
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          // agent-ui: `sheetClassName`, e.g. to open the sheet past a rail.
+          // agentui: `sheetClassName`, e.g. to open the sheet past a rail.
           className={cn(
             "w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground outline-none [&>button]:hidden",
             sheetClassName
@@ -221,7 +221,7 @@ function Sidebar({
             } as React.CSSProperties
           }
           side={side}
-          // agent-ui: none, rather than one hidden by its class.
+          // agentui: none, rather than one hidden by its class.
           showCloseButton={false}
         >
           <SheetHeader className="sr-only">
@@ -288,7 +288,7 @@ function SidebarTrigger({
   label = "Toggle Sidebar",
   ...props
 }: React.ComponentProps<typeof Button> & {
-  /** agent-ui: its name, for other languages; or the app's `aria-label`. */
+  /** agentui: its name, for other languages; or the app's `aria-label`. */
   label?: string
 }) {
   const { toggleSidebar } = useSidebar()
@@ -319,7 +319,7 @@ function SidebarRail({
   label = "Toggle Sidebar",
   ...props
 }: React.ComponentProps<"button"> & {
-  /** agent-ui: its name and title, for other languages. */
+  /** agentui: its name and title, for other languages. */
   label?: string
 }) {
   const { toggleSidebar } = useSidebar()

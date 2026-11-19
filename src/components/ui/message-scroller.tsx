@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowDown02Icon } from "@hugeicons/core-free-icons"
 
-// agent-ui: keep the place scrollToMessage, scrollToEnd or the default
+// agentui: keep the place scrollToMessage, scrollToEnd or the default
 // position "end" scrolled to while the content settles or grows.
 // @shadcn/react 0.3.1 scrolls once; then messages render at their real
 // height instead of the content-visibility estimate, images load and, at
@@ -49,7 +49,7 @@ const MessageScrollerPinContext = React.createContext<{
   startsAtEnd: boolean
 } | null>(null)
 
-// agent-ui: a long conversation's messages are windowed. Each item stays
+// agentui: a long conversation's messages are windowed. Each item stays
 // in the content, at its height, so the scroller's geometry, anchors and
 // jumps work on it as before; only the content of those far from the view
 // is unmounted, a box of their last measured height in its place (10rem
@@ -343,7 +343,7 @@ function MessageScrollerProvider({
   )
 }
 
-// agent-ui: every message mounted while `active`, e.g. while a find
+// agentui: every message mounted while `active`, e.g. while a find
 // searches the conversation's text. Without a provider this is a no-op.
 function useMessageScrollerShowAll(active: boolean) {
   const windowing = React.useContext(MessageScrollerWindowContext)?.windowing
@@ -355,7 +355,7 @@ function useMessageScrollerShowAll(active: boolean) {
 
 const subscribeToNothing = () => () => {}
 
-// agent-ui: an app scrolling the viewport itself, e.g. to a find's match,
+// agentui: an app scrolling the viewport itself, e.g. to a find's match,
 // must not be pulled back by a hold. Without a provider this is a no-op.
 function useMessageScrollerRelease() {
   const context = React.useContext(MessageScrollerPinContext)
@@ -363,7 +363,7 @@ function useMessageScrollerRelease() {
   return React.useCallback(() => pin?.end(), [pin])
 }
 
-// agent-ui: how long a message is marked once the reader is taken to it,
+// agentui: how long a message is marked once the reader is taken to it,
 // as the theme's animate-highlight lasts.
 const highlightTime = 1200
 const highlighted = new Map<string, ReturnType<typeof setTimeout>>()
@@ -400,7 +400,7 @@ function useMessageScroller() {
       messageId: string,
       options?: Parameters<typeof scroll>[1] & {
         /**
-         * agent-ui: mark it a moment, where the reader was taken to it
+         * agentui: mark it a moment, where the reader was taken to it
          * (a search's result, a link to it): the accent fading out.
          */
         highlight?: boolean
@@ -504,7 +504,7 @@ function MessageScrollerViewport({
   )
 }
 
-// agent-ui: only a new message is an anchor to scroll to. @shadcn/react
+// agentui: only a new message is an anchor to scroll to. @shadcn/react
 // 0.3.1, when a row is replaced by another (a waiting row by a decided
 // one, a working row by a waiting one: as many rows as before), looks for
 // an anchor it has not scrolled to and finds the first message there when
@@ -638,7 +638,7 @@ function MessageScrollerItem({
       scrollAnchor={scrollAnchor}
       className={cn(
         "min-w-0 shrink-0",
-        // agent-ui: marked a moment where the reader was taken to it
+        // agentui: marked a moment where the reader was taken to it
         // (`scrollToMessage(id, { highlight: true })`, or the app's
         // data-highlighted): the accent's grey fading out over 1.2s; with
         // less motion, held while marked.
@@ -657,7 +657,7 @@ function MessageScrollerItem({
   )
 }
 
-// agent-ui: whether the reader asked for less motion, for the scroll
+// agentui: whether the reader asked for less motion, for the scroll
 // buttons' behavior.
 const reducedMotion = "(prefers-reduced-motion: reduce)"
 
@@ -675,7 +675,7 @@ function usePrefersReducedMotion() {
   )
 }
 
-// agent-ui: every button name is a label, so apps can translate both directions.
+// agentui: every button name is a label, so apps can translate both directions.
 type MessageScrollerButtonLabels = {
   /** The end button's name. */
   scrollToEnd: string
@@ -690,7 +690,7 @@ const messageScrollerButtonLabels: MessageScrollerButtonLabels = {
 
 function MessageScrollerButton({
   direction = "end",
-  // agent-ui: jump to the start instead of scrolling smoothly. With
+  // agentui: jump to the start instead of scrolling smoothly. With
   // autoScroll, @shadcn/react 0.3.1 counts the first scroll event of a smooth
   // scroll as still at the end and goes back to following the bottom. And
   // jump to the end too where the reader asked for less motion.
@@ -706,14 +706,14 @@ function MessageScrollerButton({
   ...props
 }: React.ComponentProps<typeof MessageScrollerPrimitive.Button> &
   Pick<React.ComponentProps<typeof Button>, "variant" | "size"> & {
-    // agent-ui: the app's words on what waits past the button, e.g.
+    // agentui: the app's words on what waits past the button, e.g.
     // "2 queued"; part of its name, never announced on a change.
     summary?: React.ReactNode
     labels?: Partial<MessageScrollerButtonLabels>
   }) {
   const labels = { ...messageScrollerButtonLabels, ...labelsProp }
   const label = direction === "end" ? labels.scrollToEnd : labels.scrollToStart
-  // agent-ui: with a summary, a pill at the icon button's height.
+  // agentui: with a summary, a pill at the icon button's height.
   const pill =
     summary !== undefined && summary !== null && summary !== false && !children
   const size = sizeProp ?? (pill ? "sm" : "icon-sm")
@@ -728,7 +728,7 @@ function MessageScrollerButton({
       behavior={
         behavior ?? (direction === "start" || reduced ? "auto" : "smooth")
       }
-      // agent-ui: @shadcn/react 0.3.1 blurs the button after this, and
+      // agentui: @shadcn/react 0.3.1 blurs the button after this, and
       // once scrolled it is inert, so the focus fell to the body. It goes
       // to the viewport instead, where the keyboard scrolls on.
       onClick={(event) => {
@@ -741,14 +741,14 @@ function MessageScrollerButton({
           ?.querySelector<HTMLElement>("[data-slot=message-scroller-viewport]")
         queueMicrotask(() => viewport?.focus({ preventScroll: true }))
       }}
-      // agent-ui: round and raised, so it floats over the text it covers
+      // agentui: round and raised, so it floats over the text it covers
       // while the reader is above the end, not a box set on it. To a
       // finger, 44px past its 28px box. With reduced motion it fades
       // without sliding. Raised by shadow-float, as everything that floats:
       // shadow-md had no outline, and in dark hardly showed.
       className={cn(
         "absolute inset-s-1/2 -translate-x-1/2 rounded-full bg-background text-foreground shadow-float transition-[translate,scale,opacity] motion-pop motion-reduce:transition-opacity hover:bg-muted hover:text-foreground dark:bg-muted dark:hover:bg-accent data-[active=false]:pointer-events-none data-[active=false]:scale-95 data-[active=false]:opacity-0 data-[active=true]:translate-y-0 data-[active=true]:scale-100 data-[active=true]:opacity-100 data-[direction=end]:bottom-4 data-[direction=end]:data-[active=false]:translate-y-full data-[direction=start]:top-4 data-[direction=start]:data-[active=false]:-translate-y-full rtl:translate-x-1/2 data-[direction=start]:[&_svg]:rotate-180 pointer-coarse:after:absolute pointer-coarse:after:-inset-2",
-        // agent-ui: a pill with a summary. Placed at half the width, it
+        // agentui: a pill with a summary. Placed at half the width, it
         // would shrink to fit the other half: w-max, kept in the scroller.
         pill && "w-max max-w-9/10 gap-2 px-3",
         className
@@ -759,7 +759,7 @@ function MessageScrollerButton({
       {children ?? (
         <>
           <HugeiconsIcon icon={ArrowDown02Icon} strokeWidth={2} />
-          {/* agent-ui: visible names with a summary; literal spaces keep the
+          {/* agentui: visible names with a summary; literal spaces keep the
               accessible name separated, even between inline spans. */}
           <span className={pill ? "shrink-0" : "sr-only"}>{label}</span>
           {pill && (

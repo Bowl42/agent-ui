@@ -180,7 +180,7 @@ type BrowserChatPart =
  * `DataTransfer` names it: e.g. a `Composer`'s `dropTypes`. Its text is
  * the path too, for any input.
  */
-const browserFileType = "application/x-agent-ui-browser-file"
+const browserFileType = "application/x-agentui-browser-file"
 
 /** The file or directory a drag from a `files` page carries, if any. */
 function browserFileFrom(
@@ -936,7 +936,7 @@ function resolveWebAddress(address: string): BrowserPage | undefined {
 }
 
 /** The type of a tab dragged within a browser. */
-const tabType = "application/x-agent-ui-browser-tab"
+const tabType = "application/x-agentui-browser-tab"
 
 /** Where a dragged tab would go: a place among tabs, or beside a pane. */
 type Drop =

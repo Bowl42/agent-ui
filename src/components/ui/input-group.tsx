@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
-// agent-ui: no fill in dark, its border alone (3:1) outlining it, so a
+// agentui: no fill in dark, its border alone (3:1) outlining it, so a
 // field is not a grey slab on a card or a dialog.
 function InputGroup({
   className,
@@ -16,14 +16,14 @@ function InputGroup({
   ...props
 }: React.ComponentProps<"div"> & {
   /**
-   * agent-ui: `"lg"`, a sign-in screen's: 44px, a finger's height, its
+   * agentui: `"lg"`, a sign-in screen's: 44px, a finger's height, its
    * text 16px and its icons 20px.
    */
   size?: "default" | "lg"
 }) {
-  // agent-ui: the group looks disabled when its control is, not when any
+  // agentui: the group looks disabled when its control is, not when any
   // descendant is (a disabled send button left the field looking disabled).
-  // agent-ui: a contenteditable control is :focus-visible whenever it has
+  // agentui: a contenteditable control is :focus-visible whenever it has
   // focus, pointer or not, so it does not take the dark border and 3px ring
   // a keyboard focus gets; its border darkens a step instead, still a
   // visible focus indicator.
@@ -169,7 +169,7 @@ function InputGroupTextarea({
   )
 }
 
-// agent-ui: a popup opened from inside a group, as a menu of a composer's
+// agentui: a popup opened from inside a group, as a menu of a composer's
 // toolbar, sits 8px clear of the whole group rather than of its trigger,
 // so it never covers the text: Base UI's `sideOffset` for it, given its
 // trigger, e.g. `sideOffset={({ side }) => inputGroupPopupOffset(
@@ -190,7 +190,7 @@ function inputGroupPopupOffset(
   return outside
 }
 
-// agent-ui: what such a popup is placed by, Base UI's `anchor`, e.g.
+// agentui: what such a popup is placed by, Base UI's `anchor`, e.g.
 // `anchor={() => inputGroupPopupAnchor(trigger.current)}`: its trigger,
 // or where the group has folded the trigger away (a narrow composer's
 // toolbar), the group's button marked `data-input-group-fold` that stands
@@ -204,7 +204,7 @@ function inputGroupPopupAnchor(trigger: Element | null) {
   )
 }
 
-// agent-ui: for a popup aligned to its trigger's end (`align="end"`), the
+// agentui: for a popup aligned to its trigger's end (`align="end"`), the
 // `alignOffset` that ends it where the group's end column starts, the
 // first element marked `data-input-group-end` (a composer's stop and
 // send) after the trigger; 0 without one.

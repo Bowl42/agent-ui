@@ -1,6 +1,6 @@
-# Building an app from agent-ui
+# Building an app from agentui
 
-agent-ui is open source and has no business logic: no sessions, agents,
+agentui is open source and has no business logic: no sessions, agents,
 approvals or protocols, only the standard UI those are made of. Apps adapt
 to it. They own their screens, as shadcn intends, and compose them from
 the parts below; they do not restyle or fork the parts, and do not make
@@ -75,7 +75,7 @@ const turnLabels = {
 
 ## Conversation content
 
-**Markdown**, streamed or not, is agent-ui's `markdown`: [Streamdown](https://streamdown.ai)
+**Markdown**, streamed or not, is agentui's `markdown`: [Streamdown](https://streamdown.ai)
 (it renders unfinished code blocks, lists and tables while they stream)
 at a conversation's rhythm, its fenced code a `CodeBlock`. Every app uses
 it, so long answers read the same in each; don't restyle Streamdown in
@@ -91,7 +91,7 @@ the app.
 ```
 
 - Its props are Streamdown's. `components` the app gives replace
-  agent-ui's, e.g. links that open beside the conversation, or `code`
+  agentui's, e.g. links that open beside the conversation, or `code`
   with an "Open beside" action (`MarkdownCodeBlock` is the default).
 - The app's CSS adds Streamdown's own classes, beside the theme's:
   `@source "../node_modules/streamdown/dist/*.js";`
@@ -1191,7 +1191,7 @@ const [highlight, setHighlight] = useState("")   // the highlighted hit's value
   the React Compiler too: no workaround in the app.
 - A preview of the highlighted hit goes beside the list, outside it.
 
-## Components agent-ui adds
+## Components agentui adds
 
 ### `composer`
 
@@ -1577,7 +1577,7 @@ With `resolveLink(url, { signal })`, a pasted address (alone, `http` or
 up, then what the app returned (`title`, `detail`, `icon`, `kind`,
 `description`, `image`). Null, or a failure, leaves the address as text.
 What a link is, e.g. a pull request with its number and state, is the
-app's: agent-ui knows no site.
+app's: agentui knows no site.
 
 ```tsx
 resolveLink={async (url, { signal }) => {
@@ -1968,7 +1968,7 @@ click chooses and closes, and the focus goes back to the trigger.
 Picks a conversation's model and how hard it thinks, from a trigger in
 the composer's toolbar. Models, their groups (e.g. providers), thinking
 steps and purposes are the app's data; nothing about a provider is in
-agent-ui.
+agentui.
 
 ```tsx
 <InputGroupAddon align="block-end">
@@ -3306,7 +3306,7 @@ function PanelBrowser(props: React.ComponentProps<typeof Browser>) {
   `sandbox`, without `allow-same-origin`, or it could reach the app.
   Pages the server forbids framing (`X-Frame-Options`) cannot be shown:
   open them in a new window (its toolbar's "More" menu).
-- **A web page's states** (`browser-web.tsx`): agent-ui draws the
+- **A web page's states** (`browser-web.tsx`): agentui draws the
   chrome and the overlays; the page and its states are the app's, on
   its `content`, changed with `update(page)`:
 
@@ -3490,7 +3490,7 @@ own, the app's, is too.
   name="notes.txt" // the last of its path
   icon={<HugeiconsIcon icon={File01Icon} strokeWidth={2} />}
   path={[
-    { label: "agent-ui", onSelect: () => openFolder("") },
+    { label: "agentui", onSelect: () => openFolder("") },
     { label: "docs" },
   ]}
   onBack={back} // no button without it
@@ -3550,7 +3550,7 @@ the surface it sits on, e.g. a dialog's.
 
 ```tsx
 <FilesViewer
-  name="agent-ui"
+  name="agentui"
   files={[                                  // a folder's own children under it
     { id: "src", name: "src", directory: true, modified, children: [ … ] },
     { id: "package.json", name: "package.json", modified, size: 2253, status: "M" },
@@ -4270,7 +4270,7 @@ last in its place; a skip-everything button becomes its `onDecline`
 (`labels.decline` for its words). Give each item its question as a
 `QuestionnaireTitle` and the card a title for the whole request.
 
-## Blocks agent-ui adds
+## Blocks agentui adds
 
 ### `agent-app`
 

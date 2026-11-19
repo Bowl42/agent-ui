@@ -6,7 +6,7 @@ import { OTPInput, OTPInputContext } from "input-otp"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MinusSignIcon } from "@hugeicons/core-free-icons"
 
-// agent-ui: no fill in dark, its border alone (3:1) outlining it, so a
+// agentui: no fill in dark, its border alone (3:1) outlining it, so a
 // field is not a grey slab on a card or a dialog.
 function InputOTP({
   className,

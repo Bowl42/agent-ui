@@ -19,12 +19,12 @@ import { FolderPicker } from "@/components/folder-picker"
 import { folderTree, loadFolder, updateFolder } from "@/stories/folder-tree"
 
 const projects: AppProject[] = [
-  { id: "agent-ui", path: "~/src/agent-ui" },
+  { id: "agentui", path: "~/src/agentui" },
   { id: "docs", path: "~/src/docs" },
 ]
 
 function Demo({ onBrowse }: { onBrowse: () => void }) {
-  const [value, setValue] = React.useState<string | null>("agent-ui")
+  const [value, setValue] = React.useState<string | null>("agentui")
   const [items, setItems] = React.useState(projects)
   const [open, setOpen] = React.useState(false)
   const [selected, setSelected] = React.useState<string | null>(null)
@@ -92,7 +92,7 @@ type Story = StoryObj<typeof meta>
 export const Footer: Story = {
   play: async ({ args, canvas }) => {
     await userEvent.click(
-      canvas.getByRole("combobox", { name: "Project: agent-ui" })
+      canvas.getByRole("combobox", { name: "Project: agentui" })
     )
     const popup = await screen.findByRole("dialog", { name: "Search projects" })
     await userEvent.click(
@@ -456,10 +456,10 @@ export const Selected: Story = {
 export const ChosenLook: Story = {
   play: async ({ canvas }) => {
     await userEvent.click(
-      canvas.getByRole("combobox", { name: "Project: agent-ui" })
+      canvas.getByRole("combobox", { name: "Project: agentui" })
     )
     const popup = await screen.findByRole("dialog", { name: "Search projects" })
-    const chosen = within(popup).getByRole("option", { name: /^agent-ui/ })
+    const chosen = within(popup).getByRole("option", { name: /^agentui/ })
     const other = within(popup).getByRole("option", { name: /^docs/ })
     const name = (option: HTMLElement) =>
       option.querySelector("span > span")! as HTMLElement

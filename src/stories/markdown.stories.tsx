@@ -956,7 +956,7 @@ export const CodeWrapByDefaultShort: Story = {
 }
 
 const longPath =
-  "/Users/someone/projects/agent-ui/node_modules/.pnpm/some-very-long-package-name@1.2.3/".repeat(
+  "/Users/someone/projects/agentui/node_modules/.pnpm/some-very-long-package-name@1.2.3/".repeat(
     3
   )
 const narrow: Story["decorators"] = [

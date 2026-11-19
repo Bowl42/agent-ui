@@ -54,7 +54,7 @@ function AlertDialogContent({
         data-size={size}
         className={cn(
           "group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-popover-foreground ring-1 ring-foreground/10 motion-pop outline-none data-[size=default]:sm:max-w-sm data-[size=sm]:sm:max-w-xs data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-          // agent-ui: on a phone a sheet from the bottom, its footer kept
+          // agentui: on a phone a sheet from the bottom, its footer kept
           // at the foot, as a dialog's.
           dialogPhoneSheet,
           dialogStickyFooter["alert-dialog-footer"],
@@ -89,7 +89,7 @@ function AlertDialogFooter({
   return (
     <div
       data-slot="alert-dialog-footer"
-      // agent-ui: its buttons under the content, as a dialog's, not on a
+      // agentui: its buttons under the content, as a dialog's, not on a
       // band ruled off.
       className={cn(
         "flex flex-col-reverse gap-2 pt-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end short:flex-row short:justify-end",

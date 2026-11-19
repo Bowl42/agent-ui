@@ -1,6 +1,6 @@
 # The grid
 
-agent-ui lays out on one grid: a 4px module for every size and space,
+agentui lays out on one grid: a 4px module for every size and space,
 and 12 columns for a page's layout. Components keep to it so that what
 an app puts together lines up without values of its own.
 

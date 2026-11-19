@@ -18,7 +18,7 @@ function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
   return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />
 }
 
-// agent-ui: where toasts show, the window's bottom or top end. At the top,
+// agentui: where toasts show, the window's bottom or top end. At the top,
 // under a titlebar (AgentApp's --agent-app-titlebar) and the status bar;
 // at the end, clear of what the app keeps there (--toast-inset-end, e.g.
 // a native view the page cannot cover).
@@ -55,7 +55,7 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
     <ToastPrimitive.Root
       data-slot="toast"
       swipeDirection={position === "top-end" ? ["up", "right"] : ["down", "right"]}
-      // agent-ui: a dialog's radius, and no border: shadow-lg is the theme's
+      // agentui: a dialog's radius, and no border: shadow-lg is the theme's
       // shadow-float, which has its own hairline.
       className={cn(
         "group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom [--toast-dir:1] in-data-[position=top-end]:top-0 in-data-[position=top-end]:bottom-auto in-data-[position=top-end]:origin-top in-data-[position=top-end]:[--toast-dir:-1] rounded-xl bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
@@ -227,10 +227,10 @@ function Toaster({
   pinned,
   ...props
 }: ToastPrimitive.Provider.Props & {
-  /** agent-ui: the window's bottom end, or its top end. */
+  /** agentui: the window's bottom end, or its top end. */
   position?: ToastPosition
   /**
-   * agent-ui: a card that stays where the toasts show, not a toast (e.g.
+   * agentui: a card that stays where the toasts show, not a toast (e.g.
    * asking to allow notifications), the toasts beside it, away from the
    * window's edge.
    */

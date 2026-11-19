@@ -59,7 +59,7 @@ function AvatarBadge({
   ...props
 }: React.ComponentProps<"span"> & {
   /**
-   * agent-ui: its colour, by a state: a reminder on an account
+   * agentui: its colour, by a state: a reminder on an account
    * (`warning`), online (`success`), news (`info`), an error.
    */
   variant?: "default" | "success" | "warning" | "info" | "destructive"

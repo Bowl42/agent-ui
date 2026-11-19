@@ -452,7 +452,7 @@ function useLongLines(
         }
       setLong(wrapped)
     }
-    // agent-ui: told once laid out, as the observer starts, not read as
+    // agentui: told once laid out, as the observer starts, not read as
     // it mounts: a block mounting while the layout is dirty (a message
     // windowed in as the reader scrolls) would force a layout of the page.
     const observer = new ResizeObserver(measure)

@@ -84,7 +84,7 @@ function BubbleContent({
   })
 }
 
-// agent-ui: the pill floats over the bubble's edge, raised by shadow-float
+// agentui: the pill floats over the bubble's edge, raised by shadow-float
 // as everything that floats, not cut out by a ring of the card's colour,
 // which in dark was a light ring on the page.
 const bubbleReactionsVariants = cva(

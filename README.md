@@ -1,4 +1,4 @@
-# agent-ui
+# agentui
 
 Components for agent apps (conversations, tool calls, a composer, viewers
 for what an agent opens) as a [shadcn/ui](https://ui.shadcn.com) registry.
@@ -9,7 +9,7 @@ upstream components.
 > **Status:** pre-release (0.x). Breaking changes can come in any release;
 > its notes say what to change.
 
-[See every component in Storybook](https://bowl42.github.io/agent-ui/).
+[See every component in Storybook](https://bowl42.github.io/agentui/).
 
 This is not an npm package. As with shadcn, the CLI copies each component
 into your app, where you own and edit it. Every component has stories that
@@ -24,8 +24,8 @@ In an app set up for shadcn's `base-nova` style (for example
 whatever components you need from a release, by their URLs:
 
 ```sh
-pnpm dlx shadcn@latest add https://raw.githubusercontent.com/Bowl42/agent-ui/v0.1.0/public/r/theme.json
-pnpm dlx shadcn@latest add https://raw.githubusercontent.com/Bowl42/agent-ui/v0.1.0/public/r/composer.json
+pnpm dlx shadcn@latest add https://raw.githubusercontent.com/Bowl42/agentui/v0.1.12/public/r/theme.json
+pnpm dlx shadcn@latest add https://raw.githubusercontent.com/Bowl42/agentui/v0.1.12/public/r/composer.json
 ```
 
 Each item brings what it depends on, from the same release. For shorter
@@ -34,7 +34,7 @@ names, add the registry to `components.json`:
 ```json
 {
   "registries": {
-    "@bowl42": "https://raw.githubusercontent.com/Bowl42/agent-ui/v0.1.0/public/r/{name}.json"
+    "@bowl42": "https://raw.githubusercontent.com/Bowl42/agentui/v0.1.12/public/r/{name}.json"
   }
 }
 ```
@@ -46,7 +46,7 @@ pnpm dlx shadcn@latest add @bowl42/composer @bowl42/agent-turn
 ```
 
 - **Pin a release.** Each item and everything it depends on is read at
-  the tag in the URL; the [releases](https://github.com/Bowl42/agent-ui/releases)
+  the tag in the URL; the [releases](https://github.com/Bowl42/agentui/releases)
   list them, and their notes say what to change. Change the tag to
   upgrade, and re-add every item you use, in one call.
 - **Icons.** The components draw [Hugeicons](https://hugeicons.com).
@@ -56,10 +56,10 @@ pnpm dlx shadcn@latest add @bowl42/composer @bowl42/agent-turn
   this registry has a fixed version (see [below](#fixed-shadcn-components)),
   add it after shadcn's, and again after any update from shadcn:
   `pnpm dlx shadcn@latest add --overwrite @bowl42/use-mobile`.
-- **Without a release.** `pnpm dlx shadcn@latest add Bowl42/agent-ui/<name>`
+- **Without a release.** `pnpm dlx shadcn@latest add Bowl42/agentui/<name>`
   reads main, one request per file. To use a local checkout, run
   `pnpm registry:build` in it and add the built file:
-  `pnpm dlx shadcn@latest add ../agent-ui/public/r/<name>.json`.
+  `pnpm dlx shadcn@latest add ../agentui/public/r/<name>.json`.
 
 [Building an app](docs/building-apps.md) shows how the pieces make an agent
 app's screens.
@@ -177,7 +177,7 @@ For a side panel, or over the whole window.
 
 Fixed versions of shadcn's `base-nova` components. Each makes the smallest
 change that fixes accessibility, a bug, or its fit with the theme, and
-the change is marked `// agent-ui:` in the code. Each is dropped once
+the change is marked `// agentui:` in the code. Each is dropped once
 shadcn ships a fix.
 
 `accordion`, `alert`, `alert-dialog`, `attachment`, `avatar`, `badge`,

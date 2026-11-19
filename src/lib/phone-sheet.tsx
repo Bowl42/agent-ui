@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
-// agent-ui: on a phone a menu, a popover or a select's list opens as a
+// agentui: on a phone a menu, a popover or a select's list opens as a
 // sheet from the bottom, as the platform's action sheets do, not anchored
 // to its trigger: across the screen, over a scrim that closes it when
 // tapped, a handle to swipe it down by, its rows 44px tall, clear of the

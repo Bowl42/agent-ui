@@ -7,7 +7,7 @@ type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {
   size?: "sm" | "default"
 }
 
-// agent-ui: no fill in dark, its border alone (3:1) outlining it, so a
+// agentui: no fill in dark, its border alone (3:1) outlining it, so a
 // field is not a grey slab on a card or a dialog.
 function NativeSelect({
   className,

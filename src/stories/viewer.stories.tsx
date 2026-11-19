@@ -33,7 +33,7 @@ const meta = {
   args: {
     name: "notes.txt",
     icon: <HugeiconsIcon icon={File01Icon} strokeWidth={2} />,
-    path: [{ label: "agent-ui", onSelect: fn() }, { label: "docs" }],
+    path: [{ label: "agentui", onSelect: fn() }, { label: "docs" }],
     onBack: fn(),
     onAddToChat: fn(),
     menu: (
@@ -65,9 +65,7 @@ export const Default: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Back" }))
     await expect(args.onBack).toHaveBeenCalled()
     const path = canvas.getByRole("navigation", { name: /^Path/ })
-    await userEvent.click(
-      within(path).getByRole("button", { name: "agent-ui" })
-    )
+    await userEvent.click(within(path).getByRole("button", { name: "agentui" }))
     await expect(args.path![0]!.onSelect).toHaveBeenCalled()
     // The last of the path is its name, the page it is.
     await expect(within(path).getByRole("link")).toHaveTextContent("notes.txt")
@@ -169,7 +167,7 @@ export const ToolGroups: Story = {
           each.getAttribute("aria-label") ?? each.textContent?.trim() ?? ""
       )
     await expect(groups.map(named)).toEqual([
-      ["Back", "Path, notes.txt", "agent-ui"],
+      ["Back", "Path, notes.txt", "agentui"],
       ["Wrap lines"],
       ["Add to chat", "Download", "More"],
     ])

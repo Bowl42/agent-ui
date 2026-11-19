@@ -286,7 +286,7 @@ function PdfViewer({
             }
           }}
         >
-          <style href="agent-ui-viewer-find" precedence="default">
+          <style href="agentui-viewer-find" precedence="default">
             {highlightStyle}
           </style>
           {pages && pages.length > 1 && (

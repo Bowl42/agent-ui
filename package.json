@@ -1,5 +1,5 @@
 {
-  "name": "@bowl42/agent-ui",
+  "name": "@bowl42/agentui",
   "private": true,
   "version": "0.0.0",
   "description": "shadcn/ui registry for agent apps: the base-nova components with an accessible theme",
@@ -7,7 +7,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Bowl42/agent-ui.git"
+    "url": "git+https://github.com/Bowl42/agentui.git"
   },
   "scripts": {
     "storybook": "storybook dev -p 6006",

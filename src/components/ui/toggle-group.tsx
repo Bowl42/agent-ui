@@ -40,7 +40,7 @@ function ToggleGroup({
       data-size={size}
       data-spacing={spacing}
       data-orientation={orientation}
-      // agent-ui: Base UI needs it for ArrowUp and ArrowDown.
+      // agentui: Base UI needs it for ArrowUp and ArrowDown.
       orientation={orientation}
       style={{ "--gap": spacing } as React.CSSProperties}
       className={cn(
@@ -74,7 +74,7 @@ function ToggleGroupItem({
       data-size={context.size || size}
       data-spacing={context.spacing}
       className={cn(
-        // agent-ui: pressed, a step lighter than a hovered item in dark,
+        // agentui: pressed, a step lighter than a hovered item in dark,
         // where both were bg-muted on a near background.
         "shrink-0 dark:aria-pressed:bg-foreground/15 group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-2 focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-1 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-1 group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-lg group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-lg group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-lg group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-lg group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t",
         toggleVariants({

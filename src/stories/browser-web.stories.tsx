@@ -82,7 +82,7 @@ const changes: BrowserPage = {
 const files: BrowserPage = {
   id: "files",
   title: "Files",
-  location: "~/agent-ui",
+  location: "~/agentui",
   content: {
     type: "files",
     files: [{ name: "vite.config.ts", path: "vite.config.ts" }],

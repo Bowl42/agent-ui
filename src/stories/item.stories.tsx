@@ -650,9 +650,9 @@ export const ColumnsLongTitle: Story = {
       <Item {...args} role="listitem">
         <ItemContent>
           <ItemTitle>
-            <span className="shrink-0">agent-ui</span>
+            <span className="shrink-0">agentui</span>
             <span className="min-w-0 truncate font-normal text-muted-foreground">
-              ~/code/agent-ui/packages/registry
+              ~/code/agentui/packages/registry
             </span>
           </ItemTitle>
         </ItemContent>

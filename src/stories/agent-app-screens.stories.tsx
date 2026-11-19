@@ -129,8 +129,8 @@ const icon = (of: Parameters<typeof HugeiconsIcon>[0]["icon"]) => (
 
 const projects: AppSidebarProject[] = [
   {
-    id: "agent-ui",
-    path: "~/code/agent-ui",
+    id: "agentui",
+    path: "~/code/agentui",
     count: 12,
     conversations: [
       { id: "vite", title: "Tune the vite build", time: "now" },
@@ -429,7 +429,7 @@ function Panel({ screen, touch }: { screen: Screen; touch: boolean }) {
                 type: "files",
                 files: [{ name: "vite.config.ts", path: "vite.config.ts" }],
               }),
-              location: "~/agent-ui",
+              location: "~/agentui",
             },
           ],
         },
@@ -762,7 +762,7 @@ function RunningTurn() {
                         </AgentRequestTitle>
                         <AgentRequestDescription>
                           It pushes main and the v0.1.9 tag to
-                          github.com/Bowl42/agent-ui. This can&apos;t be undone
+                          github.com/Bowl42/agentui. This can&apos;t be undone
                           from here.
                         </AgentRequestDescription>
                         <AgentRequestContent>
@@ -820,7 +820,7 @@ function RunningTurn() {
 }
 
 function Dock({ screen, phone = false }: { screen: Screen; phone?: boolean }) {
-  const [project, setProject] = React.useState<string | null>("agent-ui")
+  const [project, setProject] = React.useState<string | null>("agentui")
   const composer = (
     <Composer status={screen === "running" ? "running" : "ready"}>
       {screen === "new" && (
@@ -1129,7 +1129,7 @@ export const Thread: Story = {
     )
     const count = within(
       add.closest<HTMLElement>("[data-sidebar=group]")!
-    ).getByRole("button", { name: /^agent-ui/ }).lastElementChild!
+    ).getByRole("button", { name: /^agentui/ }).lastElementChild!
     await expect(plus.getBoundingClientRect().right).toBe(
       count.getBoundingClientRect().right
     )
@@ -1399,7 +1399,7 @@ export const PhoneSidebar: Story = {
     const sheet = await within(document.body).findByRole("dialog")
     await waitFor(() => expect(sheet.getBoundingClientRect().left).toBe(0))
     await expect(sheet.getBoundingClientRect().width).toBe(390 * 0.8)
-    const row = within(sheet).getByRole("button", { name: /^agent-ui/ })
+    const row = within(sheet).getByRole("button", { name: /^agentui/ })
     await expect(row.getBoundingClientRect().height).toBe(44)
     await expect(getComputedStyle(row).fontSize).toBe("16px")
     await expect(row).toHaveTextContent("12")

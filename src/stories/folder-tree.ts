@@ -8,7 +8,7 @@ const directory = (id: string, children?: ViewerFile[]): ViewerFile => ({
 })
 export const folderTree: ViewerFile = directory("~", [
   directory("~/code", [
-    directory("~/code/agent-ui", [directory("~/code/agent-ui/src", [])]),
+    directory("~/code/agentui", [directory("~/code/agentui/src", [])]),
     directory("~/code/vesper", [directory("~/code/vesper/app", [])]),
     directory("~/code/samples"),
     { id: "~/code/notes.txt", name: "notes.txt" },

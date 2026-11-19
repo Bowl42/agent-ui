@@ -131,7 +131,7 @@ const tree: BrowserFile[] = [
 const files: BrowserPage = {
   id: "files",
   title: "Files",
-  location: "~/agent-ui",
+  location: "~/agentui",
   content: { type: "files", files: tree },
 }
 
@@ -229,11 +229,11 @@ const dev: BrowserPage = {
   title: "pnpm dev",
   content: {
     type: "terminal",
-    output: `~/agent-ui ❯ pnpm dev\n\n  ${green}VITE v7.2.1${reset}  ready in 412 ms\n\n  ➜  Local:   http://localhost:5173/\n`,
+    output: `~/agentui ❯ pnpm dev\n\n  ${green}VITE v7.2.1${reset}  ready in 412 ms\n\n  ➜  Local:   http://localhost:5173/\n`,
     live: true,
     status: "Running · 12m",
     sessions: [
-      { id: "zsh", title: "zsh", output: "~/agent-ui ❯ ", status: "Exited 0" },
+      { id: "zsh", title: "zsh", output: "~/agentui ❯ ", status: "Exited 0" },
     ],
   },
 }
@@ -242,7 +242,7 @@ const now = Date.now()
 const assets: BrowserPage = {
   id: "files:assets",
   title: "assets",
-  location: "agent-ui/public/assets",
+  location: "agentui/public/assets",
   content: {
     type: "files",
     view: "grid",
@@ -1740,7 +1740,7 @@ export const Viewers: Story = {
     await expect(canvas.queryByRole("textbox", { name: "Address" })).toBeNull()
     await expect(
       page().getByRole("navigation", { name: /^Path/ })
-    ).toHaveTextContent(/agent-ui.*public.*assets/)
+    ).toHaveTextContent(/agentui.*public.*assets/)
 
     // An image: its size read, the app's facts after, at the top of More
     // (no status bar under it); its download.

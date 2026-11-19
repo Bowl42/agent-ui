@@ -19,7 +19,7 @@ const groups: AppSidebarGroup[] = [
     projects: [
       {
         id: "ui",
-        path: "~/code/agent-ui",
+        path: "~/code/agentui",
         conversations: [
           { id: "styles", title: "Review styles", status: "waiting" },
         ],
@@ -111,7 +111,7 @@ export const ProjectMode: Story = {
       .closest('[data-slot="agent-app-projects"]')
     if (!(flat instanceof HTMLElement))
       throw new Error("Missing projects section")
-    for (const name of ["agent-ui", "api", "docs"]) {
+    for (const name of ["agentui", "api", "docs"]) {
       await waitFor(() =>
         expect(within(flat).getByRole("button", { name })).toBeVisible()
       )
@@ -145,7 +145,7 @@ export const GroupMode: Story = {
     await expect(
       canvas.queryByRole("button", { name: "New conversation in docs" })
     ).toBeNull()
-    for (const name of ["agent-ui", "api"]) {
+    for (const name of ["agentui", "api"]) {
       await expect(
         // Shown on hover or focus, as other rows' buttons.
         canvas.getByRole("button", { name: `New conversation in ${name}` })
@@ -228,7 +228,7 @@ export const OneGroup: Story = {
       ).toBeVisible()
     )
     await waitFor(() =>
-      expect(canvas.getByRole("button", { name: "agent-ui" })).toBeVisible()
+      expect(canvas.getByRole("button", { name: "agentui" })).toBeVisible()
     )
     await expect(canvas.queryByRole("heading", { level: 2 })).toBeNull()
   },

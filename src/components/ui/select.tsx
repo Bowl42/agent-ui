@@ -17,7 +17,7 @@ import {
 
 const Select = SelectPrimitive.Root
 
-// agent-ui: no fill in dark, its border alone (3:1) outlining it, so a
+// agentui: no fill in dark, its border alone (3:1) outlining it, so a
 // field is not a grey slab on a card or a dialog.
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
@@ -51,7 +51,7 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       data-size={size}
-      // agent-ui: hovered in dark, a lighter fill (input/30, not /50), on
+      // agentui: hovered in dark, a lighter fill (input/30, not /50), on
       // which the placeholder's grey keeps its 4.5:1.
       className={cn(
         "flex w-fit items-center justify-between gap-2 rounded-lg border border-field bg-transparent py-2 pr-2 pl-3 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:hover:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -76,7 +76,7 @@ function SelectContent({
   sideOffset = 4,
   align = "center",
   alignOffset = 0,
-  // agent-ui: below (or above) the trigger by default, as a menu opens,
+  // agentui: below (or above) the trigger by default, as a menu opens,
   // not with the chosen item over it: tall items (long names, wrapped, in
   // large text) could put the list out of the window.
   alignItemWithTrigger: alignItemWithTriggerProp = false,
@@ -89,9 +89,9 @@ function SelectContent({
     SelectPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset" | "alignItemWithTrigger"
   > & {
-    /** agent-ui: whether it opens as a sheet from the bottom on a phone. */
+    /** agentui: whether it opens as a sheet from the bottom on a phone. */
     sheet?: boolean
-    /** agent-ui: its heading as a sheet, e.g. what is chosen. */
+    /** agentui: its heading as a sheet, e.g. what is chosen. */
     sheetTitle?: React.ReactNode
   }) {
   const sheet = usePhoneSheet(sheetProp)
@@ -109,7 +109,7 @@ function SelectContent({
         style={sheet ? phoneSheetPositionerStyle : undefined}
       >
         <SelectPrimitive.Popup
-          // agent-ui: a new one as it turns a sheet or back. Base UI puts
+          // agentui: a new one as it turns a sheet or back. Base UI puts
           // the positioner's top, bottom and the like back as it first
           // found them each time it closes: a sheet's, kept, would pin it
           // to the bottom once it opens by its trigger.
@@ -117,14 +117,14 @@ function SelectContent({
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
           data-phone-sheet={sheet ? "" : undefined}
-          // agent-ui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
+          // agentui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
           className={cn("relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) flex flex-col overflow-hidden data-[side=none]:max-h-none rounded-lg bg-popover text-popover-foreground shadow-md motion-pop data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className, sheet && phoneSheetPopup )}
           style={sheet ? phoneSheetPopupStyle(style) : style}
           {...props}
         >
           {sheet && <PhoneSheetHeader title={sheetTitle} />}
           <SelectScrollUpButton />
-          {/* agent-ui: the list scrolls, not the popup: Base UI scrolls it
+          {/* agentui: the list scrolls, not the popup: Base UI scrolls it
               to bring the chosen item over the trigger, and the listbox is
               the box seen. Lined up with the trigger (side "none"), the
               popup is as tall as Base UI makes it, not the room below.
@@ -161,7 +161,7 @@ function SelectItem({
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
-      // agent-ui: rows 32px tall, the same in every menu.
+      // agentui: rows 32px tall, the same in every menu.
       className={cn(
         "relative flex w-full cursor-default items-center gap-2 min-h-8 rounded-md py-1 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         phoneSheetRow,
@@ -169,7 +169,7 @@ function SelectItem({
       )}
       {...props}
     >
-      {/* agent-ui: a long name wraps, anywhere, not past the list's edge. */}
+      {/* agentui: a long name wraps, anywhere, not past the list's edge. */}
       <SelectPrimitive.ItemText className="flex min-w-0 flex-1 gap-2 wrap-anywhere">
         {children}
       </SelectPrimitive.ItemText>
@@ -191,7 +191,7 @@ function SelectSeparator({
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      // agent-ui: 6px either side of the rule, 13px between groups.
+      // agentui: 6px either side of the rule, 13px between groups.
       className={cn("pointer-events-none -mx-1 my-1 h-px bg-border", className)}
       {...props}
     />

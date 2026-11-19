@@ -397,7 +397,7 @@ export const Composition: Story = {
 }
 
 /**
- * A native select the page opened: agent-ui's list under its box, the
+ * A native select the page opened: agentui's list under its box, the
  * chosen one ticked; a choice sent, or Escape a cancel.
  */
 export const Select: Story = {

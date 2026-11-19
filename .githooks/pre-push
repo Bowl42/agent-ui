@@ -29,7 +29,7 @@ done
 tree_of() {
   git ls-tree -r "$1" | grep -v "	public/r/" | git hash-object --stdin
 }
-passed="$(git rev-parse --git-common-dir)/agent-ui-checked"
+passed="$(git rev-parse --git-common-dir)/agentui-checked"
 last=$(cat "$passed" 2>/dev/null)
 if [ -n "$last" ] && [ "$(tree_of HEAD)" = "$last" ]; then
   echo "pre-push: this source passed the full check" >&2

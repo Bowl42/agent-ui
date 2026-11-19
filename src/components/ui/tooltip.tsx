@@ -48,8 +48,8 @@ function TooltipContent({
       >
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
-          // agent-ui: 24px tall with a 6px radius and no arrow, as small as
-          // the label it is, like agent-ui's other floating things; its
+          // agentui: 24px tall with a 6px radius and no arrow, as small as
+          // the label it is, like agentui's other floating things; its
           // words at the type scale's smallest, 11px. On its inverted
           // surface, the greys of secondary text (a FieldDescription's,
           // text-muted-foreground) are the background's, faded.

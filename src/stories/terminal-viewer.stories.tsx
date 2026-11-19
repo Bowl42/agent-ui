@@ -13,9 +13,9 @@ const dim = (text: string) => `\x1b[2m${text}\x1b[0m`
 const bold = (text: string) => `\x1b[1m${text}\x1b[0m`
 
 const dev = [
-  `${dim("~/agent-ui ❯")} ${bold("pnpm dev")}`,
+  `${dim("~/agentui ❯")} ${bold("pnpm dev")}`,
   "",
-  dim("> agent-ui@0.1.9 dev"),
+  dim("> agentui@0.1.9 dev"),
   dim("> vite"),
   "",
   `  ${bold("VITE v7.2.1")}  ${dim("ready in")} 412 ms`,
@@ -42,7 +42,7 @@ const sessions: TerminalSession[] = [
   {
     id: "zsh",
     title: "zsh",
-    output: `${dim("~/agent-ui ❯")} `,
+    output: `${dim("~/agentui ❯")} `,
     status: "Exited 0",
   },
   {

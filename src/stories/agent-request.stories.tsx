@@ -79,7 +79,7 @@ function Approval({
     >
       <AgentRequestTitle>Allow the agent to push?</AgentRequestTitle>
       <AgentRequestDescription>
-        It pushes main and the v0.1.9 tag to github.com/Bowl42/agent-ui. This
+        It pushes main and the v0.1.9 tag to github.com/Bowl42/agentui. This
         can't be undone from here.
       </AgentRequestDescription>
       <AgentRequestContent>

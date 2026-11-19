@@ -35,7 +35,7 @@ import {
 /** A project: the directory its conversations start in. */
 type AppProject = {
   id: string
-  /** Its directory: "~/code/agent-ui". */
+  /** Its directory: "~/code/agentui". */
   path: string
   /** Its name, if not its directory's. */
   name?: string
@@ -101,7 +101,7 @@ function projectNames(projects: AppProject[]) {
 }
 
 type ProjectPickerLabels = {
-  /** The picker's name, with the project picked: "Project: agent-ui". */
+  /** The picker's name, with the project picked: "Project: agentui". */
   picker: (project: string) => string
   /** The accessible name of a group's none row with more than one group. */
   noneIn: (group: string) => string

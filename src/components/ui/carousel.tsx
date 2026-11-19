@@ -96,7 +96,7 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return
-    // agent-ui: reading Embla's initial state is syncing with an external
+    // agentui: reading Embla's initial state is syncing with an external
     // system, and reInit is unsubscribed below.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     onSelect(api)
@@ -143,7 +143,7 @@ function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       ref={carouselRef}
-      // agent-ui: a pixel of room inside the clip, so a card's ring (drawn
+      // agentui: a pixel of room inside the clip, so a card's ring (drawn
       // outside it) is not cut off at the edges.
       className="-m-px overflow-hidden p-px"
       data-slot="carousel-content"

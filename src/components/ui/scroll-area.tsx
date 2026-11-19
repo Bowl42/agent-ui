@@ -3,7 +3,7 @@
 import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area"
 import { cn } from "cn"
 
-// agent-ui: no unused `import * as React` (fails noUnusedLocals).
+// agentui: no unused `import * as React` (fails noUnusedLocals).
 
 function ScrollArea({
   className,

@@ -137,7 +137,7 @@ export function registerLanguages(
     aliases[alias.toLowerCase()] = name.toLowerCase()
 }
 
-// agent-ui: terminal output's colours. Every colour, and each one dimmed
+// agentui: terminal output's colours. Every colour, and each one dimmed
 // (ANSI 2m), is at least 4.5:1 on the page, the muted surface and a diff
 // line's tint, in its theme.
 const syntax = {
@@ -205,7 +205,7 @@ function terminal(mode: Mode): ThemeRegistration {
 }
 
 /*
- * agent-ui: code's tokens by kind, each a class (code-keyword, …) whose
+ * agentui: code's tokens by kind, each a class (code-keyword, …) whose
  * colour is a theme variable (--code-keyword, …): in colour by default,
  * every one 4.5:1 on the page, cards, the muted surface, the sidebar and
  * a diff line's tint; in greys under [data-code-tone=graphite]. Light,
@@ -228,7 +228,7 @@ const kind = (name: (typeof kinds)[keyof typeof kinds]) =>
   Object.entries(kinds).find(([, value]) => value === name)![0]
 
 const tokens: ThemeRegistration = {
-  name: "agent-ui-tokens",
+  name: "agentui-tokens",
   type: "light",
   colors: { "editor.foreground": text },
   tokenColors: [
@@ -331,7 +331,7 @@ function kindClass(color: string | undefined) {
   return color ? kinds[color.toLowerCase() as keyof typeof kinds] : undefined
 }
 
-// agent-ui: dimmed ANSI text (2m), which Shiki gives half opacity and
+// agentui: dimmed ANSI text (2m), which Shiki gives half opacity and
 // left every colour under 4.5:1, gets its colour's dimmed step instead.
 const dimmed = Object.fromEntries(
   (Object.keys(ansi) as Mode[]).map((mode) => [
@@ -355,7 +355,7 @@ function undim(style: Record<string, string>) {
   return style
 }
 
-// agent-ui: a token's weight, slant and line as well as its colour (bold
+// agentui: a token's weight, slant and line as well as its colour (bold
 // keywords, italic comments, ANSI 1m, 3m, 4m, 9m); both themes give a
 // token the same ones.
 function tokenClass(style: Record<string, string> | undefined) {
@@ -447,8 +447,8 @@ export async function loadHighlighter(language: string) {
 
       const tokens = shiki.codeToTokens(code, {
         lang,
-        theme: "agent-ui-tokens",
-        // agent-ui: only pass a state there is; an explicit undefined
+        theme: "agentui-tokens",
+        // agentui: only pass a state there is; an explicit undefined
         // fails to build with exactOptionalPropertyTypes.
         ...(state && { grammarState: state }),
       }).tokens

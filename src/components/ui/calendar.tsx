@@ -47,7 +47,7 @@ function Calendar({
         ...formatters,
       }}
       labels={{
-        // agent-ui: "Sunday, 31 May 2026": the visible day number is a word
+        // agentui: "Sunday, 31 May 2026": the visible day number is a word
         // of the name (WCAG 2.5.3), unlike the default "May 31st".
         labelDayButton: (date, modifiers, options, dateLib) => {
           let label = (dateLib ?? new DateLib(options)).format(
@@ -203,7 +203,7 @@ function CalendarDayButton({
   modifiers,
   locale,
   ...props
-  // agent-ui: `| undefined`, as Calendar passes its own optional locale
+  // agentui: `| undefined`, as Calendar passes its own optional locale
   // through; without it apps with exactOptionalPropertyTypes fail to build.
 }: React.ComponentProps<typeof DayButton> & {
   locale?: Partial<Locale> | undefined
@@ -217,7 +217,7 @@ function CalendarDayButton({
 
   return (
     <Button
-      // agent-ui: attach the ref, or focusing days with arrow keys does nothing.
+      // agentui: attach the ref, or focusing days with arrow keys does nothing.
       ref={ref}
       variant="ghost"
       size="icon"

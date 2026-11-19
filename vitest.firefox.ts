@@ -10,7 +10,7 @@ export function firefoxLaunchOptions(): {
   env?: Record<string, string | undefined>
 } {
   if (process.platform !== "darwin") return {}
-  const home = join(tmpdir(), "agent-ui-firefox-home")
+  const home = join(tmpdir(), "agentui-firefox-home")
   mkdirSync(home, { recursive: true })
   return { env: { ...process.env, CFFIXED_USER_HOME: home } }
 }

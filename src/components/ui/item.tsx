@@ -6,7 +6,7 @@ import { cn } from "cn"
 
 import { Separator } from "@/components/ui/separator"
 
-// agent-ui: with `columns`, its items' facts (`ItemMeta`) and actions
+// agentui: with `columns`, its items' facts (`ItemMeta`) and actions
 // stand in columns across them, each as wide as its widest, as a table's
 // would: media (where any item has it), content, then that many
 // columns, in each item's subgrid. On a phone, a list as without, each
@@ -41,7 +41,7 @@ function ItemGroup({
   )
 }
 
-// agent-ui: a run of an ItemGroup's items under a word ("Today",
+// agentui: a run of an ItemGroup's items under a word ("Today",
 // "Yesterday"): small, in grey, where the items' words start, lighter
 // than a section's title. A heading where the app makes it one
 // (render={<h3 />}).
@@ -80,7 +80,7 @@ function ItemSeparator({
   )
 }
 
-// agent-ui: an item made a button (render={<button />}), as a row the
+// agentui: an item made a button (render={<button />}), as a row the
 // app acts on, answers the pointer as a link does, pressed too (on a
 // touch screen, where nothing hovers); its words start where a row's do,
 // and disabled it waits, faint. The current one (aria-current, as a
@@ -103,7 +103,7 @@ const itemVariants = cva(
         default: "gap-2 px-3 py-3",
         sm: "gap-2 px-3 py-2",
         xs: "gap-2 px-2 py-2 in-data-[slot=dropdown-menu-content]:p-0",
-        // agent-ui: a long list's row, as the sidebar's: 32px, 8px in,
+        // agentui: a long list's row, as the sidebar's: 32px, 8px in,
         // no outline (whatever its variant), its corners a row's; rows
         // in an ItemGroup touch, hovered alone (a line under its title:
         // see ItemContent).
@@ -143,7 +143,7 @@ function Item({
 }
 
 const itemMediaVariants = cva(
-  // agent-ui: beside a second line it starts at the title, a phone's
+  // agentui: beside a second line it starts at the title, a phone's
   // line (ItemDescription phoneOnly) counting only on a phone; in a
   // compact row past the content's own room over it (4px, a phone's 8px).
   "flex shrink-0 items-center justify-center gap-2 group-has-[[data-slot=item-description]:not([data-phone-only])]/item:translate-y-0.5 group-has-[[data-slot=item-description]:not([data-phone-only])]/item:self-start max-sm:group-has-data-[slot=item-description]/item:translate-y-0.5 max-sm:group-has-data-[slot=item-description]/item:self-start group-data-[size=compact]/item:group-has-[[data-slot=item-description]:not([data-phone-only])]/item:mt-1 max-sm:group-data-[size=compact]/item:group-has-data-[slot=item-description]/item:mt-2 [&_svg]:pointer-events-none",
@@ -154,7 +154,7 @@ const itemMediaVariants = cva(
         icon: "[&_svg:not([class*='size-'])]:size-4",
         image:
           "size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8 group-data-[size=xs]/item:size-6 [&_img]:size-full [&_img]:object-cover",
-        // agent-ui: a row's number (1, 2, 12) on a round grey mark of one
+        // agentui: a row's number (1, 2, 12) on a round grey mark of one
         // width, its digits of one width, so the rows' titles start on
         // one line whatever the number.
         number:
@@ -188,7 +188,7 @@ function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="item-content"
       className={cn(
         "flex flex-1 flex-col gap-1 group-data-[size=xs]/item:gap-0 [&+[data-slot=item-content]]:flex-none",
-        // agent-ui: in a compact item, with a line under its title, as
+        // agentui: in a compact item, with a line under its title, as
         // the sidebar's two-line rows: 4px over and under, 8px on a
         // phone; its buttons beside it as tall as they were.
         "group-data-[size=compact]/item:has-[[data-slot=item-description]:not([data-phone-only])]:py-1 max-sm:group-data-[size=compact]/item:has-data-[slot=item-description]:py-2",
@@ -199,7 +199,7 @@ function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-// agent-ui: an item's title as its link (or, render={<button />}, its
+// agentui: an item's title as its link (or, render={<button />}, its
 // button): over the whole row, so the row is pressed anywhere but its
 // actions, which stay above it; the row hovered where it is, its focus
 // ring round the row. In an ItemTitle.
@@ -230,7 +230,7 @@ function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="item-title"
       className={cn(
         "line-clamp-1 flex w-fit items-center gap-2 text-sm leading-5 font-medium underline-offset-4",
-        // agent-ui: no wider than its content's column, so a part of it
+        // agentui: no wider than its content's column, so a part of it
         // cut short (truncate) is cut there, not over the next column.
         "max-w-full",
         className
@@ -246,7 +246,7 @@ function ItemDescription({
   ...props
 }: React.ComponentProps<"p"> & {
   /**
-   * agent-ui: a line only a phone shows (as facts a desktop gives
+   * agentui: a line only a phone shows (as facts a desktop gives
    * columns): hidden from `sm`, where the row is one line.
    */
   phoneOnly?: boolean
@@ -265,7 +265,7 @@ function ItemDescription({
   )
 }
 
-// agent-ui: a fact at an item's end (a time, a cost, a branch): small,
+// agentui: a fact at an item's end (a time, a cost, a branch): small,
 // grey, on one line, its digits of one width; in an ItemGroup with
 // `columns`, in a column of the same fact of every item, at its end
 // (`align="start"`: at its start, for words).
@@ -296,7 +296,7 @@ function ItemActions({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="item-actions"
       className={cn(
-        // agent-ui: in an ItemGroup's columns, at its column's end; above
+        // agentui: in an ItemGroup's columns, at its column's end; above
         // an ItemLink's area.
         "relative flex items-center gap-2 sm:group-data-columns/item-group:justify-end",
         className

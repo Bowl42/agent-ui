@@ -7,11 +7,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // agent-ui: disabled, a muted button, not the primary half
+        // agentui: disabled, a muted button, not the primary half
         // see-through: a grey that looks broken.
         default:
           "bg-primary text-primary-foreground hover:bg-primary/80 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100",
-        // agent-ui: in dark too, a hairline on the colour it is on (a
+        // agentui: in dark too, a hairline on the colour it is on (a
         // page, a card, a dialog), as in light, not shadcn's bright
         // input-coloured edge on a white tint, nor a darker hole in a card.
         // A button is told by its words; a field's edge keeps 3:1.

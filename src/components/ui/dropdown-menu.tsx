@@ -44,15 +44,15 @@ function DropdownMenuContent({
   children,
   ...props
 }: MenuPrimitive.Popup.Props &
-  // agent-ui: an anchor of its own (e.g. a split button's group), not
+  // agentui: an anchor of its own (e.g. a split button's group), not
   // only its trigger.
   Pick<
     MenuPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset" | "anchor"
   > & {
-    /** agent-ui: whether it opens as a sheet from the bottom on a phone. */
+    /** agentui: whether it opens as a sheet from the bottom on a phone. */
     sheet?: boolean
-    /** agent-ui: its heading as a sheet, e.g. what it acts on. */
+    /** agentui: its heading as a sheet, e.g. what it acts on. */
     sheetTitle?: React.ReactNode
   }) {
   const sheet = usePhoneSheet(sheetProp)
@@ -66,7 +66,7 @@ function DropdownMenuContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
-        // agent-ui: as wide as its items, at least its trigger (and 8rem),
+        // agentui: as wide as its items, at least its trigger (and 8rem),
         // at most the room there is: an icon button's menu is not 128px
         // with its items broken over two lines.
         style={sheet ? phoneSheetPositionerStyle : menuWidth}
@@ -74,7 +74,7 @@ function DropdownMenuContent({
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           data-phone-sheet={sheet ? "" : undefined}
-          // agent-ui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
+          // agentui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
           className={cn("z-50 max-h-(--available-height) w-max max-w-(--available-width) min-w-(--dropdown-menu-min-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md motion-pop outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95", className, sheet && phoneSheetPopup )}
           style={sheet ? phoneSheetPopupStyle(style) : style}
           {...props}
@@ -122,7 +122,7 @@ function DropdownMenuItem({
   inset?: boolean
   variant?: "default" | "destructive"
   /**
-   * agent-ui: a line under its label, what it does, in grey; said after
+   * agentui: a line under its label, what it does, in grey; said after
    * its name. The item's children are its label's line.
    */
   description?: React.ReactNode
@@ -135,7 +135,7 @@ function DropdownMenuItem({
       data-inset={inset}
       data-variant={variant}
       {...(described ? { "aria-describedby": descriptionId } : {})}
-      // agent-ui: rows 32px tall, the same in every menu.
+      // agentui: rows 32px tall, the same in every menu.
       className={cn(
         "group/dropdown-menu-item relative flex cursor-default items-center gap-2 min-h-8 rounded-md px-2 py-1 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:not-data-[slot=dropdown-menu-item-description]:text-accent-foreground data-inset:pl-8 data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 data-[variant=destructive]:*:[svg]:text-destructive",
         phoneSheetRow,
@@ -180,7 +180,7 @@ function DropdownMenuSubTrigger({
     <MenuPrimitive.SubmenuTrigger
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
-      // agent-ui: rows 32px tall, the same in every menu.
+      // agentui: rows 32px tall, the same in every menu.
       className={cn(
         "flex cursor-default items-center gap-2 min-h-8 rounded-md px-2 py-1 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:pl-8 data-popup-open:bg-accent data-popup-open:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         phoneSheetRow,
@@ -205,7 +205,7 @@ function DropdownMenuSubContent({
   return (
     <DropdownMenuContent
       data-slot="dropdown-menu-sub-content"
-      // agent-ui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
+      // agentui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
       className={cn("w-auto min-w-[96px] rounded-lg bg-popover p-1 text-popover-foreground shadow-lg motion-pop data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className )}
       align={align}
       alignOffset={alignOffset}
@@ -229,7 +229,7 @@ function DropdownMenuCheckboxItem({
     <MenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
       data-inset={inset}
-      // agent-ui: rows 32px tall, the same in every menu.
+      // agentui: rows 32px tall, the same in every menu.
       className={cn(
         "relative flex cursor-default items-center gap-2 min-h-8 rounded-md py-1 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-8 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         phoneSheetRow,
@@ -272,7 +272,7 @@ function DropdownMenuRadioItem({
     <MenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
-      // agent-ui: rows 32px tall, the same in every menu.
+      // agentui: rows 32px tall, the same in every menu.
       className={cn(
         "relative flex cursor-default items-center gap-2 min-h-8 rounded-md py-1 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-8 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         phoneSheetRow,
@@ -300,7 +300,7 @@ function DropdownMenuSeparator({
   return (
     <MenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      // agent-ui: 6px either side of the rule, 13px between groups.
+      // agentui: 6px either side of the rule, 13px between groups.
       className={cn("-mx-1 my-1 h-px bg-border", className)}
       {...props}
     />

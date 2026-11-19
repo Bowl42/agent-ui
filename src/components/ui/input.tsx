@@ -2,7 +2,7 @@ import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
 import { cn } from "cn"
 
-// agent-ui: no fill in dark, its border alone (3:1) outlining it, so a
+// agentui: no fill in dark, its border alone (3:1) outlining it, so a
 // field is not a grey slab on a card or a dialog. `size="sm"`: 28px, its
 // text 13px, beside a toolbar's or a composer's 28px buttons (36px on a
 // phone, as they are; 16px text under 768px, so iOS does not zoom). A

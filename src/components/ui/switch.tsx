@@ -10,9 +10,9 @@ function Switch({
 }: SwitchPrimitive.Root.Props & {
   size?: "sm" | "default"
 }) {
-  // agent-ui: its size in rem, as its thumb's: at another root font size
+  // agentui: its size in rem, as its thumb's: at another root font size
   // (a reader's larger text) the thumb stays inside it, both sides.
-  // agent-ui: off, a light track with a hairline and a grey thumb, so it
+  // agentui: off, a light track with a hairline and a grey thumb, so it
   // reads quieter than on rather than as a mid-grey block.
   return (
     <SwitchPrimitive.Root

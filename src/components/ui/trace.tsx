@@ -34,8 +34,8 @@ function TraceLine({
     <span
       data-slot="trace-line"
       data-status={status}
-      // agent-ui: pending dims the icon only; dimmed text fell below 4.5:1.
-      // agent-ui: a failed line in greys, by weight (as the agent turn
+      // agentui: pending dims the icon only; dimmed text fell below 4.5:1.
+      // agentui: a failed line in greys, by weight (as the agent turn
       // marks one), not red.
       className={cn(
         "flex w-fit max-w-full min-w-0 items-center gap-2 text-sm text-muted-foreground transition-colors has-data-[slot=trace-description]:w-full in-[a,button]:cursor-pointer in-[a:hover,button:hover]:text-foreground data-[status=error]:text-foreground data-[status=error]:*:data-[slot=trace-title]:font-medium data-[status=pending]:*:[svg]:opacity-60 data-[status=running]:*:data-[slot=trace-title]:shimmer",
@@ -61,7 +61,7 @@ function TraceIcon({ className, ...props }: React.ComponentProps<"span">) {
 }
 
 function TraceTitle({ className, ...props }: React.ComponentProps<"span">) {
-  // agent-ui: pause running titles while out of view.
+  // agentui: pause running titles while out of view.
   useShimmerPause()
   return (
     <span
@@ -79,7 +79,7 @@ function TraceDescription({
   return (
     <span
       data-slot="trace-description"
-      // agent-ui: full muted-foreground; /70 fell below 4.5:1. At the
+      // agentui: full muted-foreground; /70 fell below 4.5:1. At the
       // line's end, smaller, so the results of the lines are one column.
       className={cn(
         "ms-auto shrink-0 ps-3 text-xs text-muted-foreground tabular-nums",
@@ -120,9 +120,9 @@ function TraceCollapsibleTrigger({
   return (
     <CollapsibleTrigger
       data-slot="trace-collapsible-trigger"
-      // agent-ui: text-sm, as its rows: at the inherited 16px a fold's
+      // agentui: text-sm, as its rows: at the inherited 16px a fold's
       // title outweighed the lines beside it.
-      // agent-ui: a failed line inside does not tint the fold's title.
+      // agentui: a failed line inside does not tint the fold's title.
       className={cn(
         "group/trace-collapsible-trigger flex w-fit max-w-full min-w-0 cursor-pointer has-data-[slot=trace-description]:w-full items-center gap-1 rounded-md text-left text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
         className
@@ -130,7 +130,7 @@ function TraceCollapsibleTrigger({
       {...props}
     >
       {children}
-      {/* agent-ui: no turning with reduced motion. */}
+      {/* agentui: no turning with reduced motion. */}
       <TraceIcon className="transition-transform group-aria-expanded/trace-collapsible-trigger:rotate-90 motion-reduce:transition-none">
         <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
       </TraceIcon>
@@ -146,14 +146,14 @@ function TraceCollapsibleContent({
   return (
     <CollapsibleContent
       data-slot="trace-collapsible-content"
-      // agent-ui: opens as every collapsible does (at once with reduced
+      // agentui: opens as every collapsible does (at once with reduced
       // motion).
       className="min-w-0"
       {...props}
     >
       <div
         data-slot="trace-collapsible-content-inner"
-        // agent-ui: text-sm, as the rows above it, not the inherited 16px.
+        // agentui: text-sm, as the rows above it, not the inherited 16px.
         className={cn(
           "mt-2 mb-1 ml-[calc(--spacing(2)-1px)] min-w-0 border-l pr-1 pl-4 text-sm leading-6 wrap-break-word text-muted-foreground",
           className

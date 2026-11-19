@@ -10,7 +10,7 @@ function Slider({
   getAriaValueText,
   ...props
 }: SliderPrimitive.Root.Props &
-  // agent-ui: the thumbs are inside, so a slider of named steps (Low,
+  // agentui: the thumbs are inside, so a slider of named steps (Low,
   // Medium, High) could not say its value's name, only its number.
   Pick<SliderPrimitive.Thumb.Props, "getAriaValueText">) {
   const _values = Array.isArray(value)

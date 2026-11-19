@@ -28,7 +28,7 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
   return (
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
-      // agent-ui: a flat scrim, without shadcn's blur, a step darker.
+      // agentui: a flat scrim, without shadcn's blur, a step darker.
       className={cn(
         "fixed inset-0 z-50 bg-black/20 transition-opacity motion-slide data-ending-style:opacity-0 data-starting-style:opacity-0",
         className
@@ -48,7 +48,7 @@ function SheetContent({
 }: SheetPrimitive.Popup.Props & {
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
-  /** agent-ui: the close button's name, for other languages. */
+  /** agentui: the close button's name, for other languages. */
   closeLabel?: string
 }) {
   return (

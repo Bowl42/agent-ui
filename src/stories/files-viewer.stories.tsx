@@ -194,7 +194,7 @@ function Files({
   const [selected, setSelected] = React.useState<string | null>(initial)
   return (
     <FilesViewer
-      name="agent-ui"
+      name="agentui"
       files={workspace}
       now={now}
       selected={selected}
@@ -256,7 +256,7 @@ export const List: Story = {
     )
   },
   play: async ({ args, canvas }) => {
-    const tree = canvas.getByRole("tree", { name: "agent-ui" })
+    const tree = canvas.getByRole("tree", { name: "agentui" })
     const picked = row(canvas, /^debounce\.ts/)
     await expect(picked).toHaveAttribute("aria-selected", "true")
     await expect(picked).toHaveAttribute("aria-level", "3")
@@ -347,7 +347,7 @@ export const Grid: Story = {
     name: "assets",
     files: assets,
     defaultView: "grid",
-    path: [{ label: "agent-ui" }, { label: "public" }],
+    path: [{ label: "agentui" }, { label: "public" }],
     onBack: fn(),
     selected: "hero.png",
     controls: (
@@ -430,7 +430,7 @@ export const Columns: Story = {
       selector: "[data-slot=files-preview] *",
     })
     await expect(preview).toBeVisible()
-    await expect(canvas.queryByRole("listbox", { name: "agent-ui" })).toBeNull()
+    await expect(canvas.queryByRole("listbox", { name: "agentui" })).toBeNull()
     await expect(canvas.queryByRole("listbox", { name: "src" })).toBeNull()
     // Back a column: src, the preview hidden; forward again.
     await userEvent.click(canvas.getByRole("button", { name: "Back to src" }))
@@ -512,19 +512,19 @@ export const GalleryInAFolder: Story = {
     const strip = await canvas.findByRole("listbox", { name: "lib" })
     await expect(within(strip).getAllByRole("option")).toHaveLength(2)
     const path = canvasElement.querySelector("[data-slot=files-gallery-path]")!
-    await expect(path).toHaveTextContent("agent-ui / src / lib")
+    await expect(path).toHaveTextContent("agentui / src / lib")
     // Back out: src's files, lib picked in them.
     await userEvent.click(canvas.getByRole("button", { name: "Back to src" }))
     const src = await canvas.findByRole("listbox", { name: "src" })
     await expect(
       within(src).getByRole("option", { name: /^lib/ })
     ).toHaveAttribute("aria-selected", "true")
-    await expect(path).toHaveTextContent("agent-ui / src")
+    await expect(path).toHaveTextContent("agentui / src")
     // And to the top: no way there said, the strip the top's.
     await userEvent.click(
-      canvas.getByRole("button", { name: "Back to agent-ui" })
+      canvas.getByRole("button", { name: "Back to agentui" })
     )
-    await canvas.findByRole("listbox", { name: "agent-ui" })
+    await canvas.findByRole("listbox", { name: "agentui" })
     await expect(
       canvasElement.querySelector("[data-slot=files-gallery-path]")
     ).toBeNull()
@@ -774,7 +774,7 @@ export const SearchResults: Story = {
             .map(({ file, parent }) => ({
               ...file,
               children: undefined,
-              description: parent || "agent-ui",
+              description: parent || "agentui",
             }))
         )
         setSearching(false)
@@ -783,7 +783,7 @@ export const SearchResults: Story = {
     }, [query, level])
     return (
       <FilesViewer
-        name={here?.name ?? "agent-ui"}
+        name={here?.name ?? "agentui"}
         now={now}
         files={query ? results : level}
         selected={selected}
@@ -821,7 +821,7 @@ export const SearchResults: Story = {
         canvas.getAllByRole("treeitem").map((item) => item.textContent)
       ).toEqual([
         expect.stringMatching(/^libsrc/),
-        expect.stringMatching(/^publicagent-ui/),
+        expect.stringMatching(/^publicagentui/),
       ])
     )
     await expect(row(canvas, /^lib/).querySelector("mark")).toHaveTextContent(
@@ -847,7 +847,7 @@ export const SearchResults: Story = {
     await expect(within(row(canvas, /^lib/)).getByText("↵")).toBeVisible()
     await expect(within(row(canvas, /^lib/)).getByText("Open")).toBeVisible()
     await expect(within(row(canvas, /^public/)).queryByText("Open")).toBeNull()
-    await expect(canvas.getByText("In agent-ui")).toBeVisible()
+    await expect(canvas.getByText("In agentui")).toBeVisible()
     await expect(canvas.getByText("↑↓ move · ↵ open · Esc clear")).toBeVisible()
     await expect(canvas.getByText("2 of 2 items")).toBeVisible()
     await expect(canvas.queryByRole("button", { name: "Filter" })).toBeNull()
@@ -954,7 +954,7 @@ const manyFolders: ViewerFile[] = Array.from({ length: 500 }, (_, index) => ({
 export const LongColumn: Story = {
   args: { defaultView: "columns", files: manyFolders },
   play: async ({ canvas }) => {
-    const column = await canvas.findByRole("listbox", { name: "agent-ui" })
+    const column = await canvas.findByRole("listbox", { name: "agentui" })
     await expect(within(column).getAllByRole("option").length).toBeLessThan(100)
     await userEvent.click(
       within(column).getByRole("option", { name: "folder-000" })
@@ -987,7 +987,7 @@ const manyFiles: ViewerFile[] = Array.from({ length: 500 }, (_, index) => ({
 export const LongListInView: Story = {
   args: { files: manyFiles },
   play: async ({ canvas }) => {
-    const list = await canvas.findByRole("tree", { name: "agent-ui" })
+    const list = await canvas.findByRole("tree", { name: "agentui" })
     const rowOf = (name: string) =>
       row(canvas, new RegExp(`^${name.replace(".", "\\.")}`))
     await userEvent.click(rowOf("file-000.txt"))
@@ -1119,7 +1119,7 @@ export const FoldersOnly: Story = {
   args: {
     name: "code",
     files: [
-      { id: "agent-ui", name: "agent-ui", directory: true, children: [] },
+      { id: "agentui", name: "agentui", directory: true, children: [] },
       { id: "vesper", name: "vesper", directory: true, children: [] },
     ],
   },
@@ -1130,7 +1130,7 @@ export const FoldersOnly: Story = {
     await expect(
       canvas.queryByRole("button", { name: "Sort by Modified" })
     ).toBeNull()
-    await expect(row(canvas, /^agent-ui/)).not.toHaveTextContent("—")
+    await expect(row(canvas, /^agentui/)).not.toHaveTextContent("—")
   },
 }
 
@@ -1359,7 +1359,7 @@ export const ColumnsResize: Story = {
   play: async ({ canvas }) => {
     const handles = () => canvas.getAllByRole("separator", { name: /^Resize/ })
     const first = handles()[0]!
-    await expect(first).toHaveAccessibleName("Resize agent-ui column")
+    await expect(first).toHaveAccessibleName("Resize agentui column")
     await expect(first).toHaveClass("pointer-coarse:hidden")
     first.focus()
     await userEvent.keyboard("{ArrowRight}")
@@ -1389,7 +1389,7 @@ export const ColumnsResize: Story = {
       "aria-selected",
       "true"
     )
-    const column = canvas.getByRole("listbox", { name: "agent-ui" })
+    const column = canvas.getByRole("listbox", { name: "agentui" })
     const start = column.getBoundingClientRect().width
     const pointer = (type: string, clientX: number, buttons = 1) =>
       first.dispatchEvent(
@@ -1422,9 +1422,7 @@ export const ColumnsResize: Story = {
     const widest = Number(first.getAttribute("aria-valuemax"))
     await expect(widest).toBeLessThan(480)
     await expect(first).toHaveAttribute("aria-valuenow", String(widest))
-    await expect(
-      canvas.getByRole("listbox", { name: "agent-ui" })
-    ).toBeVisible()
+    await expect(canvas.getByRole("listbox", { name: "agentui" })).toBeVisible()
     await expect(handles()).toHaveLength(3)
     // End on a middle column: as wide as there is room, still shown and
     // still focused.
@@ -1436,9 +1434,7 @@ export const ColumnsResize: Story = {
       "aria-valuenow",
       middle.getAttribute("aria-valuemax")
     )
-    await expect(
-      canvas.getByRole("listbox", { name: "agent-ui" })
-    ).toBeVisible()
+    await expect(canvas.getByRole("listbox", { name: "agentui" })).toBeVisible()
     await expect(canvas.getByRole("listbox", { name: "lib" })).toBeVisible()
     await expect(middle).toHaveFocus()
   },
@@ -1451,9 +1447,9 @@ export const ColumnWidthsControlled: Story = {
     onColumnWidthsChange: fn(),
   },
   play: async ({ canvas, args }) => {
-    const column = canvas.getByRole("listbox", { name: "agent-ui" })
+    const column = canvas.getByRole("listbox", { name: "agentui" })
     const handle = canvas.getByRole("separator", {
-      name: "Resize agent-ui column",
+      name: "Resize agentui column",
     })
     await expect(Math.round(column.getBoundingClientRect().width)).toBe(240)
     await expect(handle).toHaveAttribute("aria-valuenow", "240")

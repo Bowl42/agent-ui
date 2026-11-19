@@ -88,7 +88,7 @@ function Files() {
         ) : (
           <AgentAppSidebar
             header="Agent workspace"
-            projects={[{ id: "ui", path: "~/code/agent-ui" }]}
+            projects={[{ id: "ui", path: "~/code/agentui" }]}
             conversations={[{ id: "plan", title: "Plan the release" }]}
             href={() => "#/c"}
             onNewConversation={onNewConversation}
@@ -189,7 +189,7 @@ export const SameAsConversations: Story = {
     )
     const conversations = measure(
       "Projects and conversations",
-      /^agent-ui/,
+      /^agentui/,
       "Projects"
     )
     await expect(files).toEqual(conversations)

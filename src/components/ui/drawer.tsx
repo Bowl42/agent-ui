@@ -67,7 +67,7 @@ function DrawerOverlay({
   className,
   ...props
 }: DrawerPrimitive.Backdrop.Props) {
-  // agent-ui: a flat scrim, without blurring the page behind it.
+  // agentui: a flat scrim, without blurring the page behind it.
   return (
     <DrawerPrimitive.Backdrop
       data-slot="drawer-overlay"
@@ -84,7 +84,7 @@ function DrawerSwipeHandle({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  // agent-ui: the grabber is a 36x5 bar (sideways, 5x36), as drawn.
+  // agentui: the grabber is a 36x5 bar (sideways, 5x36), as drawn.
   return (
     <div
       data-slot="drawer-swipe-handle"
@@ -106,7 +106,7 @@ function DrawerContent({
   ...props
 }: DrawerPrimitive.Popup.Props & {
   /**
-   * agent-ui: from the bottom or the top, how tall it may be: its
+   * agentui: from the bottom or the top, how tall it may be: its
    * content's height up to 6rem short of the screen ("default"), up to
    * just under the status bar ("tall"), or that tall always ("full").
    */
@@ -140,7 +140,7 @@ function DrawerContent({
             "after:pointer-events-none after:absolute after:bg-(--drawer-bleed-background,var(--color-popover)) data-[swipe-axis=x]:after:inset-y-0 data-[swipe-axis=x]:after:w-(--bleed) data-[swipe-axis=y]:after:inset-x-0 data-[swipe-axis=y]:after:h-(--bleed) data-[swipe-direction=down]:after:top-full data-[swipe-direction=left]:after:right-full data-[swipe-direction=right]:after:left-full data-[swipe-direction=up]:after:bottom-full",
             // Sizing.
             "[--drawer-content-height:var(--drawer-height,auto)] data-[swipe-axis=x]:[--drawer-content-width:75%] data-[swipe-axis=y]:[--drawer-content-max-height:calc(100dvh-6rem)] data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100dvh] data-[swipe-axis=x]:sm:[--drawer-content-width:24rem]",
-            // agent-ui: taller, to the status bar's edge (1rem at least).
+            // agentui: taller, to the status bar's edge (1rem at least).
             "data-[swipe-axis=y]:data-[size=full]:[--drawer-content-height:calc(100dvh-max(1rem,env(safe-area-inset-top)))] data-[swipe-axis=y]:data-[size=full]:[--drawer-content-max-height:calc(100dvh-max(1rem,env(safe-area-inset-top)))] data-[swipe-axis=y]:data-[size=tall]:[--drawer-content-max-height:calc(100dvh-max(1rem,env(safe-area-inset-top)))]",
             // Stack.
             "[--bleed:3rem] [--peek:1rem] [--stack-height:var(--drawer-frontmost-height,var(--drawer-height,0px))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-scale-base:max(0,calc(1-(var(--nested-drawers)*var(--stack-step))))] [--stack-scale:clamp(0,calc(var(--stack-scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--stack-shrink:calc(1-var(--stack-scale))] [--stack-step:0.05]",
@@ -166,7 +166,7 @@ function DrawerContent({
           <DrawerPrimitive.Content
             data-slot="drawer-content"
             className={cn(
-              // agent-ui: from the bottom, clear of the home indicator
+              // agentui: from the bottom, clear of the home indicator
               // (its footer, last, pads itself).
               "group-data-[swipe-direction=down]/drawer-popup:not-has-[>[data-slot=drawer-footer]:last-child]:pb-safe",
               "flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain rounded-[inherit] transition-opacity motion-size select-text group-data-nested-drawer-open/drawer-popup:opacity-0 group-data-nested-drawer-swiping/drawer-popup:opacity-100 group-data-swiping/drawer-popup:select-none"
@@ -197,7 +197,7 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="drawer-footer"
-      // agent-ui: from the bottom, clear of the home indicator (1rem at
+      // agentui: from the bottom, clear of the home indicator (1rem at
       // least); where the screen is short (a phone on its side), its
       // buttons side by side, the first at the end, as a dialog's.
       className={cn(

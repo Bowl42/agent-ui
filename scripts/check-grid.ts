@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
 
-// Lists what is off agent-ui's grid (docs/grid.md:
-// https://github.com/Bowl42/agent-ui/blob/main/docs/grid.md) in an app's
+// Lists what is off agentui's grid (docs/grid.md:
+// https://github.com/Bowl42/agentui/blob/main/docs/grid.md) in an app's
 // .ts and .tsx files, src/components and src/lib by default:
 // - a size, padding, space or line height of a half or quarter step, or
 //   a pixel value not a multiple of 4 (a 2px nudge of a margin, a gap or

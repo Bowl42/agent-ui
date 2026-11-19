@@ -113,7 +113,7 @@ function NavigationMenuPositioner({
         )}
         {...props}
       >
-        {/* agent-ui: it floats as other popups do (shadow-float). */}
+        {/* agentui: it floats as other popups do (shadow-float). */}
         <NavigationMenuPrimitive.Popup className="xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-lg bg-popover text-popover-foreground shadow-float transition-[opacity,transform,width,height,scale,translate] motion-slide outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0">
           <NavigationMenuPrimitive.Viewport className="relative size-full overflow-hidden" />
         </NavigationMenuPrimitive.Popup>

@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const alertVariants = cva(
-  // agent-ui: the action in a column of its own, as wide as its buttons
+  // agentui: the action in a column of its own, as wide as its buttons
   // (shadcn's sat over the text, past 72px of room); under the text where
   // the alert is narrow.
   "group/alert @container/alert relative grid w-full gap-x-2 gap-y-0.5 rounded-lg border px-3 py-2 text-left text-sm has-data-[slot=alert-action]:grid-cols-[1fr_auto] has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:has-data-[slot=alert-action]:grid-cols-[auto_1fr_auto] *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
@@ -13,7 +13,7 @@ const alertVariants = cva(
         default: "bg-card text-card-foreground",
         destructive:
           "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
-        // agent-ui: a state beside the page's words (unsaved changes, a
+        // agentui: a state beside the page's words (unsaved changes, a
         // key being checked): the icon in its colour, the words the card's.
         warning: "bg-card text-card-foreground *:[svg]:text-warning",
         success: "bg-card text-card-foreground *:[svg]:text-success",

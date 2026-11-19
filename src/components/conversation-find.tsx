@@ -417,7 +417,7 @@ function ConversationFind({
         }}
       >
         <style
-          href="agent-ui-conversation-find"
+          href="agentui-conversation-find"
           precedence="default"
         >{`::highlight(conversation-find){background-color:var(--mark);color:inherit}::highlight(conversation-find-current){background-color:var(--mark-current);color:inherit}`}</style>
         <FoldFindable value={open}>{children}</FoldFindable>

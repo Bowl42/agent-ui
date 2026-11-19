@@ -192,7 +192,7 @@ function keyboardShown() {
  * frames never flicker; the reader's pointer, wheel and keys on it sent
  * in the page's CSS pixels; text through a hidden field at the page's
  * caret, so an input method composes there; its cursor; and the page's
- * own select popups and script dialogs, drawn by agent-ui. By touch, the
+ * own select popups and script dialogs, drawn by agentui. By touch, the
  * screen's keyboard comes up only while the page has a caret (a field of
  * its has the focus), not for a tap anywhere else.
  */
@@ -623,7 +623,7 @@ function BrowserRemotePage({
   )
 }
 
-/** A native select's popup as agent-ui draws one, under its box. */
+/** A native select's popup as agentui draws one, under its box. */
 function RemoteSelect({
   select,
   box,
@@ -765,7 +765,7 @@ function RemoteSelect({
   )
 }
 
-/** A page script's dialog as agent-ui draws one. */
+/** A page script's dialog as agentui draws one. */
 function RemoteDialog({
   dialog,
   host,

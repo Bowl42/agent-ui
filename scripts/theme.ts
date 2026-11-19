@@ -26,7 +26,7 @@ const shadcn = join(root, "node_modules/.bin/shadcn")
 const target = join(root, "src/index.css")
 const check = process.argv.includes("--check")
 
-const dir = mkdtempSync(join(tmpdir(), "agent-ui-theme-"))
+const dir = mkdtempSync(join(tmpdir(), "agentui-theme-"))
 try {
   execFileSync(shadcn, ["build", "-o", join(dir, "r")], {
     cwd: root,

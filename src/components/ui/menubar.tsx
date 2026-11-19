@@ -81,7 +81,7 @@ function MenubarContent({
       align={align}
       alignOffset={alignOffset}
       sideOffset={sideOffset}
-      // agent-ui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
+      // agentui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
       className={cn("min-w-36 rounded-lg bg-popover p-1 text-popover-foreground shadow-md motion-pop data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95", className )}
       {...props}
     />
@@ -121,7 +121,7 @@ function MenubarCheckboxItem({
     <MenuPrimitive.CheckboxItem
       data-slot="menubar-checkbox-item"
       data-inset={inset}
-      // agent-ui: rows 32px tall, the same in every menu.
+      // agentui: rows 32px tall, the same in every menu.
       className={cn(
         "relative flex cursor-default items-center gap-2 min-h-8 rounded-md py-1 pr-2 pl-8 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-8 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className
@@ -157,7 +157,7 @@ function MenubarRadioItem({
     <MenuPrimitive.RadioItem
       data-slot="menubar-radio-item"
       data-inset={inset}
-      // agent-ui: rows 32px tall, the same in every menu.
+      // agentui: rows 32px tall, the same in every menu.
       className={cn(
         "relative flex cursor-default items-center gap-2 min-h-8 rounded-md py-1 pr-2 pl-8 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-8 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
@@ -201,7 +201,7 @@ function MenubarSeparator({
   return (
     <DropdownMenuSeparator
       data-slot="menubar-separator"
-      // agent-ui: 4px either side of the rule, as in every menu.
+      // agentui: 4px either side of the rule, as in every menu.
       className={cn("-mx-1 my-1 h-px bg-border", className)}
       {...props}
     />
@@ -257,7 +257,7 @@ function MenubarSubContent({
   return (
     <DropdownMenuSubContent
       data-slot="menubar-sub-content"
-      // agent-ui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
+      // agentui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
       className={cn("min-w-32 rounded-lg bg-popover p-1 text-popover-foreground shadow-lg motion-pop data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className )}
       {...props}
     />

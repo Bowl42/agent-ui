@@ -285,7 +285,7 @@ const diffs = {
 }
 
 const typeCheck = [
-  "> agent-ui@0.1.12 typecheck",
+  "> agentui@0.1.12 typecheck",
   "> tsc -p tsconfig.app.json --noEmit",
   "src/stories/agent-turn.stories.tsx(14,10): error TS2305:",
   "  Module '\"@/components/composer\"' has no exported",

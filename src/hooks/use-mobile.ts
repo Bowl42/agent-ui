@@ -1,6 +1,6 @@
 import * as React from "react"
 
-// agent-ui: useSyncExternalStore, not setState in an effect
+// agentui: useSyncExternalStore, not setState in an effect
 // (react-hooks/set-state-in-effect). A phone is narrower than 640px,
 // Tailwind's `sm` (`max-sm:` in a component), not 768px: a foldable or a
 // tablet has the desktop's layout. Sizes for a finger follow

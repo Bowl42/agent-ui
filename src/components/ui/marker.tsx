@@ -4,7 +4,7 @@ import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-// agent-ui: a marker that is a button or link takes the rounded focus
+// agentui: a marker that is a button or link takes the rounded focus
 // ring of the trace and accordion, not the browser's square outline.
 const markerVariants = cva(
   "group/marker relative flex min-h-4 w-full items-center gap-2 rounded-md text-left text-sm text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 [&_svg:not([class*='size-'])]:size-4 [a]:underline [a]:underline-offset-3 [a]:hover:text-foreground",
@@ -12,7 +12,7 @@ const markerVariants = cva(
     variants: {
       variant: {
         default: "",
-        // agent-ui: a step smaller, as a divider in a conversation: 12px
+        // agentui: a step smaller, as a divider in a conversation: 12px
         // text in a 24px row, 8px from its rules.
         separator:
           "min-h-6 gap-1 text-xs before:mr-1 before:h-px before:min-w-0 before:flex-1 before:bg-border after:ml-1 after:h-px after:min-w-0 after:flex-1 after:bg-border",

@@ -38,16 +38,16 @@ function PopoverContent({
 }: PopoverPrimitive.Popup.Props &
   Pick<
     PopoverPrimitive.Positioner.Props,
-    // agent-ui: anchor, for a popup whose trigger is hidden (inputGroupPopupAnchor).
+    // agentui: anchor, for a popup whose trigger is hidden (inputGroupPopupAnchor).
     "align" | "alignOffset" | "side" | "sideOffset" | "anchor"
   > & {
-    /** agent-ui: whether it opens as a sheet from the bottom on a phone. */
+    /** agentui: whether it opens as a sheet from the bottom on a phone. */
     sheet?: boolean
-    /** agent-ui: its heading as a sheet. */
+    /** agentui: its heading as a sheet. */
     sheetTitle?: React.ReactNode
   }) {
   const sheet = usePhoneSheet(sheetProp)
-  // agent-ui: reachable by keyboard while it scrolls, for its arrow keys.
+  // agentui: reachable by keyboard while it scrolls, for its arrow keys.
   const [watch, overflows] = useOverflow<HTMLDivElement>()
   const setRef = React.useCallback(
     (element: HTMLDivElement | null) => {
@@ -75,10 +75,10 @@ function PopoverContent({
           tabIndex={overflows ? 0 : tabIndex}
           data-slot="popover-content"
           data-phone-sheet={sheet ? "" : undefined}
-          // agent-ui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
+          // agentui: the theme's shadow-md and shadow-lg are shadow-float, whose hairline a ring would double.
           className={cn(
             "z-50 flex w-72 origin-(--transform-origin) flex-col gap-3 rounded-lg bg-popover p-3 text-sm text-popover-foreground shadow-md outline-hidden motion-pop data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-            // agent-ui: no wider or taller than there is room for, as a
+            // agentui: no wider or taller than there is room for, as a
             // menu is; what is taller scrolls.
             !sheet &&
               "max-h-(--available-height) max-w-(--available-width) overflow-y-auto",

@@ -228,7 +228,7 @@ export const Folding: Story = {
   },
 }
 
-const json = '{"name":"agent-ui","private":true,"scripts":{"test":"vitest"}}'
+const json = '{"name":"agentui","private":true,"scripts":{"test":"vitest"}}'
 
 /** JSON formatted, or as written; its buttons say which. */
 export const Json: Story = {
@@ -261,7 +261,7 @@ export const Json: Story = {
       expect(distance(painted(format), painted(actions))).toBeGreaterThan(8)
     )
     await waitFor(() =>
-      expect(line(canvasElement, 2)).toHaveTextContent('"name": "agent-ui",')
+      expect(line(canvasElement, 2)).toHaveTextContent('"name": "agentui",')
     )
   },
 }
@@ -482,7 +482,7 @@ export const Embedded: Story = {
 const log = (() => {
   const failure = [
     "##[group]Run pnpm registry:build",
-    "> agent-ui@0.1.9 registry:build",
+    "> agentui@0.1.9 registry:build",
     "> node scripts/registry.mjs",
     "",
     "Reading registry.json (48 items)",

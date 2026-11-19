@@ -220,7 +220,7 @@ type AgentAppSidebarLabels = {
   /** The sidebar's landmark, a navigation. */
   navigation: string
   newConversation: string
-  /** A project's own new conversation: "New conversation in agent-ui". */
+  /** A project's own new conversation: "New conversation in agentui". */
   newConversationIn: (project: string) => string
   search: string
   projects: string

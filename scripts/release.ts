@@ -5,18 +5,18 @@
 // The commit holds the built registry, public/r/<name>.json (each item with
 // its files' content, as `shadcn build` writes it), with this registry's
 // dependencies named by their built file's URL at the tag
-// (https://raw.githubusercontent.com/Bowl42/agent-ui/<tag>/public/r/<name>.json).
+// (https://raw.githubusercontent.com/Bowl42/agentui/<tag>/public/r/<name>.json).
 // An app adds an item by its URL, or as "@bowl42/<name>" with the "@bowl42"
 // registry of its components.json a URL into the tag (README.md); either
 // way each item, and each dependency however deep, is one request for one
 // file, read at the tag, with nothing to set up.
 //
-// Why not "Bowl42/agent-ui/<name>#<tag>": the shadcn CLI reads such an
+// Why not "Bowl42/agentui/<name>#<tag>": the shadcn CLI reads such an
 // address with one `gh api` call (or GitHub API request) for registry.json
 // and one for each file, again for every dependency and for each of its
 // passes over the tree, one after another; a full set of items takes
 // minutes, and a dependency's address does not keep the tag. main keeps
-// "Bowl42/agent-ui/<name>", which installs main or a checkout as it is.
+// "Bowl42/agentui/<name>", which installs main or a checkout as it is.
 import { execFileSync } from "node:child_process"
 import { readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 
@@ -33,7 +33,7 @@ if (git("status", "--porcelain")) {
   process.exit(1)
 }
 
-const prefix = "Bowl42/agent-ui/"
+const prefix = "Bowl42/agentui/"
 type Item = { name: string; registryDependencies?: string[] }
 const items = new Map(
   (
@@ -86,11 +86,11 @@ if (pulled.length) {
 
 git("switch", "--detach")
 // Only the strings, so the file keeps its formatting.
-const released = `https://raw.githubusercontent.com/Bowl42/agent-ui/${version}/public/r/`
+const released = `https://raw.githubusercontent.com/Bowl42/agentui/${version}/public/r/`
 writeFileSync(
   "registry.json",
   readFileSync("registry.json", "utf8").replace(
-    /"Bowl42\/agent-ui\/([a-z0-9-]+)(?:#[^"]*)?"/g,
+    /"Bowl42\/agentui\/([a-z0-9-]+)(?:#[^"]*)?"/g,
     `"${released}$1.json"`
   )
 )
@@ -100,7 +100,7 @@ run("pnpm", "exec", "shadcn", "build", "--output", "public/r")
 
 // Every file is an item, and an item of this registry is named by its URL
 // at this tag wherever it is a dependency: a bare name installs shadcn's
-// instead, over the fix, and "Bowl42/agent-ui/<name>" goes back to the
+// instead, over the fix, and "Bowl42/agentui/<name>" goes back to the
 // slow path, at main.
 const wrong: string[] = []
 for (const file of readdirSync("public/r")) {

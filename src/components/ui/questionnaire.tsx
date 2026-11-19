@@ -17,7 +17,7 @@ function Questionnaire({
   ...props
 }: React.ComponentProps<typeof QuestionnairePrimitive.Root> & {
   /**
-   * agent-ui: choosing an option of a single-choice question (a click,
+   * agentui: choosing an option of a single-choice question (a click,
    * its number key, Space) goes on to the next question, as Enter does;
    * not on the last, which waits for Submit, and not with the arrow
    * keys, which only move between the options. Previous goes back.
@@ -85,7 +85,7 @@ function QuestionnaireProgress({
       data-slot="questionnaire-progress"
       className={cn(
         "min-h-[1lh] w-fit min-w-[14ch] text-xs font-medium text-muted-foreground tabular-nums",
-        // agent-ui: one question has no progress to show.
+        // agentui: one question has no progress to show.
         "data-[total=0]:hidden data-[total=1]:hidden",
         className
       )}
@@ -108,7 +108,7 @@ function QuestionnaireItem({
       )}
       onFocus={(event) => {
         onFocus?.(event)
-        // agent-ui: a question that is only a field, come to, is typed in.
+        // agentui: a question that is only a field, come to, is typed in.
         const item = event.currentTarget
         if (
           event.target !== item ||
@@ -153,7 +153,7 @@ function QuestionnaireDescription({
   )
 }
 
-// agent-ui: a field among the choices is their "Other" row.
+// agentui: a field among the choices is their "Other" row.
 const ChoicesContext = React.createContext(false)
 
 function QuestionnaireChoices({
@@ -179,7 +179,7 @@ function QuestionnaireChoice({
   className,
   ...props
 }: React.ComponentProps<typeof QuestionnairePrimitive.Choice>) {
-  // agent-ui: light rows, not a stack of form fields: no border (but a
+  // agentui: light rows, not a stack of form fields: no border (but a
   // keyboard focus's ring; invalid, the error line under them says so), a
   // grey row when checked.
   // With a shortcut, its number key leads the row and shows the choice,
@@ -251,7 +251,7 @@ function QuestionnaireInput(
 }
 
 /**
- * agent-ui: the "Other" field among the choices is one of their rows, not
+ * agentui: the "Other" field among the choices is one of their rows, not
  * a form field: no border, its placeholder in grey where a choice's words
  * are ("Something else…"), led by the key after the choices' own, which
  * types in it, and grey like a checked choice once it has words.
@@ -373,7 +373,7 @@ function QuestionnaireField({
     >
       <QuestionnairePrimitive.Input
         data-slot="questionnaire-input"
-        // agent-ui: invalid, still a grey field: the error line says so.
+        // agentui: invalid, still a grey field: the error line says so.
         className={cn(
           "h-8 min-h-11 w-full min-w-0 rounded-lg border border-field bg-transparent px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 sm:min-h-0 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80",
           "selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground",
@@ -392,7 +392,7 @@ function QuestionnaireError({
   return (
     <QuestionnairePrimitive.Error
       data-slot="questionnaire-error"
-      // agent-ui: the error is this line, an icon and its words, the one
+      // agentui: the error is this line, an icon and its words, the one
       // place in red: the choices and the "Other" field stay grey.
       className={cn(
         "mt-2 items-start gap-2 text-sm text-destructive [&:not([hidden])]:flex [&>svg]:mt-0.5 [&>svg]:size-4 [&>svg]:shrink-0",
@@ -416,7 +416,7 @@ function QuestionnaireActions({
   return (
     <div
       data-slot="questionnaire-actions"
-      // agent-ui: a row, not a grid of three, so a Decline fits: Previous
+      // agentui: a row, not a grid of three, so a Decline fits: Previous
       // at its start, or a Decline there and Previous with the rest at
       // its end.
       className={cn(
@@ -529,7 +529,7 @@ function QuestionnaireSubmit({
 }
 
 /**
- * agent-ui: the way out of the whole questionnaire, not of one question
+ * agentui: the way out of the whole questionnaire, not of one question
  * (that is `QuestionnaireSkip`): e.g. the reader does not answer an
  * agent's questions at all. A quiet button, on any question, required
  * or not; what it does is its `onClick`'s.
@@ -561,7 +561,7 @@ function QuestionnaireDecline({
   )
 }
 
-// agent-ui: its words' type, exported, so an app's translation names
+// agentui: its words' type, exported, so an app's translation names
 // every key.
 type QuestionnaireNavigationLabels = {
   decline: React.ReactNode
@@ -572,7 +572,7 @@ type QuestionnaireNavigationLabels = {
 }
 
 /**
- * agent-ui: the way through, whatever the question: Previous but on the
+ * agentui: the way through, whatever the question: Previous but on the
  * first, Skip on an optional one, Next but on the last and Submit on it.
  * Each shows only where it applies, so one of them always goes on. With
  * `onDecline`, a quiet Decline first, on every question: the way out of

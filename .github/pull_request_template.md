@@ -13,5 +13,5 @@
 - [ ] Code, comments and samples in English; another language only where a
       story tests one.
 - [ ] Components still come from shadcn; a fixed file says why with an
-      `// agent-ui:` comment and is listed in `registry.json`.
+      `// agentui:` comment and is listed in `registry.json`.
 - [ ] No change to `src/index.css` by hand (`pnpm theme` writes it).

@@ -45,7 +45,7 @@ function PaginationLink({
   size = "icon",
   ...props
 }: PaginationLinkProps) {
-  // agent-ui: a plain link: rendering Button gives it role="button".
+  // agentui: a plain link: rendering Button gives it role="button".
   return (
     <a
       aria-current={isActive ? "page" : undefined}

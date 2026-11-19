@@ -163,7 +163,7 @@ function FieldSeparator({
       <Separator className="absolute inset-0 top-1/2" />
       {children && (
         <span
-          // agent-ui: on the surface it is on: a card's, a popover's.
+          // agentui: on the surface it is on: a card's, a popover's.
           className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground in-data-[slot=card]:bg-card in-data-[slot=popover-content]:bg-popover"
           data-slot="field-separator-content"
         >

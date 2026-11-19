@@ -1,5 +1,5 @@
 // Checks that items depend on this registry's fixed items by their full
-// name ("Bowl42/agent-ui/input-group"). A bare "input-group" is shadcn's
+// name ("Bowl42/agentui/input-group"). A bare "input-group" is shadcn's
 // own, so installing the item would overwrite the fixed file with it.
 import { readdirSync, readFileSync } from "node:fs"
 
@@ -15,7 +15,7 @@ const bare = registry.items.flatMap((item) =>
 )
 if (bare.length) {
   console.error(
-    `Use Bowl42/agent-ui/<name> for these registry dependencies:\n  ${bare.join("\n  ")}`
+    `Use Bowl42/agentui/<name> for these registry dependencies:\n  ${bare.join("\n  ")}`
   )
   process.exit(1)
 }
@@ -38,8 +38,8 @@ const missing = items.flatMap((item) => {
   const dependencies = new Set(
     (item.registryDependencies ?? []).map((dependency) =>
       dependency.replace(
-        /^https:\/\/raw\.githubusercontent\.com\/Bowl42\/agent-ui\/[^/]+\/public\/r\/([a-z0-9-]+)\.json$/,
-        "Bowl42/agent-ui/$1"
+        /^https:\/\/raw\.githubusercontent\.com\/Bowl42\/agentui\/[^/]+\/public\/r\/([a-z0-9-]+)\.json$/,
+        "Bowl42/agentui/$1"
       )
     )
   )
@@ -54,7 +54,7 @@ const missing = items.flatMap((item) => {
         mine !== undefined
           ? mine === item.name
             ? undefined
-            : `Bowl42/agent-ui/${mine}`
+            : `Bowl42/agentui/${mine}`
           : path!.startsWith("@/components/ui/")
             ? path!.slice("@/components/ui/".length)
             : undefined

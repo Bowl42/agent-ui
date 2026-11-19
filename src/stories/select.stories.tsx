@@ -130,7 +130,7 @@ const longNames = [
   { label: "main", value: "main" },
   {
     label:
-      "~/code/agent-ui/src/components/agent-app/very-long-folder-name-without-spaces",
+      "~/code/agentui/src/components/agent-app/very-long-folder-name-without-spaces",
     value: "deep",
   },
   {

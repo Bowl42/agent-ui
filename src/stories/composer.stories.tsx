@@ -2609,7 +2609,7 @@ const releaseDraft: ComposerValue = [
     "### Upgrade",
     "",
     "```sh",
-    "pnpm dlx shadcn@latest add @agent-ui/composer",
+    "pnpm dlx shadcn@latest add @agentui/composer",
     "```",
     "",
     "Read the full notes at ",
@@ -2905,7 +2905,7 @@ export const Expanded: Story = {
       "600"
     )
     const code = getComputedStyle(
-      run(editor, "pnpm dlx shadcn@latest add @agent-ui/composer")
+      run(editor, "pnpm dlx shadcn@latest add @agentui/composer")
     )
     // The theme's mono, as this browser writes it.
     const probe = document.createElement("span")
