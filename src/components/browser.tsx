@@ -88,6 +88,7 @@ import {
   type BrowserPickOptions,
   type BrowserNetworkRequest,
   type BrowserRecent,
+  type BrowserRemoteInput,
   type BrowserWebContent,
   type BrowserWebLabels,
   type BrowserWebView,
@@ -1038,6 +1039,23 @@ type BrowserWebProps = {
    * it, there is no Refresh.
    */
   onRefreshNetwork?: ((page: BrowserPage) => void) | undefined
+  /**
+   * The reader's input on a web page the app gives as `remote` (a remote
+   * browser's frames), in the page's CSS pixels, for the app to send to
+   * that browser: pointer, wheel, keys, an input method's composition,
+   * text, paste, the page's room (to size its viewport to), and the
+   * answers to its select popups and dialogs.
+   */
+  onRemoteInput?:
+    ((page: BrowserPage, input: BrowserRemoteInput) => void) | undefined
+  /** A remote page's selected text, read for a copy (⌘C, Ctrl+C). */
+  copyRemoteSelection?:
+    ((page: BrowserPage) => Promise<string | undefined>) | undefined
+  /**
+   * A key the app keeps for itself while a remote page has the keys
+   * (its shortcuts): true, and it is not sent to the page.
+   */
+  remoteShortcut?: ((event: KeyboardEvent) => boolean) | undefined
   /** Where nothing runs at a web page's address: e.g. a button to start it. */
   notRunningActions?: ((page: BrowserPage) => React.ReactNode) | undefined
   /** Addresses to go to where nothing runs, e.g. those visited. */
@@ -1103,6 +1121,9 @@ function Browser({
   onTakeOver,
   onAskAgent,
   onRefreshNetwork,
+  onRemoteInput,
+  copyRemoteSelection,
+  remoteShortcut,
   notRunningActions,
   recent,
   start,
@@ -1271,6 +1292,9 @@ function Browser({
       onTakeOver,
       onAskAgent,
       onRefreshNetwork,
+      onRemoteInput,
+      copyRemoteSelection,
+      remoteShortcut,
       notRunningActions,
       recent,
     },
@@ -2263,7 +2287,7 @@ function PageToolbar({
             onViewChange={(change) => setWebView(tab.id, change)}
             pickable={
               webProps.onPickElement !== undefined &&
-              (web.screenshot === undefined ||
+              ((web.screenshot === undefined && web.remote === undefined) ||
                 webProps.inspectElement !== undefined)
             }
             labels={labels}
@@ -2868,6 +2892,9 @@ function WebView({
     onTakeOver,
     onAskAgent,
     onRefreshNetwork,
+    onRemoteInput,
+    copyRemoteSelection,
+    remoteShortcut,
   } = web
   return (
     <BrowserWebPage
@@ -2887,6 +2914,11 @@ function WebView({
       onTakeOver={onTakeOver && (() => onTakeOver(page))}
       onAskAgent={onAskAgent && ((message) => onAskAgent(page, message))}
       onRefreshNetwork={onRefreshNetwork && (() => onRefreshNetwork(page))}
+      onRemoteInput={onRemoteInput && ((input) => onRemoteInput(page, input))}
+      copyRemoteSelection={
+        copyRemoteSelection && (() => copyRemoteSelection(page))
+      }
+      remoteShortcut={remoteShortcut}
       notRunningActions={web.notRunningActions?.(page)}
       recent={web.recent}
       onOpenAddress={(address) => {
@@ -3094,3 +3126,14 @@ export {
   type BrowserState,
   type BrowserTab,
 }
+export type {
+  BrowserModifiers,
+  BrowserRemote,
+  BrowserRemoteBox,
+  BrowserRemoteDialog,
+  BrowserRemoteFrame,
+  BrowserRemoteInput,
+  BrowserRemoteLabels,
+  BrowserRemoteOption,
+  BrowserRemoteSelect,
+} from "@/components/browser-remote"

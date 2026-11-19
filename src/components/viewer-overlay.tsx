@@ -58,8 +58,10 @@ type ViewerOverlayItem = {
 // one has focus), the strip the way through; under a finger and on a
 // phone, where the strip is not, always. Centred by their margins, not a
 // translate, which a button's press replaces: it would leave the pointer.
+// At an end, disabled, still in the pointer's way: a click there is
+// nobody's, not the image's under it (which would zoom).
 const side =
-  "absolute inset-y-0 z-10 my-auto rounded-full bg-background/80 shadow-float backdrop-blur-sm motion-safe:transition-opacity motion-safe:motion-fade pointer-fine:opacity-0 pointer-fine:group-hover/stage:opacity-100 pointer-fine:focus-visible:opacity-100"
+  "absolute inset-y-0 z-10 my-auto rounded-full disabled:pointer-events-auto disabled:cursor-default bg-background/80 shadow-float backdrop-blur-sm motion-safe:transition-opacity motion-safe:motion-fade pointer-fine:opacity-0 pointer-fine:group-hover/stage:opacity-100 pointer-fine:focus-visible:opacity-100"
 
 // The strip's width (w-18) less, from where the window's own buttons end:
 // the row's start past them, over the strip's top.

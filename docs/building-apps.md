@@ -3312,6 +3312,7 @@ function PanelBrowser(props: React.ComponentProps<typeof Browser>) {
       type: "web",
       url,
       screenshot,                  // a picture instead of a frame, e.g. a remote browser's
+      remote: { frame, cursor, caret, select, dialog }, // a remote browser's live page (below)
       running: true,               // a dot in the address bar; false: "Nothing is running on …"
       error: "The server answered 502", // or true: "Could not load …", with Retry
       agent: {                     // while the agent drives it
@@ -3355,6 +3356,31 @@ box, text }`). A frame's own document is read where it is the
     app's origin; otherwise, and for a `screenshot`, `inspectElement`
     finds the element (e.g. by the remote browser's protocol). Escape
     leaves it.
+  - **A remote browser's page** (`remote`): the page itself, live, as
+    a remote browser draws it, in place of a frame or a picture. The app
+    streams `frame` (`{ src, width, height }`: a data or blob URL and
+    the viewport's CSS size; none yet: a spinner, "Connecting"), and
+    gives the page's `cursor` (a CSS keyword), its `caret` (the focused
+    field's box, where an input method's window opens), an open native
+    `select` (`{ box, options, multiple }`) and a script's `dialog`
+    (`alert`, `confirm`, `prompt` or `beforeunload`, with its message).
+    A frame is drawn once decoded, so frames never flicker; none moves
+    in a transition. `onRemoteInput(page, input)` gives the reader's
+    input in the page's CSS pixels, to send on (e.g. as DevTools
+    Input events): `resize` (the page's room and the device pixel
+    ratio, at once and again once it settles, to size the remote
+    viewport to), `pointer` (move, down, up; button, buttons,
+    clickCount, modifiers; moves once a frame), `wheel`, `key` (down
+    and up, with the text it types, Enter as `"\r"`), `composition`
+    (start, update, end with the text committed), `text` (typed by no
+    key: dictation, an emoji picker), `paste`, `select` or
+    `select-cancel`, and `dialog` (`accept`, a prompt's `text`). A press
+    focuses the page; its keys then are the page's, Tab and the arrows
+    too, but for those `remoteShortcut(event)` keeps for the app. ⌘C or
+    Ctrl+C copies `copyRemoteSelection(page)`'s text. Pointing at an
+    element needs `inspectElement`; the agent's layer, the devices and
+    the drawer work as on a frame; "Dark color scheme" is the view's
+    `dark`, for the app to apply remotely.
   - **Viewport**: the panel's size, or a laptop's, a tablet's or a
     phone's in a rounded bezel on a dotted canvas, scaled to fit. A size
     pill sits inside the canvas at its bottom. The menu shows the panel's

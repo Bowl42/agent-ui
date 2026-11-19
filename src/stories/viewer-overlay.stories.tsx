@@ -558,6 +558,15 @@ export const NextOverMarking: Story = {
     await userEvent.click(next)
     await screen.findByRole("dialog", { name: "Inbox" })
     await expect(next).toBeDisabled()
+    // At the end, disabled, it is still what the pointer is on: a click
+    // there reaches nothing under it.
+    const end = next.getBoundingClientRect()
+    await expect(
+      document.elementFromPoint(
+        end.left + end.width / 2,
+        end.top + end.height / 2
+      )
+    ).toBe(next)
   },
 }
 

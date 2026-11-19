@@ -46,6 +46,13 @@ import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Kbd } from "@/components/ui/kbd"
 import { ViewerFilter, ViewerMenu, ViewerTool } from "@/components/viewer"
+import {
+  BrowserRemotePage,
+  defaultRemoteLabels,
+  type BrowserRemote,
+  type BrowserRemoteInput,
+  type BrowserRemoteLabels,
+} from "@/components/browser-remote"
 
 /** A box on a web page, in its CSS pixels from its viewport's top left. */
 type BrowserBox = { x: number; y: number; width: number; height: number }
@@ -135,6 +142,12 @@ type BrowserWebContent = {
    * screenshot, as wide as the viewport.
    */
   screenshot?: string | undefined
+  /**
+   * The page as a remote browser draws it, to use as the page itself:
+   * its frames as the app streams them, the reader's input sent back by
+   * `onRemoteInput` (a `Browser`'s). In place of a frame or a picture.
+   */
+  remote?: BrowserRemote | undefined
   /**
    * Whether something serves the address, e.g. the dev server, as a dot
    * in the address bar; `false`: a page saying nothing runs there.
@@ -242,6 +255,8 @@ type BrowserWebLabels = {
   loadFailedHint: string
   /** Loads it again. */
   retry: string
+  /** A remote page's words: its dialogs, its select's Done, connecting. */
+  remote: Partial<BrowserRemoteLabels>
 }
 
 const defaultWebLabels: BrowserWebLabels = {
@@ -305,6 +320,7 @@ const defaultWebLabels: BrowserWebLabels = {
   loadFailedHint:
     "Check the address and that the server answers, then try again.",
   retry: "Retry",
+  remote: defaultRemoteLabels,
 }
 
 const hostOf = (url: string) => {
@@ -707,6 +723,9 @@ function BrowserWebPage({
   onTakeOver,
   onAskAgent,
   onRefreshNetwork,
+  onRemoteInput,
+  copyRemoteSelection,
+  remoteShortcut,
   notRunningActions,
   recent,
   onOpenAddress,
@@ -742,6 +761,12 @@ function BrowserWebPage({
   onAskAgent?: ((message: BrowserConsoleMessage) => void) | undefined
   /** The Network tab's Refresh: the app reads the requests again. */
   onRefreshNetwork?: (() => void) | undefined
+  /** The reader's input on a `remote` page, for the remote browser. */
+  onRemoteInput?: ((input: BrowserRemoteInput) => void) | undefined
+  /** A `remote` page's selected text, for a copy. */
+  copyRemoteSelection?: (() => Promise<string | undefined>) | undefined
+  /** A key that is the app's, not the remote page's: true. */
+  remoteShortcut?: ((event: KeyboardEvent) => boolean) | undefined
   /** Where nothing runs: the app's buttons, e.g. to start the server. */
   notRunningActions?: React.ReactNode
   recent?: BrowserRecent[] | undefined
@@ -752,7 +777,9 @@ function BrowserWebPage({
   onRetry?: (() => void) | undefined
   labels: BrowserWebLabels
 }) {
-  const [loading, setLoading] = React.useState(!content.screenshot)
+  const [loading, setLoading] = React.useState(
+    !content.screenshot && !content.remote
+  )
   const frame = React.useRef<HTMLIFrameElement>(null)
   const host = hostOf(location ?? content.url)
 
@@ -838,7 +865,18 @@ function BrowserWebPage({
         </div>
       )}
       <BrowserStage device={view.device} rotated={view.rotated}>
-        {content.screenshot ? (
+        {content.remote ? (
+          <BrowserRemotePage
+            title={title}
+            host={host}
+            remote={content.remote}
+            inert={agent !== undefined || view.picking}
+            onInput={(input) => onRemoteInput?.(input)}
+            copySelection={copyRemoteSelection}
+            shortcut={remoteShortcut}
+            labels={labels.remote}
+          />
+        ) : content.screenshot ? (
           <img
             src={content.screenshot}
             alt={title}
@@ -1534,3 +1572,14 @@ export {
   type BrowserWebLabels,
   type BrowserWebView,
 }
+export type {
+  BrowserModifiers,
+  BrowserRemote,
+  BrowserRemoteBox,
+  BrowserRemoteDialog,
+  BrowserRemoteFrame,
+  BrowserRemoteInput,
+  BrowserRemoteLabels,
+  BrowserRemoteOption,
+  BrowserRemoteSelect,
+} from "@/components/browser-remote"
