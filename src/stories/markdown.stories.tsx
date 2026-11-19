@@ -1056,7 +1056,7 @@ export const WideTable: Story = {
   play: async ({ canvasElement }) => {
     const cells = [...canvasElement.querySelectorAll("td")]
     const scroller = canvasElement.querySelector<HTMLElement>(
-      "[data-slot=markdown-table]"
+      "[data-slot=markdown-table-content]"
     )!
     // What is wider than the lane scrolls (a long token, in Chromium and
     // WebKit), and a keyboard can scroll it.
@@ -1106,9 +1106,94 @@ export const CjkTable: Story = {
     await expect(long).not.toHaveAttribute("data-short")
     await expect(long.getBoundingClientRect().width).toBeGreaterThanOrEqual(192)
     const scroller = canvasElement.querySelector<HTMLElement>(
-      "[data-slot=markdown-table]"
+      "[data-slot=markdown-table-content]"
     )!
     await expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth)
+  },
+}
+
+/**
+ * Under a table, a button copies it: as an HTML table (a spreadsheet or
+ * document pastes it as one) and as Markdown text, its alignment kept.
+ */
+export const TableCopy: Story = {
+  args: { children: tables, mode: "static" },
+  play: async ({ canvasElement }) => {
+    const write = spyOn(navigator.clipboard, "write").mockResolvedValue()
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole("button", { name: "Copy table" }))
+    await waitFor(() => expect(write).toHaveBeenCalledTimes(1))
+    const [item] = write.mock.calls[0]![0] as ClipboardItem[]
+    await expect([...item!.types].sort()).toEqual(["text/html", "text/plain"])
+    const text = await (await item!.getType("text/plain")).text()
+    await expect(text).toBe(
+      [
+        "| Chunk | Before | After |",
+        "| :--- | ---: | ---: |",
+        "| index.js | 412 KB | 96 KB |",
+        "| vendor.js | — | 141 KB |",
+        "| pricing.css | 38 KB | 6 KB |",
+      ].join("\n")
+    )
+    const html = await (await item!.getType("text/html")).text()
+    const table = new DOMParser()
+      .parseFromString(html, "text/html")
+      .querySelector("table")!
+    await expect(table.querySelectorAll("thead th")).toHaveLength(3)
+    await expect(table.querySelectorAll("tbody tr")).toHaveLength(3)
+    await waitFor(() =>
+      expect(canvas.getByRole("button", { name: "Copied" })).toBeVisible()
+    )
+    write.mockRestore()
+  },
+}
+
+/**
+ * Full screen, a table has the room it needs, its size said, its heading
+ * held at the top as it scrolls; Escape closes it, back on its button.
+ */
+export const TableFullScreen: Story = {
+  args: {
+    mode: "static",
+    children: [
+      "| Chunk | Before | After |",
+      "| :-- | --: | --: |",
+      ...Array.from(
+        { length: 60 },
+        (_, at) =>
+          `| chunk-${at + 1}.js | ${at * 7 + 12} KB | ${at * 3 + 4} KB |`
+      ),
+    ].join("\n"),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const open = canvas.getByRole("button", { name: "Full screen" })
+    await userEvent.click(open)
+    const dialog = await within(document.body).findByRole("dialog")
+    // Once it has faded in.
+    await waitFor(() =>
+      expect(within(dialog).getByText("60 rows · 3 columns")).toBeVisible()
+    )
+    await expect(
+      within(dialog).getByRole("button", { name: "Copy table" })
+    ).toBeVisible()
+    const scroller = dialog.querySelector<HTMLElement>(
+      "[data-slot=markdown-table-content]"
+    )!
+    await waitFor(() => expect(document.activeElement).toBe(scroller))
+    await expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight)
+    const heading = dialog.querySelector("th")!
+    const top = heading.getBoundingClientRect().top
+    scroller.scrollTop = 400
+    await waitFor(() =>
+      expect(heading.getBoundingClientRect().top).toBeCloseTo(top, 0)
+    )
+    await expect(getComputedStyle(heading).position).toBe("sticky")
+    await userEvent.keyboard("{Escape}")
+    await waitFor(() =>
+      expect(within(document.body).queryByRole("dialog")).toBeNull()
+    )
+    await waitFor(() => expect(document.activeElement).toBe(open))
   },
 }
 

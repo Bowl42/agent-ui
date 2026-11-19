@@ -119,7 +119,10 @@ the app.
 - Tables have rules between rows only; the Markdown's column alignment
   (`--:`) lines numbers up on the right. Cells wrap, align at the top and
   have a 24rem cap; wider tables scroll horizontally and take focus to
-  scroll by keyboard.
+  scroll by keyboard. Under each table, a button copies it (an HTML
+  table, so a spreadsheet or document pastes it as one, plus Markdown
+  text with the alignment kept) and one opens it full screen, its heading
+  pinned as it scrolls (`labels.table*`, `labels.close`).
 - **Sources** are GFM footnotes: `[^1]` in the text is a numbered tile
   linking to its note, and the notes are a list under a rule, each with
   the site its link goes to (`rollupjs.org`). Turn the protocol's

@@ -22,6 +22,7 @@ import {
   useIsCodeFenceIncomplete,
 } from "streamdown"
 
+import { CopyButton, type CopyData } from "@/components/copy-button"
 import { Button } from "@/components/ui/button"
 import {
   CodeBlock,
@@ -37,6 +38,13 @@ import {
   useCodeBlockCut,
   type CodeBlockLabels,
 } from "@/components/ui/code-block"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Tooltip,
   TooltipContent,
@@ -57,6 +65,18 @@ type MarkdownLabels = CodeBlockLabels & {
   diagramCode: string
   /** Under a diagram's code when it could not be drawn. */
   diagramFailed: string
+  /** A table's name in full screen. */
+  table: string
+  /** How large a table is: "12 rows · 3 columns". */
+  tableSize: (rows: number, columns: number) => string
+  /** The button that copies a table, for a spreadsheet or a document. */
+  tableCopy: string
+  tableCopied: string
+  tableCopyFailed: string
+  /** The button that shows a table full screen. */
+  tableFullScreen: string
+  /** Full screen's close button. */
+  close: string
 }
 
 const defaultLabels: MarkdownLabels = {
@@ -70,6 +90,14 @@ const defaultLabels: MarkdownLabels = {
   formula: "Formula",
   diagramCode: "Show code",
   diagramFailed: "The diagram could not be drawn.",
+  table: "Table",
+  tableSize: (rows, columns) =>
+    `${rows} ${rows === 1 ? "row" : "rows"} · ${columns} ${columns === 1 ? "column" : "columns"}`,
+  tableCopy: "Copy table",
+  tableCopied: "Copied",
+  tableCopyFailed: "Could not copy",
+  tableFullScreen: "Full screen",
+  close: "Close",
 }
 
 /** Code, as `onOpenCode` gets it, with its file name if the fence has one. */
@@ -984,24 +1012,200 @@ const heading = (Tag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6", size: string) =>
     )
   }
 
-/** A table of the answer's: rules between rows only, numbers lined up. */
+/** A table's rows, as text, and each column's alignment, from its tree. */
+function tableCells(node: MarkdownNode | undefined) {
+  const rows: string[][] = []
+  const align: (string | undefined)[] = []
+  const walk = (parent: MarkdownNode) => {
+    for (const child of parent.children ?? []) {
+      if (child.tagName === "tr") {
+        const cells = (child.children ?? []).filter(
+          (cell) => cell.tagName === "th" || cell.tagName === "td"
+        )
+        if (rows.length === 0)
+          for (const cell of cells)
+            align.push(
+              typeof cell.properties?.align === "string"
+                ? cell.properties.align
+                : undefined
+            )
+        rows.push(
+          cells.map((cell) => nodeText(cell).trim().replace(/\s+/g, " "))
+        )
+      } else walk(child)
+    }
+  }
+  if (node) walk(node)
+  return { rows, align }
+}
+
+/** A table in Markdown, its columns' alignment kept, pipes escaped. */
+function cellsToMarkdown(
+  rows: readonly string[][],
+  align: readonly (string | undefined)[]
+) {
+  const columns = Math.max(0, ...rows.map((row) => row.length))
+  const line = (row: readonly string[]) =>
+    `| ${Array.from({ length: columns }, (_, at) =>
+      (row[at] ?? "").replaceAll("|", "\\|")
+    ).join(" | ")} |`
+  const rule = Array.from({ length: columns }, (_, at) =>
+    align[at] === "center"
+      ? ":---:"
+      : align[at] === "right"
+        ? "---:"
+        : align[at] === "left"
+          ? ":---"
+          : "---"
+  )
+  const [head = [], ...body] = rows
+  return [line(head), `| ${rule.join(" | ")} |`, ...body.map(line)].join("\n")
+}
+
+/** A table as HTML, its first row the heading: a spreadsheet's paste. */
+function cellsToHtml(rows: readonly string[][]) {
+  const escape = (text: string) =>
+    text
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+  const [head = [], ...body] = rows
+  const row = (cells: readonly string[], tag: "th" | "td") =>
+    `<tr>${cells.map((cell) => `<${tag}>${escape(cell)}</${tag}>`).join("")}</tr>`
+  return `<table><thead>${row(head, "th")}</thead><tbody>${body
+    .map((cells) => row(cells, "td"))
+    .join("")}</tbody></table>`
+}
+
+const tableClass =
+  "w-full border-collapse text-sm leading-5 break-normal wrap-normal tabular-nums [&_tbody_tr:last-child>td]:border-b-0"
+
+/**
+ * A table of the answer's: rules between rows only, numbers lined up.
+ * Under it, a button copies it (as an HTML table, which a spreadsheet or
+ * a document pastes as one, and as Markdown text) and one shows it full
+ * screen, its heading held at the top as it scrolls.
+ */
 function Table(all: ElementProps<"table">) {
-  const { className, ...props } = domProps(all)
+  const { labels } = React.useContext(MarkdownContext)
+  const { className, children, ...props } = domProps(all)
+  const [full, setFull] = React.useState(false)
+  const scroller = React.useRef<HTMLDivElement>(null)
+  const node = all.node as MarkdownNode | undefined
+  const { html, markdown, rows, columns } = React.useMemo(() => {
+    const { rows, align } = tableCells(node)
+    return {
+      html: cellsToHtml(rows),
+      markdown: cellsToMarkdown(rows, align),
+      rows: Math.max(0, rows.length - 1),
+      columns: Math.max(0, ...rows.map((row) => row.length)),
+    }
+  }, [node])
+  const copy = React.useMemo<CopyData[]>(
+    () => [
+      {
+        type: "text/html",
+        data: async () => new Blob([html], { type: "text/html" }),
+      },
+      {
+        type: "text/plain",
+        data: async () => new Blob([markdown], { type: "text/plain" }),
+      },
+    ],
+    [html, markdown]
+  )
+  const size = labels.tableSize(rows, columns)
+  const copyButton = (
+    <CopyButton
+      value={copy}
+      labels={{
+        copy: labels.tableCopy,
+        copied: labels.tableCopied,
+        failed: labels.tableCopyFailed,
+      }}
+      className="text-muted-foreground pointer-coarse:size-10"
+    />
+  )
   return (
-    <div
-      data-slot="markdown-table"
-      // Wider than the lane it scrolls: a keyboard can focus it to scroll.
-      tabIndex={0}
-      className="w-full min-w-0 scrollbar-thin overflow-x-auto rounded-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-    >
-      <table
-        data-streamdown="table"
-        className={cn(
-          "w-full border-collapse text-sm leading-5 break-normal wrap-normal tabular-nums [&_tbody_tr:last-child>td]:border-b-0",
-          className
-        )}
-        {...props}
-      />
+    <div data-slot="markdown-table" className="flex min-w-0 flex-col">
+      <div
+        data-slot="markdown-table-content"
+        // Wider than the lane it scrolls: a keyboard can focus it to scroll.
+        tabIndex={0}
+        className="w-full min-w-0 scrollbar-thin overflow-x-auto rounded-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        <table
+          data-streamdown="table"
+          className={cn(tableClass, className)}
+          {...props}
+        >
+          {children}
+        </table>
+      </div>
+      {/* Its buttons at its end, as an answer's own are under it. */}
+      <div
+        data-slot="markdown-table-actions"
+        className="-me-2 flex justify-end gap-0.5 pointer-coarse:-me-3"
+      >
+        {copyButton}
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={labels.tableFullScreen}
+                className="text-muted-foreground pointer-coarse:size-10"
+                onClick={() => setFull(true)}
+              />
+            }
+          >
+            <HugeiconsIcon icon={ArrowExpand01Icon} strokeWidth={2} />
+          </TooltipTrigger>
+          <TooltipContent>{labels.tableFullScreen}</TooltipContent>
+        </Tooltip>
+      </div>
+      <Dialog open={full} onOpenChange={setFull}>
+        <DialogContent
+          data-slot="markdown-table-dialog"
+          closeLabel={labels.close}
+          // On the table: the arrow keys scroll it.
+          initialFocus={scroller}
+          size="full"
+          // As wide as a wide table needs, and no wider.
+          className="gap-3 sm:max-h-240 sm:max-w-6xl"
+        >
+          <DialogHeader>
+            <DialogTitle>{labels.table}</DialogTitle>
+            <div className="flex items-center gap-0.5">
+              <DialogDescription className="min-w-0 flex-1">
+                {size}
+              </DialogDescription>
+              {copyButton}
+            </div>
+          </DialogHeader>
+          <div
+            ref={scroller}
+            data-slot="markdown-table-content"
+            tabIndex={0}
+            className="-mx-2 min-h-0 flex-1 scrollbar-thin overflow-auto rounded-md px-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            {/* Its heading held at the top, on the dialog's surface, its
+                rule kept with it. */}
+            <table
+              data-streamdown="table"
+              className={cn(
+                tableClass,
+                "[&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-popover [&_th]:shadow-[inset_0_-1px_var(--border)]",
+                className
+              )}
+              {...props}
+            >
+              {children}
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

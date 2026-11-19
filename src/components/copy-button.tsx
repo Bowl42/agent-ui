@@ -19,7 +19,9 @@ import {
 /**
  * What is copied besides text: e.g. an image, as `{ type: "image/png",
  * data: () => fetch(src).then((r) => r.blob()) }`. `data` is asked for on
- * the press (the clipboard is written in it, as Safari needs).
+ * the press (the clipboard is written in it, as Safari needs). Several,
+ * in one array, are one copy the place it is pasted reads as it can: e.g.
+ * a table as `text/html` and as `text/plain`.
  */
 type CopyData = { type: string; data: () => Promise<Blob> }
 
@@ -52,15 +54,18 @@ function CopyButton({
   onClick,
   ...props
 }: Omit<React.ComponentProps<typeof Button>, "children" | "value"> & {
-  /** Text, or `CopyData` (keep it the same object while it is the same). */
-  value: string | CopyData
+  /**
+   * Text, or `CopyData`, or several (keep it the same object while it is
+   * the same).
+   */
+  value: string | CopyData | readonly CopyData[]
   /** The button's name and the announcement, for other languages. */
   labels?: Partial<CopyButtonLabels>
   /** Its word shown beside its icon, not in a tooltip. */
   showLabel?: boolean
 }) {
   const [result, setResult] = React.useState<{
-    value: string | CopyData
+    value: string | CopyData | readonly CopyData[]
     copied: boolean
   } | null>(null)
   const copied = result?.value === value && result.copied
@@ -99,7 +104,14 @@ function CopyButton({
             typeof value === "string"
               ? navigator.clipboard.writeText(value)
               : navigator.clipboard.write([
-                  new ClipboardItem({ [value.type]: value.data() }),
+                  new ClipboardItem(
+                    Object.fromEntries(
+                      ("type" in value ? [value] : value).map((item) => [
+                        item.type,
+                        item.data(),
+                      ])
+                    )
+                  ),
                 ])
           )
           .then(
