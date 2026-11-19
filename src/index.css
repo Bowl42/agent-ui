@@ -78,6 +78,7 @@
     --default-transition-timing-function: var(--ease-ui);
     --animate-accordion-down: accordion-down var(--motion-size) var(--ease-ui);
     --animate-accordion-up: accordion-up var(--motion-size) var(--ease-ui);
+    --animate-pulse: pulse var(--motion-pulse) var(--ease-loop) infinite;
     --color-code-property: var(--code-property);
     --color-code-tag: var(--code-tag);
     --color-code-type: var(--code-type);
@@ -95,6 +96,11 @@
         }
   to {
     background-color: transparent;
+        }
+    }
+  @keyframes wait-in {
+  from {
+    opacity: 0;
         }
     }
 }
@@ -157,10 +163,13 @@
     --motion-size: 200ms;
     --motion-slide: 400ms;
     --motion-mark: 1200ms;
+    --motion-wait: 300ms;
+    --motion-pulse: 2s;
     --ease-ui: cubic-bezier(0.2, 0, 0, 1);
     --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-exit: cubic-bezier(0.3, 0, 1, 1);
     --ease-slide: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-loop: cubic-bezier(0.4, 0, 0.6, 1);
     --line-mark: 1.5px;
     --shadow-mark-start: inset var(--line-mark) 0 0 var(--foreground);
     --shadow-rule: inset 0 -1px var(--border);
@@ -443,6 +452,10 @@
     animation: highlight var(--motion-mark) var(--ease-ui) forwards;
 }
 
+@utility animate-wait-in {
+    animation: wait-in var(--motion-fade) var(--ease-ui) var(--motion-wait) backwards;
+}
+
 @utility pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -493,6 +506,9 @@
     --motion-slide: 0s;
     }
   .animate-highlight {
+    animation: none;
+    }
+  .animate-pulse {
     animation: none;
     }
 }

@@ -940,13 +940,15 @@ Motion is for a change of state or of space, never for the keyboard:
 the theme's tokens time it, the same in every component, and where the
 reader asks for less motion (`prefers-reduced-motion`) it is gone.
 
-| Utility        | Time         | For                                                                               |
-| -------------- | ------------ | --------------------------------------------------------------------------------- |
-| `motion-hover` | 100ms        | a row's background as the pointer comes (only then: a key's highlight is at once) |
-| `motion-fade`  | 150ms        | what fades or swaps in place: a page of a picker, an icon, a chevron's turn       |
-| `motion-size`  | 200ms        | what changes size: a collapsible's height, a panel opening beside, the sidebar    |
-| `motion-slide` | 400ms        | a surface crossing the screen: a sheet, a drawer, a toast, a menu's viewport      |
-| `motion-pop`   | 150ms, 100ms | a popup: a menu, popover, tooltip, select or dialog, in and (faster) out          |
+| Utility           | Time              | For                                                                               |
+| ----------------- | ----------------- | --------------------------------------------------------------------------------- |
+| `motion-hover`    | 100ms             | a row's background as the pointer comes (only then: a key's highlight is at once) |
+| `motion-fade`     | 150ms             | what fades or swaps in place: a page of a picker, an icon, a chevron's turn       |
+| `motion-size`     | 200ms             | what changes size: a collapsible's height, a panel opening beside, the sidebar    |
+| `motion-slide`    | 400ms             | a surface crossing the screen: a sheet, a drawer, a toast, a menu's viewport      |
+| `motion-pop`      | 150ms, 100ms      | a popup: a menu, popover, tooltip, select or dialog, in and (faster) out          |
+| `animate-wait-in` | 300ms, then 150ms | a loading state: unseen for `--motion-wait`, then faded in (see below)            |
+| `animate-pulse`   | 2s, repeating     | a `Skeleton`'s pulse (`--motion-pulse`), stopped where less motion is asked       |
 
 | Curve          | Tailwind      | For                                                     |
 | -------------- | ------------- | ------------------------------------------------------- |
@@ -954,6 +956,7 @@ reader asks for less motion (`prefers-reduced-motion`) it is gone.
 | `--ease-enter` | `ease-out`    | what arrives: fast, then settling (motion-pop's way in) |
 | `--ease-exit`  | `ease-in`     | what leaves, gathering speed (motion-pop's way out)     |
 | `--ease-slide` | —             | a surface under a finger, as the platform's sheets      |
+| `--ease-loop`  | —             | what repeats, evenly both ways (a skeleton's pulse)     |
 
 Each utility sets the duration and curve of a transition and of
 tw-animate-css's `animate-in` and `animate-out`, e.g.
@@ -976,6 +979,38 @@ the `--motion-*` properties (`--motion-mark`, 1200ms, is how long
   `data-panel-motion` meanwhile.
 - `FloatingButton` fades and grows in; with `visible` it stays rendered
   and fades and shrinks out too.
+
+No curve overshoots (a spring's bounce): what arrives settles on
+`--ease-enter`, fast then still, so a popup is read where it lands and
+not watched.
+
+### Loading
+
+What loads shows nothing for a moment, then a skeleton of what comes,
+then what came:
+
+- Put `animate-wait-in` on what holds the loading state (its
+  `role="status"`, with `Skeleton`s or a `Spinner` in it): it stays
+  unseen for `--motion-wait` (300ms) and then fades in by
+  `motion-fade`, so a load quicker than that never flashes one. Where
+  less motion is asked the wait stays and the fade goes. Render it from
+  the start; the wait is the theme's, not a timer of the app's.
+- A `Skeleton` pulses on the theme's timing, and not at all where less
+  motion is asked; it needs no `motion-reduce:animate-none`.
+- What came replaces the skeleton at once, in its place: no fade and no
+  cross-fade, which would only hold back what the reader waited for
+  (and a quick load shows no skeleton at all). Keep the skeleton the
+  size of what comes, so nothing moves as it does.
+
+### Rows coming and going
+
+A row added to or removed from a list (a sidebar's `SidebarMenuItem`,
+an `ItemGroup`'s `Item`) appears and goes at once, on purpose: a list
+is where the reader looks for a row, and rows sliding or growing in
+move the others under the pointer as it reaches for one. The change
+shows itself otherwise: a new conversation is the current row (its
+background, and scrolled into view), and what is removed can be undone
+from a toast.
 
 ## Edges and marks
 

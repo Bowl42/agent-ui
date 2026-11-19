@@ -25,8 +25,16 @@ export function reducedMotionDuration(element: HTMLElement) {
   return computed
 }
 
+/**
+ * An element's `animation-name` where the reader prefers reduced motion,
+ * as `reducedMotionTransition` reads it: "none" where the theme stops it.
+ */
+export function reducedMotionAnimation(element: Element) {
+  return reducedMotion(element, "animationName")
+}
+
 /** The custom properties the root takes where the reader prefers less motion. */
-function reducedCustomProperties() {
+export function reducedCustomProperties() {
   const properties = new Map<string, string>()
   const visit = (rules: CSSRuleList, reduced: boolean) => {
     for (const rule of Array.from(rules)) {
@@ -56,7 +64,7 @@ function reducedCustomProperties() {
 
 function reducedMotion(
   element: Element,
-  name: "transitionProperty" | "transitionDuration"
+  name: "transitionProperty" | "transitionDuration" | "animationName"
 ) {
   let property: string | undefined
   const take = (style: CSSStyleDeclaration, selector: string) => {

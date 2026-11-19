@@ -3245,6 +3245,8 @@ function StepsState({
           data-slot="agent-turn-steps-loading"
           role="status"
           aria-label={labels.loadingSteps}
+          // Seen only past a short wait, so quick steps never flash it.
+          className="animate-wait-in"
         >
           {["w-2/5", "w-3/5", "w-1/3"].map((width) => (
             <div
@@ -3255,11 +3257,11 @@ function StepsState({
                 lineClass
               )}
             >
-              <Skeleton className="size-4 rounded-full motion-reduce:animate-none" />
+              <Skeleton className="size-4 rounded-full" />
               <Skeleton
                 className={cn(
                   // grid: mark
-                  "h-2.5 rounded-full motion-reduce:animate-none",
+                  "h-2.5 rounded-full",
                   width
                 )}
               />
