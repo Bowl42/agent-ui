@@ -393,6 +393,18 @@ export const ImageAmongOthers: Story = {
       onPrevious: ReturnType<typeof fn>
       onNext: ReturnType<typeof fn>
     }
+    // Centred by its margins: pressed, its pixel down keeps it under the
+    // pointer, the click its own.
+    const side = canvas.getByRole("button", { name: "Next image" })
+    await expect(getComputedStyle(side).translate).toBe("none")
+    const box = side.getBoundingClientRect()
+    side.style.translate = "0 1px"
+    const pressed = document.elementFromPoint(
+      box.left + box.width / 2,
+      box.top + box.height / 2
+    )
+    side.style.translate = ""
+    await expect(side.contains(pressed)).toBe(true)
     // Where it is at the foot of the image, as a viewer's anywhere.
     const where = await canvas.findByText("30 / 60")
     await expect(where).toBeVisible()

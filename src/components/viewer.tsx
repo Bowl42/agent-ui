@@ -1374,7 +1374,10 @@ function ViewerSiblings({
   labels: labelsProp,
 }: Pick<ViewerFrameProps, "position" | "onPrevious" | "onNext" | "labels">) {
   const labels = { ...defaultViewerLabels, ...labelsProp }
-  const side = cn(viewerOverContent, "top-1/2 -translate-y-1/2")
+  // Centred by its margins, not a translate: a button's press moves it
+  // a pixel by its own, which would undo the centring and take it from
+  // under the pointer before its click.
+  const side = cn(viewerOverContent, "inset-y-0 my-auto")
   return (
     <>
       {onPrevious && (

@@ -529,6 +529,39 @@ export const MarkInDock: Story = {
 }
 
 /**
+ * Over an image that can be marked (its editor's frame under the
+ * buttons), Next stays under the pointer while it is pressed: centred by
+ * its margins, its press's own pixel does not take it away, so the click
+ * is its own and it goes on, never the image's (which would zoom).
+ */
+export const NextOverMarking: Story = {
+  args: { more: true },
+  play: async ({ canvas }) => {
+    const dialog = await openOverlay(canvas)
+    await waitFor(() =>
+      expect(
+        dialog.querySelector("[data-slot=image-editor-frame]")
+      ).not.toBeNull()
+    )
+    const next = within(dialog).getByRole("button", { name: "Next image" })
+    await expect(getComputedStyle(next).translate).toBe("none")
+    const box = next.getBoundingClientRect()
+    const centre = { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+    await expect(document.elementFromPoint(centre.x, centre.y)).toBe(next)
+    // Pressed, as a button's :active moves it.
+    next.style.translate = "0 1px"
+    const pressed = document.elementFromPoint(centre.x, centre.y)
+    next.style.translate = ""
+    await expect(next.contains(pressed)).toBe(true)
+    await userEvent.click(next)
+    await screen.findByRole("dialog", { name: "Small mark" })
+    await userEvent.click(next)
+    await screen.findByRole("dialog", { name: "Inbox" })
+    await expect(next).toBeDisabled()
+  },
+}
+
+/**
  * With a mouse, the buttons to the one before and after are there while
  * it points at the image (or one has focus): the strip is the way
  * through.
