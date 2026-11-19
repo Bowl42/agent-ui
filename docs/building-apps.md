@@ -2878,9 +2878,17 @@ uses this registry's scroller hooks.
 </MessageScroller>
 ```
 
-- One tick per supplied user message or app mark; turns in view are darker,
-  and the current turn is marked. The first non-empty line of `label`
-  names the tick and its tooltip. `labels` supplies the navigation's words.
+- One tick per supplied user message or app mark. The ticks fall off as
+  a dock's icons: the one being read (`aria-current`) is the longest
+  (24px) and darkest, each row further a step shorter and lighter (18,
+  14, 11px), and from the fifth row on they are all short and faint
+  (8px). Under the pointer the falloff centres on the row pointed at,
+  and on the focused one from the keyboard; it returns to the current
+  one as they leave. A section or a mark is a step behind a turn at the
+  same distance. `resting="quiet"` halves the lengths and greys the
+  ticks until the pointer or focus is on it. The first non-empty line of
+  `label` names the tick and its tooltip. `labels` supplies the
+  navigation's words.
 - The ticks are one Tab stop. ArrowUp/ArrowDown and Home/End move focus
   without scrolling; click, Enter or Space jumps instantly to that turn.
   Previous and next turn buttons jump from the turn being read.

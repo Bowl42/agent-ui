@@ -75,6 +75,29 @@ const clearance = 16
 // Leave space below the card and above the scroller’s bottom edge.
 const gap = 12
 const bottomPadding = 48
+/**
+ * A tick's length by its step from the falloff's centre (the current
+ * row, or the one pointed at), the last the length of all further out;
+ * quiet, half of it.
+ */
+const falloff = [24, 18, 14, 11, 8]
+const quietFalloff = [12, 9, 7, 6, 4]
+/** Its grey by the same steps: the text's colour down to a faint grey. */
+const ink = [
+  "bg-foreground",
+  "bg-foreground/70",
+  "bg-foreground/50",
+  "bg-muted-foreground/60",
+  "bg-muted-foreground/40",
+]
+const quietInk = [
+  "bg-muted-foreground/70",
+  "bg-muted-foreground/50",
+  "bg-muted-foreground/40",
+  "bg-muted-foreground/30",
+  "bg-muted-foreground/20",
+]
+
 // Two 26px buttons and eight 8px ticks.
 const minimumHeight = 112
 
@@ -179,7 +202,7 @@ function ConversationMinimap({
     // The heading of the current turn's reply being read, or -1.
     section: -1,
   })
-  // The row the pointer is over, for the ticks near it to grow.
+  // The row the pointer is over: the falloff's centre while it is.
   const [pointed, setPointed] = React.useState<number | null>(null)
   const [focused, setFocused] = React.useState<string | null>(null)
   // The pointer over it, or focus in it: awake, as wide and dark as ever.
@@ -403,6 +426,17 @@ function ConversationMinimap({
           rows.findIndex((row) => row.key === currentKey)
         )
 
+  // The falloff's centre: the row pointed at, else the one with the
+  // keyboard's focus, else the current one.
+  const centre =
+    pointed ??
+    (focusIn && focusedRow >= 0
+      ? focusedRow
+      : Math.max(
+          0,
+          rows.findIndex((row) => row.key === currentKey)
+        ))
+
   if (!hasItems) return null
 
   const firstLine = (label: string) =>
@@ -442,30 +476,14 @@ function ConversationMinimap({
         ? `${labels.failed}: ${question}`
         : question
     const current = row.key === currentKey
-    const turnCurrent = row.turn === state.current
-    // Wider as the pointer nears it: 6px over it, 4 and 2 beside.
-    const near = pointed === null ? 3 : Math.abs(pointed - index)
-    const grow = near === 0 ? 6 : near === 1 ? 4 : near === 2 ? 2 : 0
-    const base = isSection
-      ? current
-        ? 14
-        : 10
-      : kind === "mark"
-        ? 10
-        : current || (turnCurrent && !isSection && state.section < 0)
-          ? 20
-          : 16
-    // Quiet: 6px, 10 for the current turn; a heading's 4, 6.
-    const rest = isSection
-      ? current
-        ? 6
-        : 4
-      : kind === "mark"
-        ? 4
-        : base === 20
-          ? 10
-          : 6
-    const width = quiet ? rest : Math.min(24, base + grow)
+    // A dock's falloff: longest and darkest at its centre, a step shorter
+    // and lighter a row further each way, short and faint from the fifth
+    // row on; a heading or an app's mark a step behind a turn.
+    const step = Math.min(
+      falloff.length - 1,
+      Math.abs(index - centre) + (isSection || kind === "mark" ? 1 : 0)
+    )
+    const width = (quiet ? quietFalloff : falloff)[step]!
     return (
       <HoverCard>
         <HoverCardTrigger
@@ -559,22 +577,10 @@ function ConversationMinimap({
                     "size-1.5 rotate-45 rounded-none motion-fade motion-safe:transition-colors",
                     quiet ? "bg-muted-foreground/70" : "bg-foreground"
                   )
-                : quiet
-                  ? cn(
-                      "h-0.5 rounded-full bg-muted-foreground/20 motion-fade motion-safe:transition-[width,background-color]",
-                      !isSection &&
-                        state.inView[row.turn] &&
-                        "bg-muted-foreground/40",
-                      current && "bg-muted-foreground/70"
-                    )
-                  : cn(
-                      "h-0.5 rounded-full bg-muted-foreground/40 motion-hover group-hover/tick:bg-foreground motion-safe:transition-[width,background-color]",
-                      !isSection &&
-                        state.inView[row.turn] &&
-                        "bg-foreground/70",
-                      isSection && turnCurrent && "bg-muted-foreground/70",
-                      current && "bg-foreground"
-                    )
+                : cn(
+                    "h-0.5 rounded-full motion-fade motion-safe:transition-[width,background-color]",
+                    (quiet ? quietInk : ink)[step]
+                  )
             )}
           />
         </HoverCardTrigger>
@@ -642,6 +648,7 @@ function ConversationMinimap({
       onPointerLeave={(event) => {
         props.onPointerLeave?.(event)
         setHovered(false)
+        setPointed(null)
       }}
       onFocus={(event) => {
         props.onFocus?.(event)

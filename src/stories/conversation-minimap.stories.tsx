@@ -266,8 +266,8 @@ async function map(canvas: HTMLElement) {
 }
 
 /**
- * A long conversation, opened at its end: one tick per turn, those in view
- * darker, the current one marked. A tick jumps to its turn.
+ * A long conversation, opened at its end: one tick per turn, the current
+ * one marked. A tick jumps to its turn.
  */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
@@ -285,6 +285,52 @@ export const Default: Story = {
       expect(ticks[2]).toHaveAttribute("aria-current", "location")
     )
     await expect(ticks[2]).toHaveFocus()
+  },
+}
+
+/**
+ * The ticks fall off as a dock's icons from the current one: 24px and
+ * the text's colour there, each row further a step shorter and lighter,
+ * 8px from the fifth on. Under the pointer the falloff centres on the
+ * tick pointed at, and back on the current one as it leaves.
+ */
+export const Falloff: Story = {
+  play: async ({ canvasElement }) => {
+    const nav = await map(canvasElement)
+    // Every row, a reply's sections too: the falloff counts rows.
+    const ticks = [...nav.querySelectorAll<HTMLElement>("button[data-kind]")]
+    const line = (tick: HTMLElement) => tick.querySelector("span")!
+    const width = (tick: HTMLElement) =>
+      Math.round(line(tick).getBoundingClientRect().width)
+    // A section or a mark a step behind a turn.
+    const lengths = [24, 18, 14, 11, 8]
+    const expected = (centre: number) =>
+      ticks.map((tick, index) => {
+        if (tick.dataset.kind === "error") return width(tick)
+        const behind =
+          tick.dataset.kind === "section" || tick.dataset.kind === "mark"
+        return lengths[Math.min(4, Math.abs(index - centre) + (behind ? 1 : 0))]
+      })
+    const last = ticks.length - 1
+    await waitFor(() =>
+      expect(ticks[last]).toHaveAttribute("aria-current", "location")
+    )
+    await waitFor(() => expect(ticks.map(width)).toEqual(expected(last)))
+    await expect(width(ticks[last]!)).toBe(24)
+    const ink = (tick: HTMLElement) =>
+      getComputedStyle(line(tick)).backgroundColor
+    const text = getComputedStyle(nav).color
+    await expect(ink(ticks[last]!)).toBe(text)
+    await expect(ink(ticks[last - 1]!)).not.toBe(text)
+    // Pointed at, a far turn is the centre, both ways.
+    const at = ticks.findIndex(
+      (tick, index) => index > 2 && tick.dataset.kind === "message"
+    )
+    await userEvent.hover(ticks[at]!)
+    await waitFor(() => expect(ticks.map(width)).toEqual(expected(at)))
+    await expect(width(ticks[at]!)).toBe(24)
+    await userEvent.unhover(nav)
+    await waitFor(() => expect(ticks.map(width)).toEqual(expected(last)))
   },
 }
 
@@ -413,13 +459,15 @@ export const Sections: Story = {
       [...card.querySelectorAll("li")].map((item) => item.textContent)
     ).toEqual(sectionNames)
     await expect(card).toHaveTextContent(/Summary: a section of a long reply/)
-    // The ticks near the pointer wider than those far from it.
+    // The falloff centred on the pointer: the heading pointed at longest,
+    // its neighbour a step shorter, a far turn short.
     const width = (button: HTMLElement) =>
       button.querySelector("span")!.getBoundingClientRect().width
     const far = within(nav).getByRole("button", { name: firstLine(3) })
     await waitFor(() => expect(width(risks)).toBeGreaterThan(14))
     await expect(width(what)).toBeGreaterThan(10)
-    await expect(width(far)).toBe(16)
+    await expect(width(what)).toBeLessThan(width(risks))
+    await expect(width(far)).toBe(8)
     await userEvent.unhover(risks)
     // The app's sections for a turn not rendered: ticks all the same.
     await expect(
@@ -638,9 +686,8 @@ export const AtStart: Story = {
 }
 
 /**
- * Quiet at rest: short, faint ticks, the current turn's a little longer
- * and darker; as wide and dark as ever under the pointer or with focus
- * in it.
+ * Quiet at rest: the falloff at half its lengths, in fainter greys; as
+ * long and dark as ever under the pointer or with focus in it.
  */
 export const QuietAtRest: Story = {
   render: () => <Conversation side="start" resting="quiet" />,
@@ -664,7 +711,7 @@ export const QuietAtRest: Story = {
     await waitFor(() => expect(getComputedStyle(next).opacity).toBe("0"))
     await waitFor(() => {
       expect(width(firstLine(2))).toBeLessThanOrEqual(6.5)
-      expect(current().getBoundingClientRect().width).toBeLessThanOrEqual(10.5)
+      expect(current().getBoundingClientRect().width).toBeLessThanOrEqual(12.5)
       expect(current().getBoundingClientRect().width).toBeGreaterThan(
         width(firstLine(2))
       )
@@ -673,7 +720,7 @@ export const QuietAtRest: Story = {
     await waitFor(() => {
       expect(getComputedStyle(next).opacity).toBe("0.5")
       expect(nav).not.toHaveAttribute("data-quiet")
-      expect(width(firstLine(2))).toBeGreaterThanOrEqual(16)
+      expect(width(firstLine(2))).toBeGreaterThanOrEqual(8)
     })
     await userEvent.unhover(nav)
     await waitFor(() => expect(nav).toHaveAttribute("data-quiet"))
@@ -683,7 +730,7 @@ export const QuietAtRest: Story = {
       .focus()
     await waitFor(() => {
       expect(nav).not.toHaveAttribute("data-quiet")
-      expect(width(firstLine(2))).toBeGreaterThanOrEqual(16)
+      expect(width(firstLine(2))).toBe(24)
     })
     ;(document.activeElement as HTMLElement).blur()
     await waitFor(() => expect(nav).toHaveAttribute("data-quiet"))
