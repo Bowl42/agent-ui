@@ -969,7 +969,11 @@ type BrowserContextValue = {
     | undefined
   /** How the reader looks at the web page in a tab. */
   webView: (tab: string) => BrowserWebView
-  setWebView: (tab: string, change: Partial<BrowserWebView>) => void
+  setWebView: (
+    tab: string,
+    page: BrowserPage,
+    change: Partial<BrowserWebView>
+  ) => void
   web: BrowserWebProps
   start: BrowserStart | undefined
   /** Where its bars go, if not in it: a titlebar's row over it. */
@@ -1056,6 +1060,13 @@ type BrowserWebProps = {
    * (its shortcuts): true, and it is not sent to the page.
    */
   remoteShortcut?: ((event: KeyboardEvent) => boolean) | undefined
+  /**
+   * A web page's view changed by the reader (its device, rotation, dark
+   * scheme, console, picking): e.g. to apply the dark scheme to a remote
+   * browser, which a frame's `colorScheme` cannot reach.
+   */
+  onWebViewChange?:
+    ((page: BrowserPage, view: BrowserWebView) => void) | undefined
   /** Where nothing runs at a web page's address: e.g. a button to start it. */
   notRunningActions?: ((page: BrowserPage) => React.ReactNode) | undefined
   /** Addresses to go to where nothing runs, e.g. those visited. */
@@ -1124,6 +1135,7 @@ function Browser({
   onRemoteInput,
   copyRemoteSelection,
   remoteShortcut,
+  onWebViewChange,
   notRunningActions,
   recent,
   start,
@@ -1281,11 +1293,11 @@ function Browser({
     refocus,
     onMarkImage,
     webView: (tab) => webViews[tab] ?? defaultWebView,
-    setWebView: (tab, change) =>
-      setWebViews((views) => ({
-        ...views,
-        [tab]: { ...(views[tab] ?? defaultWebView), ...change },
-      })),
+    setWebView: (tab, page, change) => {
+      const next = { ...(webViews[tab] ?? defaultWebView), ...change }
+      setWebViews((views) => ({ ...views, [tab]: next }))
+      onWebViewChange?.(page, next)
+    },
     web: {
       inspectElement,
       onPickElement,
@@ -2284,7 +2296,7 @@ function PageToolbar({
           <BrowserWebTools
             content={web}
             view={webView(tab.id)}
-            onViewChange={(change) => setWebView(tab.id, change)}
+            onViewChange={(change) => setWebView(tab.id, page, change)}
             pickable={
               webProps.onPickElement !== undefined &&
               ((web.screenshot === undefined && web.remote === undefined) ||
@@ -2902,7 +2914,7 @@ function WebView({
       location={page.location}
       content={content}
       view={webView(tab)}
-      onViewChange={(change) => setWebView(tab, change)}
+      onViewChange={(change) => setWebView(tab, page, change)}
       inspectElement={
         inspectElement && ((point) => inspectElement(page, point))
       }

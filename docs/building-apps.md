@@ -3380,7 +3380,8 @@ box, text }`). A frame's own document is read where it is the
     Ctrl+C copies `copyRemoteSelection(page)`'s text. Pointing at an
     element needs `inspectElement`; the agent's layer, the devices and
     the drawer work as on a frame; "Dark color scheme" is the view's
-    `dark`, for the app to apply remotely.
+    `dark`, for the app to apply remotely: `onWebViewChange(page, view)` gives
+    a page's view as the reader changes it.
   - **Viewport**: the panel's size, or a laptop's, a tablet's or a
     phone's in a rounded bezel on a dotted canvas, scaled to fit. A size
     pill sits inside the canvas at its bottom. The menu shows the panel's

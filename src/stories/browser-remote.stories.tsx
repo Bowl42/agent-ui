@@ -17,6 +17,7 @@ const frameOf = (width: number, height: number, label = "Pricing") =>
 
 const received = fn<(input: BrowserRemoteInput) => void>()
 const copied = fn()
+const viewChanged = fn()
 
 /**
  * The panel's browser on a remote page: the app's side played here, its
@@ -97,6 +98,7 @@ function Remote({
           copied()
           return "Pro plan"
         }}
+        onWebViewChange={(page, view) => viewChanged(page.id, view)}
         remoteShortcut={(event) =>
           (event.metaKey || event.ctrlKey) && event.key === "k"
         }
@@ -112,6 +114,7 @@ const meta = {
   beforeEach: () => {
     received.mockClear()
     copied.mockClear()
+    viewChanged.mockClear()
   },
 } satisfies Meta<typeof Remote>
 
@@ -413,5 +416,29 @@ export const BeforeUnload: Story = {
     })
     await userEvent.click(within(dialog).getByRole("button", { name: "Stay" }))
     await expect(sent("dialog")).toEqual([{ type: "dialog", accept: false }])
+  },
+}
+
+/**
+ * The dark scheme on a remote page is the app's to apply there: the
+ * view's change is given by `onWebViewChange`, with the page.
+ */
+export const DarkScheme: Story = {
+  play: async ({ canvas, canvasElement }) => {
+    await drawn(canvasElement)
+    await userEvent.click(canvas.getByRole("button", { name: "Viewport" }))
+    const menu = within(document.body)
+    const dark = await menu.findByRole("switch", { name: "Dark color scheme" })
+    await userEvent.click(dark)
+    await expect(viewChanged).toHaveBeenLastCalledWith(
+      "browser",
+      expect.objectContaining({ dark: true, device: "fill" })
+    )
+    await userEvent.click(dark)
+    await expect(viewChanged).toHaveBeenLastCalledWith(
+      "browser",
+      expect.objectContaining({ dark: false })
+    )
+    await userEvent.keyboard("{Escape}")
   },
 }
