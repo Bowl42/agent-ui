@@ -179,11 +179,22 @@ const modifiersOf = (event: {
 const resizeWait = 150
 
 /**
+ * Whether a screen's keyboard is up: the visual viewport is shorter than
+ * the window by more than a bar's height.
+ */
+function keyboardShown() {
+  const viewport = window.visualViewport
+  return viewport !== null && viewport.height < window.innerHeight - 120
+}
+
+/**
  * A remote browser's page: its latest frame, drawn once decoded so
  * frames never flicker; the reader's pointer, wheel and keys on it sent
  * in the page's CSS pixels; text through a hidden field at the page's
  * caret, so an input method composes there; its cursor; and the page's
- * own select popups and script dialogs, drawn by agent-ui.
+ * own select popups and script dialogs, drawn by agent-ui. By touch, the
+ * screen's keyboard comes up only while the page has a caret (a field of
+ * its has the focus), not for a tap anywhere else.
  */
 function BrowserRemotePage({
   title,
@@ -213,6 +224,22 @@ function BrowserRemotePage({
   const picture = React.useRef<HTMLImageElement>(null)
   const field = React.useRef<HTMLTextAreaElement>(null)
   const send = React.useEffectEvent(onInput)
+  // By touch (or a pen), the field keeps the focus for a keyboard's keys
+  // but asks for no keyboard on the screen (inputmode none) until the
+  // page has a caret.
+  const [touch, setTouch] = React.useState(false)
+  const typing = !touch || remote.caret !== undefined
+  const wasTyping = React.useRef(typing)
+  React.useEffect(() => {
+    if (wasTyping.current === typing) return
+    wasTyping.current = typing
+    const element = field.current
+    // Focused again, as the keyboard is asked for on focus: up for the
+    // caret, down without one.
+    if (!element || document.activeElement !== element) return
+    element.blur()
+    element.focus({ preventScroll: true })
+  }, [typing])
   const isShortcut = React.useEffectEvent(
     (event: KeyboardEvent) => shortcut?.(event) ?? false
   )
@@ -446,7 +473,26 @@ function BrowserRemotePage({
         if (inert || !onPage(event)) return
         // The field takes the keys, and an input method's text.
         event.preventDefault()
-        field.current?.focus({ preventScroll: true })
+        const touching =
+          event.pointerType === "touch" || event.pointerType === "pen"
+        if (touching !== touch) setTouch(touching)
+        const element = field.current
+        if (element) {
+          // Set now, before the focus, not when it renders.
+          const keyboard = !touching || caret !== undefined
+          element.inputMode = keyboard ? "text" : "none"
+          wasTyping.current = keyboard
+          // A tap in the page's field with the keyboard put away (iOS
+          // brings it up only on a focus in a tap): focused again.
+          if (
+            touching &&
+            keyboard &&
+            document.activeElement === element &&
+            !keyboardShown()
+          )
+            element.blur()
+          element.focus({ preventScroll: true })
+        }
         try {
           event.currentTarget.setPointerCapture(event.pointerId)
         } catch {
@@ -487,6 +533,7 @@ function BrowserRemotePage({
         ref={field}
         data-slot="browser-remote-input"
         aria-label={title}
+        inputMode={typing ? "text" : "none"}
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"

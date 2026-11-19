@@ -1477,8 +1477,12 @@ function AgentAppPanels({
   // Expanded until it closes.
   const [expandedState, setExpanded] = React.useState(false)
   if (!open && expandedState) setExpanded(false)
+  // Beside, over the main area (not on a foldable's own screen); as a
+  // sheet or a drawer, over the whole window.
   const expanded =
-    expandedState && open && place === "beside" && segments === null
+    expandedState && open && (place !== "beside" || segments === null)
+  // Over the main area beside it, which it then takes the place of.
+  const over = expanded && place === "beside"
   // Under a titlebar, beside the main area: its bar in the titlebar's
   // row, over it.
   const bar =
@@ -1698,7 +1702,7 @@ function AgentAppPanels({
           id="agent-app-main-panel"
           minSize={book ? 0 : 320}
           className={cn(
-            expanded && "hidden",
+            over && "hidden",
             cards && "py-2",
             cards && layout.railInSidebar && "ps-2"
           )}
@@ -1713,7 +1717,7 @@ function AgentAppPanels({
               "flex h-full min-w-0 flex-col",
               cards && "overflow-hidden rounded-xl bg-background shadow-float"
             )}
-            inert={expanded}
+            inert={over}
             style={
               book && !cards
                 ? { paddingInlineEnd: Math.max(0, book.hinge - 1) }
@@ -1730,7 +1734,7 @@ function AgentAppPanels({
             <ResizableHandle
               aria-label={labels?.resize ?? title}
               disabled={book !== null}
-              className={expanded || cards ? "hidden" : undefined}
+              className={over || cards ? "hidden" : undefined}
             />
             <ResizablePanel
               key={opening.times}
@@ -1804,9 +1808,16 @@ function AgentAppPanels({
           side={end}
           showCloseButton={false}
           data-slot="agent-app-panel-sheet"
-          // A card floating over the page, 8px in from its edges, as the
-          // main area is a card.
-          className="gap-0 overflow-hidden rounded-xl border-0 shadow-float data-[side=left]:inset-y-2 data-[side=left]:left-2 data-[side=left]:h-auto data-[side=left]:w-112 data-[side=left]:border-0 data-[side=right]:inset-y-2 data-[side=right]:right-2 data-[side=right]:h-auto data-[side=right]:w-112 data-[side=right]:border-0 data-[side=left]:sm:max-w-112 data-[side=right]:sm:max-w-112"
+          data-expanded={expanded || undefined}
+          className={cn(
+            "gap-0 overflow-hidden border-0 data-[side=left]:border-0 data-[side=right]:border-0",
+            expanded
+              ? // The whole window, clear of its notches and bars.
+                "inset-0 h-auto w-auto max-w-none rounded-none pt-safe-or-0 pr-[env(safe-area-inset-right)] pb-safe pl-[env(safe-area-inset-left)] data-[side=left]:w-auto data-[side=right]:w-auto data-[side=left]:sm:max-w-none data-[side=right]:sm:max-w-none"
+              : // A card floating over the page, 8px in from its edges,
+                // as the main area is a card.
+                "rounded-xl shadow-float data-[side=left]:inset-y-2 data-[side=left]:left-2 data-[side=left]:h-auto data-[side=left]:w-112 data-[side=right]:inset-y-2 data-[side=right]:right-2 data-[side=right]:h-auto data-[side=right]:w-112 data-[side=left]:sm:max-w-112 data-[side=right]:sm:max-w-112"
+          )}
           {...(barProp
             ? { "aria-labelledby": `${id}-side-title` }
             : { "aria-label": title })}
@@ -1839,11 +1850,19 @@ function AgentAppPanels({
         <DrawerContent
           id={id}
           data-slot="agent-app-panel-drawer"
+          data-expanded={expanded || undefined}
+          // Expanded, the whole screen, its top clear of the notch.
+          className={cn(
+            expanded &&
+              "pt-safe-or-0 data-[swipe-direction=down]:rounded-t-none data-[swipe-direction=down]:border-t-0"
+          )}
           style={
             {
               // Nearly the screen's height: the page shows above it.
-              "--drawer-height": "calc(100dvh - 3rem)",
-              "--drawer-content-max-height": "calc(100dvh - 3rem)",
+              "--drawer-height": expanded ? "100dvh" : "calc(100dvh - 3rem)",
+              "--drawer-content-max-height": expanded
+                ? "100dvh"
+                : "calc(100dvh - 3rem)",
             } as React.CSSProperties
           }
           {...(barProp
@@ -2052,14 +2071,15 @@ function useAgentAppPanelBar(): HTMLElement | null {
 }
 
 /**
- * Expands the panel of the `AgentAppPanels` it is in over the main area,
- * and back: for its bar's actions. Only beside the main area: none in a
- * sheet, nor on a foldable's own screen.
+ * Expands the panel of the `AgentAppPanels` it is in, and back: for its
+ * bar's actions. Beside the main area, over it; as a sheet or a phone's
+ * drawer, over the whole window, clear of its safe areas. None beside on
+ * a foldable's own screen.
  */
 function AgentAppPanelExpand(props: React.ComponentProps<typeof Button>) {
   const panel = React.useContext(PanelContext)
   const { book } = useAgentAppLayout()
-  if (!panel || panel.place !== "beside" || book) return null
+  if (!panel || (panel.place === "beside" && book)) return null
   const label = panel.expanded ? panel.collapse : panel.expand
   return (
     <Tooltip>

@@ -3527,10 +3527,31 @@ export const PhoneBrowserPanel: Story = {
     await expect(
       bar.getBoundingClientRect().top - sheet.getBoundingClientRect().top
     ).toBeLessThanOrEqual(24)
-    // No expanding: it is as large as it gets.
-    await expect(
-      within(sheet).queryByRole("button", { name: "Expand" })
-    ).toBeNull()
+    // Nearly the screen's height; expanded, all of it, and back.
+    await waitFor(() =>
+      expect(Math.round(sheet.getBoundingClientRect().height)).toBe(
+        window.innerHeight - 48
+      )
+    )
+    await userEvent.click(within(sheet).getByRole("button", { name: "Expand" }))
+    await expect(sheet).toHaveAttribute("data-expanded")
+    await waitFor(() => {
+      const box = sheet.getBoundingClientRect()
+      expect([box.top, box.height].map(Math.round)).toEqual([
+        0,
+        window.innerHeight,
+      ])
+    })
+    await expect(getComputedStyle(sheet).borderTopLeftRadius).toBe("0px")
+    await userEvent.click(
+      within(sheet).getByRole("button", { name: "Collapse" })
+    )
+    await expect(sheet).not.toHaveAttribute("data-expanded")
+    await waitFor(() =>
+      expect(Math.round(sheet.getBoundingClientRect().height)).toBe(
+        window.innerHeight - 48
+      )
+    )
     const close = within(sheet).getAllByRole("button", { name: "Close" })
     await expect(close).toHaveLength(1)
     await expect(bar).toContainElement(close[0]!)
@@ -3887,6 +3908,57 @@ export const Tablet: Story = {
       within(canvas.getByRole("banner")).getByRole("button", { name: "Files" })
     )
     await expectPanelSheet("Files")
+    await userEvent.keyboard("{Escape}")
+    await waitFor(() => expect(body.queryByRole("dialog")).toBeNull())
+  },
+}
+
+/**
+ * A tablet upright: the panel a sheet, expanded over the whole window
+ * and back to its card; the conversation under it stays as it was.
+ */
+export const TabletPanelExpand: Story = {
+  ...viewport("tablet", 768, 1024),
+  args: { sidebar: null },
+  render: () => <App />,
+  play: async ({ canvas }) => {
+    await userEvent.click(
+      within(canvas.getByRole("banner")).getByRole("button", {
+        name: "Browser",
+      })
+    )
+    const sheet = await expectPanelSheet("Browser")
+    await userEvent.click(within(sheet).getByRole("button", { name: "Expand" }))
+    await expect(sheet).toHaveAttribute("data-expanded")
+    await waitFor(() => {
+      const box = sheet.getBoundingClientRect()
+      expect(
+        [box.left, box.top, box.width, box.height].map(Math.round)
+      ).toEqual([0, 0, window.innerWidth, window.innerHeight])
+    })
+    await expect(getComputedStyle(sheet).borderTopLeftRadius).toBe("0px")
+    // The main area is still there, under it, not hidden.
+    await expect(
+      document.querySelector("#agent-app-main-panel")
+    ).not.toHaveClass("hidden")
+    await userEvent.click(
+      within(sheet).getByRole("button", { name: "Collapse" })
+    )
+    await expect(sheet).not.toHaveAttribute("data-expanded")
+    await waitFor(() =>
+      expect(Math.round(sheet.getBoundingClientRect().width)).toBe(448)
+    )
+    // Closed and opened again: as it was, not expanded.
+    await userEvent.click(within(sheet).getByRole("button", { name: "Expand" }))
+    await userEvent.keyboard("{Escape}")
+    await waitFor(() => expect(body.queryByRole("dialog")).toBeNull())
+    await userEvent.click(
+      within(canvas.getByRole("banner")).getByRole("button", {
+        name: "Browser",
+      })
+    )
+    const again = await expectPanelSheet("Browser")
+    await expect(again).not.toHaveAttribute("data-expanded")
     await userEvent.keyboard("{Escape}")
     await waitFor(() => expect(body.queryByRole("dialog")).toBeNull())
   },

@@ -26,9 +26,12 @@ const viewChanged = fn()
 function Remote({
   initial = {},
   pending = false,
+  field = false,
 }: {
   initial?: Partial<BrowserRemote>
   pending?: boolean
+  /** The page's search field, its grey bar: a press in it puts a caret there. */
+  field?: boolean
 }) {
   const [remote, setRemote] = React.useState<BrowserRemote>(initial)
   const browser = useBrowser({
@@ -89,6 +92,21 @@ function Remote({
                 height: input.height,
               },
             }))
+          // A press focuses the field it is in, or nothing, as the page
+          // says a moment later.
+          if (field && input.type === "pointer" && input.action === "down") {
+            const inField = input.y >= 24 && input.y <= 80
+            setTimeout(
+              () =>
+                setRemote((current) => ({
+                  ...current,
+                  caret: inField
+                    ? { x: 40, y: 40, width: 1, height: 20 }
+                    : undefined,
+                })),
+              50
+            )
+          }
           if (input.type === "select" || input.type === "select-cancel")
             setRemote((current) => ({ ...current, select: undefined }))
           if (input.type === "dialog")
@@ -221,6 +239,63 @@ export const Pointer: Story = {
     })
     await expect(remote.dispatchEvent(wheel)).toBe(false)
     await expect(sent("wheel").at(-1)).toMatchObject({ deltaY: 120 })
+  },
+}
+
+/** A tap at a point of the page, as a finger's or a pen's. */
+function tap(target: HTMLElement, x: number, y: number, pointerType = "touch") {
+  for (const type of ["pointerdown", "pointerup"])
+    target.dispatchEvent(
+      new PointerEvent(type, {
+        pointerType,
+        pointerId: 7,
+        isPrimary: true,
+        clientX: x,
+        clientY: y,
+        bubbles: true,
+        cancelable: true,
+      })
+    )
+}
+
+/**
+ * By touch, a tap anywhere on the page focuses the field for keys but asks
+ * for no keyboard on the screen (inputmode none); a tap in one of the
+ * page's fields, once the page says it has the caret, asks for it; a
+ * tap out of it puts it away. A mouse's press asks for it always, as before.
+ */
+export const TouchKeyboard: Story = {
+  args: { field: true },
+  play: async ({ canvasElement }) => {
+    const image = await drawn(canvasElement)
+    const remote = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=browser-remote]"
+    )!
+    const input = canvasElement.querySelector<HTMLTextAreaElement>(
+      "[data-slot=browser-remote-input]"
+    )!
+    const box = image.getBoundingClientRect()
+    const scale = box.width / sent("resize").at(-1)!.width
+    // Off any field: focused, no keyboard.
+    tap(remote, box.left + 100 * scale, box.top + 300 * scale)
+    await expect(document.activeElement).toBe(input)
+    await expect(input.inputMode).toBe("none")
+    await expect(sent("pointer").at(-1)).toMatchObject({ pointerType: "touch" })
+    // In the field: once the caret is there, the keyboard.
+    tap(remote, box.left + 100 * scale, box.top + 50 * scale)
+    await waitFor(() => expect(input.inputMode).toBe("text"))
+    await expect(document.activeElement).toBe(input)
+    // Out of it again: put away, the focus kept for a keyboard's keys.
+    tap(remote, box.left + 100 * scale, box.top + 300 * scale)
+    await waitFor(() => expect(input.inputMode).toBe("none"))
+    await expect(document.activeElement).toBe(input)
+    // A pen as a finger.
+    tap(remote, box.left + 100 * scale, box.top + 320 * scale, "pen")
+    await expect(input.inputMode).toBe("none")
+    // A mouse: as before, the field asks for text at once.
+    tap(remote, box.left + 100 * scale, box.top + 300 * scale, "mouse")
+    await expect(input.inputMode).toBe("text")
+    await expect(document.activeElement).toBe(input)
   },
 }
 

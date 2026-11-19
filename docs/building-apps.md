@@ -3196,6 +3196,10 @@ function PanelBrowser(props: React.ComponentProps<typeof Browser>) {
 />
 ```
 
+- `AgentAppPanelExpand` expands the panel and back: beside the
+  conversation, over it; as a sheet (no room beside) or a phone's
+  drawer, over the whole window, clear of its safe areas. It goes back
+  to its size when the panel closes.
 - `open(page)` opens it in a new tab after the one shown, or goes to the
   tab already showing it (the same `id`); `navigate(page, tab?)` goes to
   it in a tab (by default the one shown), back returning; `update(page)` changes it wherever it
@@ -3378,7 +3382,10 @@ box, text }`). A frame's own document is read where it is the
     (start, update, end with the text committed), `text` (typed by no
     key: dictation, an emoji picker), `paste`, `select` or
     `select-cancel`, and `dialog` (`accept`, a prompt's `text`). A press
-    focuses the page; its keys then are the page's, Tab and the arrows
+    focuses the page. By touch or a pen, the screen's keyboard comes up
+    only while `remote.caret` is set (a field of the page's is focused),
+    not for a tap anywhere else; a hardware keyboard's keys still go to
+    the page. Its keys then are the page's, Tab and the arrows
     too, but for those `remoteShortcut(event)` keeps for the app. ⌘C or
     Ctrl+C copies `copyRemoteSelection(page)`'s text. Pointing at an
     element needs `inspectElement`; the agent's layer, the devices and
