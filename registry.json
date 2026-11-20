@@ -819,7 +819,7 @@
       "name": "message",
       "type": "registry:ui",
       "title": "Message",
-      "description": "shadcn/ui's base-nova message, fixed: 8px between the parts of its content. Its spacing on the 4px module (docs/grid.md).",
+      "description": "shadcn/ui's base-nova message, fixed: 8px between the parts of its content; what its parts follow (a footer lifting the avatar, a ghost bubble's padding) set as variables by the message's own :has(), not each part's group-has-*, which restyled the whole message on every node streamed into it. Its spacing on the 4px module (docs/grid.md).",
       "dependencies": ["cn"],
       "files": [
         {
