@@ -159,6 +159,81 @@ const noMatches: readonly TextMatch[] = []
 const noFolds: FoldRanges = new Map()
 
 /**
+ * Its matches are drawn as CSS highlights, not marks: a keystroke in the
+ * find bar renders no line again (marks rendered every line a short term
+ * is in: 70 ms a keystroke at 3,500 lines, `pnpm perf`). Where the
+ * browser has no highlights, marks.
+ */
+const supportsHighlights = () =>
+  typeof CSS !== "undefined" && "highlights" in CSS
+
+const matchHighlight = "code-viewer-match"
+const currentHighlight = "code-viewer-current"
+const highlightStyle = `::highlight(${matchHighlight}){background-color:var(--mark);color:inherit}::highlight(${currentHighlight}){background-color:var(--mark-current);color:inherit}`
+
+// Every viewer's matches on the page, drawn as one highlight of each.
+const viewerRanges = new Map<
+  object,
+  { all: Range[]; current: Range | undefined }
+>()
+
+function drawHighlights() {
+  const all: Range[] = []
+  const current: Range[] = []
+  for (const each of viewerRanges.values()) {
+    all.push(...each.all)
+    if (each.current) current.push(each.current)
+  }
+  if (all.length > 0) CSS.highlights.set(matchHighlight, new Highlight(...all))
+  else CSS.highlights.delete(matchHighlight)
+  if (current.length > 0)
+    CSS.highlights.set(currentHighlight, new Highlight(...current))
+  else CSS.highlights.delete(currentHighlight)
+}
+
+/**
+ * A line's matches as ranges over its text as rendered: its coloured
+ * pieces' text nodes, past its fold button (which has none).
+ */
+function lineRanges(line: Element, matches: readonly TextMatch[]) {
+  const content = line.querySelector("[data-slot=code-block-line-content]")
+  if (!content) return []
+  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.parentElement?.closest("button,[aria-hidden=true]")
+        ? NodeFilter.FILTER_REJECT
+        : NodeFilter.FILTER_ACCEPT,
+  })
+  const ranges: Range[] = []
+  let offset = 0
+  let index = 0
+  let range: Range | null = null
+  for (
+    let node = walker.nextNode() as Text | null;
+    node && index < matches.length;
+    node = walker.nextNode() as Text | null
+  ) {
+    const end = offset + node.data.length
+    // Its matches that start or end in this node, in turn.
+    while (index < matches.length) {
+      const match = matches[index]!
+      if (!range) {
+        if (match.start >= end) break
+        range = document.createRange()
+        range.setStart(node, match.start - offset)
+      }
+      if (match.end > end) break
+      range.setEnd(node, match.end - offset)
+      ranges.push(range)
+      range = null
+      index++
+    }
+    offset = end
+  }
+  return ranges
+}
+
+/**
  * A line, rendered again only when what it shows changes: its props are
  * values, so a keystroke in the find bar renders the lines whose matches
  * changed, not all of them.
@@ -391,14 +466,112 @@ function CodeViewer({
     return hidden
   }, [ranges, shownFolded])
 
+  // Drawn as highlights where the browser has them: the ranges of the
+  // lines in sight and a screen either side (and of the match gone to),
+  // made again as the matches or the lines shown change, and as it
+  // scrolls. A short term in every line of a long file costs its screen.
+  const [highlights] = React.useState(supportsHighlights)
+  const [owner] = React.useState(() => ({}))
+  // The current match's, for the scroll to it after (a layout effect's,
+  // before the effects).
+  const currentRange = React.useRef<Range | undefined>(undefined)
+  const paint = React.useEffectEvent(() => {
+    const code = content.current
+    const all: Range[] = []
+    let gone: Range | undefined
+    if (code && hits.length > 0) {
+      const lines = [...code.querySelectorAll<HTMLElement>("[data-line]")]
+      const box = code.getBoundingClientRect()
+      const top = Math.max(box.top, 0)
+      const bottom = Math.min(box.bottom, window.innerHeight)
+      const screen = Math.max(bottom - top, 0)
+      // In the code's own coordinates (its lines' offsetTop).
+      const from = top - box.top + code.scrollTop - screen
+      const to = bottom - box.top + code.scrollTop + screen
+      const add = (line: HTMLElement) => {
+        const number = Number(line.dataset.line)
+        const each = matches[number - 1]
+        if (!each || each.length === 0) return
+        lineRanges(line, each).forEach((range, which) => {
+          if (hit?.line === number && hit.which === which) gone = range
+          else all.push(range)
+        })
+      }
+      // The first line ending past `from`, then on to `to`.
+      let low = 0
+      let high = lines.length
+      while (low < high) {
+        const middle = (low + high) >> 1
+        const line = lines[middle]!
+        if (line.offsetTop + line.offsetHeight < from) low = middle + 1
+        else high = middle
+      }
+      for (let index = low; index < lines.length; index++) {
+        const line = lines[index]!
+        if (line.offsetTop > to) break
+        add(line)
+      }
+      if (hit && !gone) {
+        const line = code.querySelector<HTMLElement>(
+          `[data-line="${hit.line}"]`
+        )
+        const range =
+          line && lineRanges(line, matches[hit.line - 1]!)[hit.which]
+        if (range) gone = range
+      }
+    }
+    viewerRanges.set(owner, { all, current: gone })
+    drawHighlights()
+    currentRange.current = gone
+  })
+  React.useLayoutEffect(() => {
+    if (highlights) paint()
+  }, [highlights, matches, hits, hit, hidden, colored])
+  React.useEffect(() => {
+    if (!highlights || hits.length === 0) return
+    let frame = 0
+    const later = () => {
+      frame ||= requestAnimationFrame(() => {
+        frame = 0
+        paint()
+      })
+    }
+    const options = { capture: true, passive: true }
+    window.addEventListener("scroll", later, options)
+    window.addEventListener("resize", later)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener("scroll", later, options)
+      window.removeEventListener("resize", later)
+    }
+  }, [highlights, hits])
+  React.useEffect(
+    () => () => {
+      if (!viewerRanges.delete(owner)) return
+      drawHighlights()
+    },
+    [owner]
+  )
+
   // To the match, or the line, gone to: in the middle, if it scrolls.
   React.useEffect(() => {
     if (current === undefined) return
-    const line = content.current?.querySelector(`[data-line="${current}"]`)
-    const target =
-      line?.querySelector("[data-slot=search-mark][data-current]") ?? line
-    target?.scrollIntoView?.({ block: "center", inline: "nearest" })
-  }, [current, at])
+    const code = content.current
+    const line = code?.querySelector(`[data-line="${current}"]`)
+    const range = currentRange.current
+    if (!highlights || !range || !code) {
+      const target =
+        line?.querySelector("[data-slot=search-mark][data-current]") ?? line
+      target?.scrollIntoView?.({ block: "center", inline: "nearest" })
+      return
+    }
+    line?.scrollIntoView?.({ block: "center", inline: "nearest" })
+    // Then across to it, if it is out of sight sideways.
+    const match = range.getBoundingClientRect()
+    const view = code.getBoundingClientRect()
+    if (match.left < view.left || match.right > view.right)
+      code.scrollLeft += match.left - view.left - view.width / 2
+  }, [current, at, highlights])
 
   // Opened, or again while open: its field focused, its text selected,
   // before the next key.
@@ -495,8 +668,8 @@ function CodeViewer({
             number={number}
             line={colored[index] ?? lines[index]}
             variant={variant ?? "default"}
-            matches={matches[index]!}
-            current={hit?.line === number ? hit.which : -1}
+            matches={highlights ? noMatches : matches[index]!}
+            current={!highlights && hit?.line === number ? hit.which : -1}
             numbered={hidden.size > 0}
             foldable={ranges.size > 0}
             fold={ranges.has(number) ? (closed ? "closed" : "open") : undefined}
@@ -532,6 +705,11 @@ function CodeViewer({
       }}
       {...props}
     >
+      {highlights && (
+        <style href="agentui-code-viewer-find" precedence="default">
+          {highlightStyle}
+        </style>
+      )}
       {find}
       {children}
     </div>

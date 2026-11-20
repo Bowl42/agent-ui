@@ -53,6 +53,35 @@ const line = (element: HTMLElement, number: number) =>
   element.querySelector<HTMLElement>(`[data-line="${number}"]`)
 
 /**
+ * The matches drawn, in the order of the code: CSS highlights' ranges
+ * (or, in a browser without them, marks), each its text, where it
+ * starts and whether it is the one gone to.
+ */
+function drawn(element: HTMLElement) {
+  if (typeof CSS === "undefined" || !("highlights" in CSS))
+    return [
+      ...element.querySelectorAll<HTMLElement>("[data-slot=search-mark]"),
+    ].map((mark) => ({
+      text: mark.textContent ?? "",
+      node: mark as Node,
+      current: mark.hasAttribute("data-current"),
+    }))
+  const of = (name: string) =>
+    [...((CSS.highlights.get(name) as Highlight | undefined) ?? [])].filter(
+      (range): range is Range =>
+        range instanceof Range && element.contains(range.startContainer)
+    )
+  const current = new Set(of("code-viewer-current"))
+  return [...of("code-viewer-match"), ...current]
+    .sort((a, b) => a.compareBoundaryPoints(Range.START_TO_START, b))
+    .map((range) => ({
+      text: range.toString(),
+      node: range.startContainer,
+      current: current.has(range),
+    }))
+}
+
+/**
  * Ctrl+F (⌘F) in it opens its own find bar: its matches marked in the
  * coloured code, counted; Enter and Shift+Enter go between them; Escape
  * closes it, the focus back on the code.
@@ -86,21 +115,20 @@ export const Find: Story = {
     await userEvent.keyboard("IMAGE.c")
     // Any case; one a line here. Found a moment after the typing (as
     // "IMAGE." finds as many), so waited for.
-    const marks = () =>
-      canvasElement.querySelectorAll("[data-slot=search-mark]")
+    const marks = () => drawn(canvasElement)
     const marked = (number: number) =>
-      [...marks()].filter((mark) => line(canvasElement, number)!.contains(mark))
+      marks().filter((mark) => line(canvasElement, number)!.contains(mark.node))
     await waitFor(() =>
       expect(
         marked(4)
-          .map((mark) => mark.textContent)
+          .map((mark) => mark.text)
           .join("")
       ).toBe("image.c")
     )
     await expect(canvas.getByText("1 of 2")).toBeVisible()
     await expect(marks()).toHaveLength(2)
     const first = marked(4)
-    await expect(first[0]).toHaveAttribute("data-current")
+    await expect(first[0]!.current).toBe(true)
     await expect(line(canvasElement, 4)).toHaveAttribute(
       "data-variant",
       "highlighted"
@@ -126,12 +154,8 @@ export const Find: Story = {
     await userEvent.clear(field)
     await userEvent.type(field, "image")
     await expect(await canvas.findByText("1 of 5")).toBeVisible()
-    await expect(
-      line(canvasElement, 3)!.querySelectorAll("[data-slot=search-mark]")
-    ).toHaveLength(2)
-    await expect(
-      canvasElement.querySelectorAll("[data-slot=search-mark][data-current]")
-    ).toHaveLength(1)
+    await waitFor(() => expect(marked(3)).toHaveLength(2))
+    await expect(marks().filter((mark) => mark.current)).toHaveLength(1)
     await userEvent.keyboard("{Shift>}{Enter}{/Shift}")
     await expect(await canvas.findByText("5 of 5")).toBeVisible()
     await expect(line(canvasElement, 7)).toHaveAttribute(
@@ -144,9 +168,11 @@ export const Find: Story = {
     await userEvent.clear(field)
     await userEvent.type(field, "IF (image")
     await waitFor(() =>
-      expect([...marks()].map((mark) => mark.textContent).join("")).toBe(
-        "if (image"
-      )
+      expect(
+        marks()
+          .map((mark) => mark.text)
+          .join("")
+      ).toBe("if (image")
     )
     await expect(canvas.getByText("1 of 1")).toBeVisible()
     // Floating, 36px, its words 12px, its count fainter, no ring inside.
@@ -160,8 +186,14 @@ export const Find: Story = {
     await expect(
       getComputedStyle(bar).boxShadow.replace(/[a-z]+\([^)]*\)/g, "")
     ).toMatch(/^[\s0px,]*$|^none$/)
-    await expect(marks().length).toBeGreaterThan(1)
-    await expect(marks()[0]!.closest("span[class^='code-']")).not.toBeNull()
+    // One range over the pieces where the browser draws highlights; a
+    // mark in each where it has to mark them.
+    await expect(marks().length).toBe(
+      typeof CSS !== "undefined" && "highlights" in CSS ? 1 : 2
+    )
+    const start = marks()[0]!.node
+    const holder = start instanceof Element ? start : start.parentElement
+    await expect(holder?.closest("span[class^='code-']")).not.toBeNull()
 
     await userEvent.clear(field)
     await userEvent.type(field, "nowhere")
@@ -375,7 +407,9 @@ export const Scrolls: Story = {
     const found = line(canvasElement, 151)!.getBoundingClientRect()
     await expect(found.top).toBeGreaterThanOrEqual(box.top)
     await expect(found.bottom).toBeLessThanOrEqual(box.bottom)
-    await expect(within(content).getByText("needle")).toBeVisible()
+    await waitFor(() =>
+      expect(drawn(canvasElement).map((mark) => mark.text)).toEqual(["needle"])
+    )
   },
 }
 
