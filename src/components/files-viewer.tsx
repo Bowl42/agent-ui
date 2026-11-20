@@ -346,9 +346,17 @@ function rowsOf(
   return rows
 }
 
+type FileIndex = Map<string, { file: ViewerFile; parent: string | null }>
+
+// Kept by the files they index: a picker opened again on the same tree
+// (100,000 folders) does not walk it again.
+const indexes = new WeakMap<readonly ViewerFile[], FileIndex>()
+
 /** Each loaded file by its id, with its folder's. */
 function indexOf(files: readonly ViewerFile[]) {
-  const byId = new Map<string, { file: ViewerFile; parent: string | null }>()
+  const kept = indexes.get(files)
+  if (kept) return kept
+  const byId: FileIndex = new Map()
   const walk = (level: readonly ViewerFile[], parent: string | null) => {
     for (const file of level) {
       byId.set(file.id, { file, parent })
@@ -356,6 +364,7 @@ function indexOf(files: readonly ViewerFile[]) {
     }
   }
   walk(files, null)
+  indexes.set(files, byId)
   return byId
 }
 

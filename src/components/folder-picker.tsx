@@ -152,11 +152,22 @@ const defaultViews: readonly PickerView[] = ["columns", "list"]
 const intentDelay = 150
 const folderPath = (folder: ViewerFile) => folder.id
 
+// Each level's entries kept by the level they come from: opened again,
+// or a folder loaded into a tree of 100,000 (its new levels on the way to
+// it alone), the rest are not made again, and stay the same arrays for
+// what is kept by them (the viewer's index of the files).
+const entriesOf = {
+  hidden: new WeakMap<readonly ViewerFile[], ViewerFile[]>(),
+  dimmed: new WeakMap<readonly ViewerFile[], ViewerFile[]>(),
+}
+
 function folderEntries(
   entries: readonly ViewerFile[],
   mode: "hidden" | "dimmed"
 ): ViewerFile[] {
-  return entries
+  const kept = entriesOf[mode].get(entries)
+  if (kept) return kept
+  const made = entries
     .filter((entry) => mode === "dimmed" || entry.directory)
     .map((entry) => ({
       ...entry,
@@ -166,6 +177,8 @@ function folderEntries(
           ? undefined
           : folderEntries(entry.children, mode),
     }))
+  entriesOf[mode].set(entries, made)
+  return made
 }
 /** The folders from the top of `folder` to `id`'s, it last; none if not in it. */
 function pathTo(

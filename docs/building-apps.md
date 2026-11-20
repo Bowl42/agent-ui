@@ -3785,6 +3785,12 @@ tree and filesystem operations.
   Each loading column or expanded loading row stays independent and usable.
   Expanded folders can be
   controlled with `expanded` and `onExpandedChange`.
+- Update the tree as React state is updated: a level that changes (a
+  folder's children loaded) is a new array, and the levels it does not
+  touch are the same ones. The picker keeps what it made of each level
+  by the level, so opening it again, or a folder loading into a tree of
+  100,000, makes again only what changed (10 ms, not 20, to open; `pnpm
+  perf`). A level changed in place is not seen.
 - Files are hidden by default; `files="dimmed"` shows them disabled for context.
   The status count is the level being picked in: the folder typed into, or
   the picked folder's own (on a phone, the folder shown); folders, plus
