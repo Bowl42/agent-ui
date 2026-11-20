@@ -3501,10 +3501,13 @@ e.g. its pages and terminals when the panel is closed:
   with it. The reader goes through the others by a swipe across the
   preview, a sideways scroll, the left and right arrows or a dot (past
   seven, "2/12"); it then stays there, and "Follow" takes it back
-  (`following`, `onFollowingChange`).
+  (`following`, `onFollowingChange`). Under a finger each dot is 28px
+  wide, so a tap takes the dot under it, not its neighbour; past four,
+  and in a pill, a count ("2/3") stands for them.
 - **Card or pill.** A card has its title and `preview` (16:10,
   `aspectRatio`; 320px wide, 240px on a phone, upright or on its side); a pill is one line: its
-  icon, `line` and `status`, up to 384px. An item opens as its `form`
+  icon, `line` and `status`, up to 384px (240px on a phone, as its card,
+  so it has corners to go to). An item opens as its `form`
   says (a card if it has a preview); Minimize makes it a pill, and the
   pill's line a card again (or, with no preview, expands it). A
   terminal is best a pill of its last line, `PictureInPictureLines`
@@ -3512,8 +3515,12 @@ e.g. its pages and terminals when the panel is closed:
 - **Moving.** Dragged by any part but its buttons (and what has
   `data-no-drag`), it lands in the corner it is let go nearest or thrown
   towards, rising a little while held; a tap on the preview is still a
-  press, and a finger's press moved less than 10px is a tap. Let go
-  with its middle past a side, it tucks into that side, only a 24px tab
+  press, and a finger's press moved less than 10px is a tap. A swipe
+  across a preview of several turns while it stays within it; taken on
+  past its side it is a move, the window catching up with the finger
+  (on a phone the preview is most of it). Let go with its middle past
+  a side, or thrown out past the side it is at, it tucks into that
+  side, only a 24px tab
   showing (its alert icon while it calls for the reader); the tab, or a
   drag back, brings it out (`tucked`, `defaultTucked`,
   `onTuckedChange`): on a phone, the conversation whole without closing

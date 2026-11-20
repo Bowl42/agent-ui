@@ -9,7 +9,7 @@ import {
   PictureInPictureLines,
   type PictureInPictureItem,
 } from "@/components/picture-in-picture"
-import { coarseHitSize } from "@/stories/touch"
+import { asCoarse, coarseHitSize } from "@/stories/touch"
 
 /** A made-up page, as a remote browser would draw it small. */
 const frame = (label: string, shade: string) =>
@@ -669,6 +669,171 @@ export const FingerSlop: Story = {
     finger("pointerup", 12)
     await expect(window).not.toHaveAttribute("data-dragging")
     await inCorner(canvasElement, "bottom", "right")
+  },
+}
+
+/** A finger's pointer events at `x`, `y` on `target`. */
+function finger(target: HTMLElement, id: number) {
+  return (type: string, x: number, y: number) =>
+    target.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        pointerId: id,
+        pointerType: "touch",
+        isPrimary: true,
+        clientX: x,
+        clientY: y,
+        buttons: type === "pointerup" ? 0 : 1,
+      })
+    )
+}
+
+const frames = (count: number) =>
+  new Promise<void>((resolve) => {
+    const next = (left: number) =>
+      left === 0 ? resolve() : requestAnimationFrame(() => next(left - 1))
+    next(count)
+  })
+
+/**
+ * Across its preview of several, a swipe within it turns; taken on past
+ * its side, it is a move after all, the window catching up with the
+ * finger: on a phone, where the preview is most of it, it is how it is
+ * dragged into its side.
+ */
+export const SwipeOutToTuck: Story = {
+  args: { items: [pricing, docs, checkout], onTuckedChange: tucked },
+  beforeEach: () => {
+    tucked.mockClear()
+  },
+  play: async ({ canvasElement }) => {
+    const { stage, window } = parts(canvasElement)
+    const preview = within(window).getByRole("button", {
+      name: "Show Pricing · example.com",
+    })
+    const box = window.getBoundingClientRect()
+    const y = box.top + box.height / 2
+    // Within it: a turn, it stays.
+    let touch = finger(preview, 11)
+    touch("pointerdown", box.right - 40, y)
+    for (let x = box.right - 60; x >= box.left + 40; x -= 20) {
+      touch("pointermove", x, y)
+      await frames(1)
+    }
+    touch("pointerup", box.left + 40, y)
+    await waitFor(() =>
+      expect(window).toHaveAccessibleName("Docs · example.com")
+    )
+    await inCorner(canvasElement, "bottom", "right")
+    // On past its side: it moves, and let go there it tucks.
+    const place = stage.getBoundingClientRect()
+    const start = box.left + box.width / 2
+    touch = finger(
+      within(window).getByRole("button", { name: "Show Docs · example.com" }),
+      12
+    )
+    touch("pointerdown", start, y)
+    for (let x = start + 20; x < place.right - 2; x += 20) {
+      touch("pointermove", x, y)
+      await frames(1)
+    }
+    touch("pointermove", place.right + 20, y)
+    await expect(window).toHaveAttribute("data-dragging", "move")
+    // Its preview back in place, not left turned.
+    await expect(
+      window.querySelector<HTMLElement>(
+        "[data-slot=picture-in-picture-content] > div"
+      )!.style.transform
+    ).toBe("")
+    touch("pointerup", place.right + 20, y)
+    await waitFor(() => expect(tucked).toHaveBeenLastCalledWith(true))
+    await expect(window).toHaveAccessibleName("Docs · example.com")
+  },
+}
+
+/**
+ * Thrown out past its own side, it tucks into it (a finger reaches the
+ * screen's edge before its middle does); nudged that way and let go
+ * slowly, it goes back to its corner.
+ */
+export const FlingToTuck: Story = {
+  args: { onTuckedChange: tucked },
+  beforeEach: () => {
+    tucked.mockClear()
+  },
+  play: async ({ canvasElement }) => {
+    const { window } = parts(canvasElement)
+    const bar = window.querySelector<HTMLElement>(
+      "[data-slot=picture-in-picture-bar]"
+    )!
+    const box = bar.getBoundingClientRect()
+    const x = box.left + 60
+    const y = box.top + box.height / 2
+    // Slowly: back to its corner.
+    let touch = finger(bar, 13)
+    touch("pointerdown", x, y)
+    for (let dx = 10; dx <= 60; dx += 10) {
+      touch("pointermove", x + dx, y)
+      await new Promise((resolve) => setTimeout(resolve, 60))
+    }
+    touch("pointerup", x + 60, y)
+    await inCorner(canvasElement, "bottom", "right")
+    await expect(tucked).not.toHaveBeenCalled()
+    // Thrown: tucked.
+    touch = finger(bar, 14)
+    touch("pointerdown", x, y)
+    touch("pointermove", x + 30, y)
+    touch("pointermove", x + 60, y)
+    touch("pointerup", x + 60, y)
+    await waitFor(() => expect(tucked).toHaveBeenLastCalledWith(true))
+  },
+}
+
+/**
+ * Under a finger its dots are 28px wide, side by side, each taking its
+ * own tap (a 44px square each, they took their neighbours'); past four,
+ * and in a pill, where it is is a count.
+ */
+export const FingerDots: Story = {
+  args: { items: [pricing, docs, checkout] },
+  play: async ({ canvasElement }) => {
+    const { window } = parts(canvasElement)
+    const dots = () =>
+      within(
+        window.querySelector<HTMLElement>(
+          "[data-slot=picture-in-picture-dots]"
+        )!
+      ).queryAllByRole("button")
+    const widths = asCoarse(window, () =>
+      // Its layout's, not as it shows while it pops in, scaled.
+      dots().map((dot) => ({
+        left: dot.offsetLeft,
+        right: dot.offsetLeft + dot.offsetWidth,
+        width: dot.offsetWidth,
+      }))
+    )
+    await expect(widths).toHaveLength(3)
+    for (const [at, dot] of widths.entries()) {
+      await expect(dot.width).toBe(28)
+      if (at > 0)
+        await expect(dot.left).toBeGreaterThanOrEqual(widths[at - 1]!.right)
+    }
+    await userEvent.click(
+      within(window).getByRole("button", { name: "Minimize" })
+    )
+    await waitFor(() =>
+      expect(
+        window.querySelector("[data-slot=picture-in-picture-pill]")
+      ).not.toBeNull()
+    )
+    const pill = asCoarse(window, () => ({
+      dots: dots().filter((dot) => getComputedStyle(dot).display !== "none")
+        .length,
+      count: window.querySelector<HTMLElement>(
+        "[data-slot=picture-in-picture-count]"
+      )?.textContent,
+    }))
+    await expect(pill).toEqual({ dots: 0, count: "1/3" })
   },
 }
 

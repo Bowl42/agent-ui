@@ -87,6 +87,9 @@ const throwAhead = 120
 
 /** At most this many dots; past it, "2/12". */
 const maxDots = 7
+// Under a finger each dot is 28px wide, so no two take one tap: as many
+// as a phone's card has room for beside Follow.
+const maxCoarseDots = 4
 
 /**
  * Its entry's zoom done: an animation of its transform would hold it
@@ -424,6 +427,11 @@ function PictureInPicture({
     vy: number
     lastX: number
     lastY: number
+    /**
+     * Until when it catches up with the finger, a swipe across its
+     * preview having become a move.
+     */
+    catchUp: number
   } | null>(null)
   // Where it was seen as it left for another corner: from there to it.
   const from = React.useRef<DOMRect | null>(null)
@@ -515,34 +523,53 @@ function PictureInPicture({
   const titleId = `${id}-title`
   const keysId = `${id}-keys`
 
-  const dots = many && (
-    <div
-      data-slot="picture-in-picture-dots"
-      data-pip-control=""
-      className="flex items-center"
-    >
-      {items.length > maxDots ? (
-        <span className="px-1 text-xs text-muted-foreground tabular-nums">
-          {index + 1}/{items.length}
-        </span>
-      ) : (
-        items.map((item, at) => (
-          <button
-            key={item.id}
-            type="button"
-            aria-label={labels.item(at + 1, items.length, item.title)}
-            aria-current={at === index || undefined}
-            onClick={() => {
-              if (at !== index) turn(at - index)
-            }}
-            className="group/dot touch-target relative grid size-4 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-          >
-            <span className="size-2 scale-75 rounded-full bg-muted-foreground/40 transition-[background-color,scale] motion-fade group-hover/dot:bg-muted-foreground group-aria-current/dot:scale-100 group-aria-current/dot:bg-foreground" />
-          </button>
-        ))
+  // Where it is among several, as a count: past as many dots as fit, and
+  // in a pill under a finger (whose dots would crowd its title out).
+  const count = (className?: string) => (
+    <span
+      data-slot="picture-in-picture-count"
+      className={cn(
+        "px-1 text-xs text-muted-foreground tabular-nums",
+        className
       )}
-    </div>
+    >
+      {index + 1}/{items.length}
+    </span>
   )
+  const dots = (pill: boolean) =>
+    many && (
+      <div
+        data-slot="picture-in-picture-dots"
+        data-pip-control=""
+        className="flex items-center"
+      >
+        {items.length > maxDots
+          ? count()
+          : items.map((item, at) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-label={labels.item(at + 1, items.length, item.title)}
+                aria-current={at === index || undefined}
+                onClick={() => {
+                  if (at !== index) turn(at - index)
+                }}
+                className={cn(
+                  // Under a finger 28px wide and 44px tall, side by side:
+                  // its 44px square over its neighbours took their taps.
+                  "group/dot touch-target relative grid size-4 shrink-0 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring/50 pointer-coarse:w-7 pointer-coarse:after:w-full",
+                  (pill || items.length > maxCoarseDots) &&
+                    "pointer-coarse:hidden"
+                )}
+              >
+                <span className="size-2 scale-75 rounded-full bg-muted-foreground/40 transition-[background-color,scale] motion-fade group-hover/dot:bg-muted-foreground group-aria-current/dot:scale-100 group-aria-current/dot:bg-foreground" />
+              </button>
+            ))}
+        {items.length <= maxDots &&
+          (pill || items.length > maxCoarseDots) &&
+          count("hidden pointer-coarse:inline")}
+      </div>
+    )
 
   const follow = away && (
     <button
@@ -598,7 +625,9 @@ function PictureInPicture({
         form === "card"
           ? // A phone's width, or its height on its side.
             "w-80 rounded-xl max-sm:w-60 [@media(max-height:30rem)]:w-60"
-          : "h-10 w-max max-w-96 min-w-40 rounded-full max-sm:max-w-80",
+          : // On a phone no wider than its card: a pill nearly as wide
+            // as the screen had no corners to go to.
+            "h-10 w-max max-w-96 min-w-40 rounded-full max-sm:max-w-60",
         // Calling for the reader: a ring as strong as the text.
         "data-attention:ring-2 data-attention:ring-foreground",
         className
@@ -628,6 +657,7 @@ function PictureInPicture({
           vy: 0,
           lastX: event.clientX,
           lastY: event.clientY,
+          catchUp: 0,
         }
       }}
       onPointerMove={(event) => {
@@ -658,16 +688,35 @@ function PictureInPicture({
         state.lastX = event.clientX
         state.lastY = event.clientY
         state.time = event.timeStamp
+        const element = event.currentTarget
         if (state.mode === "turn") {
           const content = preview.current
-          if (content) {
-            content.style.transition = "none"
-            content.style.transform = `translateX(${dx}px)`
+          const box = element.getBoundingClientRect()
+          // Within it, a swipe turns; taken out past its side, it is a
+          // move after all, the window catching up with the finger (a
+          // phone's preview is most of it: else it could not be dragged
+          // to its side to tuck it).
+          if (event.clientX >= box.left && event.clientX <= box.right) {
+            if (content) {
+              content.style.transition = "none"
+              content.style.transform = `translateX(${dx}px)`
+            }
+            return
           }
-          return
+          if (content) {
+            content.style.transition = reducedMotion()
+              ? ""
+              : "transform var(--motion-size) var(--ease-ui)"
+            content.style.transform = ""
+          }
+          state.mode = "move"
+          state.catchUp = reducedMotion() ? 0 : event.timeStamp + 100
+          element.dataset.dragging = "move"
         }
-        const element = event.currentTarget
-        element.style.transition = "none"
+        element.style.transition =
+          event.timeStamp < state.catchUp
+            ? "transform var(--motion-hover) var(--ease-ui), scale var(--motion-fade) var(--ease-ui)"
+            : "none"
         element.style.transform = `translate(${dx}px, ${dy}px)`
       }}
       onPointerUp={(event) => {
@@ -705,14 +754,22 @@ function PictureInPicture({
         const x = rect.left + rect.width / 2 + speed(state.vx) * throwAhead
         const y = rect.top + rect.height / 2 + speed(state.vy) * throwAhead
         const left = x < place.left + place.width / 2
-        // Its middle let go past a side (not thrown there: a flick to a
-        // corner is not one out): tucked into it.
+        // Tucked into a side: let go with its middle past it; or thrown
+        // out past it from that side, where a finger reaches the screen's
+        // edge before its middle does (from the other side, a flick to a
+        // corner there is not one out).
+        const own = (horizontal === "start") !== rtl ? "left" : "right"
         const middle = rect.left + rect.width / 2
+        const tuck =
+          middle < place.left ||
+          middle > place.right ||
+          (own === "left" && x < place.left && state.vx < 0) ||
+          (own === "right" && x > place.right && state.vx > 0)
         move(
           `${y < place.top + place.height / 2 ? "top" : "bottom"}-${
             left !== rtl ? "start" : "end"
           }` as PictureInPictureCorner,
-          middle < place.left || middle > place.right
+          tuck
         )
       }}
       onPointerCancel={(event) => {
@@ -844,11 +901,11 @@ function PictureInPicture({
                 {shown.preview}
               </div>
             </div>
-            {(dots || follow) && (
+            {(many || follow) && (
               <div className="pointer-events-none absolute inset-x-2 bottom-2 flex items-center justify-between gap-2 *:pointer-events-auto">
-                {dots ? (
+                {many ? (
                   <div className="rounded-full bg-background/90 px-1 py-1 shadow-float dark:bg-muted/90">
-                    {dots}
+                    {dots(false)}
                   </div>
                 ) : (
                   <span />
@@ -925,7 +982,7 @@ function PictureInPicture({
             </span>
           )}
           {follow}
-          {dots}
+          {dots(true)}
           {onClose && (
             <PipButton
               label={labels.close}
