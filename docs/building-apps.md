@@ -4469,12 +4469,12 @@ fixed after, so a conversation never moves to another project
   than `minMainWidth` (600px). Where the sidebar's width leaves it less,
   the sidebar is drawn narrower, down to `minSidebarWidth` (208px); the
   width it was given or dragged to is kept, for a wider window. On a
-  touch screen (an unfolded phone, a tablet upright), where it has no
-  room even so, a list and its page first: the rail stays a column,
-  and the sidebar stays open beside a conversation as narrow as
-  `minTouchMainWidth` (368px, so from 640px the sidebar is always
-  open beside the rail; `false` to fold instead); the reader may still
-  close it. Where it
+  touch screen (a tablet upright), where it has no room even so, a
+  list and its page first: the rail stays a column, and the sidebar
+  stays open beside a conversation as narrow as `minTouchMainWidth`
+  (432px, a large phone's width, so the conversation is never
+  narrower than a phone's: beside the rail, from 704px; `false` to
+  fold instead); the reader may still close it. Where it
   has no room beside it even so, the sidebar folds: the rail stays, its first items the sidebar's
   button, a new conversation and search (the `AgentAppSidebar`'s, where
   it has them), and the sidebar opens as a sheet past the rail. An app
@@ -4485,9 +4485,10 @@ fixed after, so a conversation never moves to another project
   Where an open panel has no room beside the
   conversation either, the panel is a sheet from the end; it opens no
   wider than leaves the conversation its 600px (the reader may drag it
-  wider). So at 690×880 (an unfolded phone) and 768×1024, under a finger,
-  the sidebar is open, 242px and 268px, beside the conversation and the
-  panel a sheet, and under a mouse the sidebar folded; at 880×690 the sidebar is 208px beside
+  wider). So at 690×880 (an unfolded phone) the sidebar is folded, under a
+  finger as under a mouse, the conversation 634px; at 768×1024, under
+  a finger, the sidebar is open, 268px, beside the conversation and the
+  panel a sheet, and under a mouse folded; at 880×690 the sidebar is 208px beside
   the conversation; at 720 wide with `minMainWidth={420}` (a foldable
   half open, an app's choice) it is 236px (212 under a finger); at 1024×640 or 1024×768 the panel is
   beside the conversation, the sidebar folded while it is open. Narrower

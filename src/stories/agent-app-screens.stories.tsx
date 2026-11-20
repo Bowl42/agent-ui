@@ -1535,13 +1535,54 @@ export const PhoneChanges: Story = {
 }
 
 /**
- * A foldable unfolded, 690px, under a finger: a list and its page beside
- * the rail, the sidebar open at its narrowest and the conversation the
- * rest, wider than `minTouchMainWidth` (344px); the app's areas in the
- * rail, not at the sidebar's foot.
+ * A foldable unfolded, 690px, under a finger: no room for a phone's
+ * width (432px) beside the sidebar, so it folds to the rail and the
+ * conversation is a card the rest of the window. The rail's button opens
+ * the sidebar as a sheet past the rail, over the conversation, which
+ * keeps its width.
  */
 export const Unfolded: Story = {
   ...viewport("unfolded", 690, 880),
+  args: { sidebar: null },
+  beforeEach: pretend("(pointer: coarse)"),
+  render: () => <Screen screen="thread" answer="short" />,
+  play: async ({ canvas }) => {
+    const main = canvas.getByRole("main", { hidden: true })
+    const rail = document.querySelector<HTMLElement>(
+      "[data-slot=agent-app-rail]"
+    )!
+    await expect(rail).toBeVisible()
+    await waitFor(() =>
+      expect(main.getBoundingClientRect().left).toBe(
+        rail.getBoundingClientRect().right
+      )
+    )
+    await expect(main.getBoundingClientRect().width).toBe(690 - 48 - 8)
+    await userEvent.click(
+      within(rail).getByRole("button", { name: "Toggle Sidebar" })
+    )
+    const sheet = await within(document.body).findByRole("dialog")
+    await waitFor(() =>
+      expect(sheet.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+        rail.getBoundingClientRect().right
+      )
+    )
+    await expect(main.getBoundingClientRect().width).toBe(690 - 48 - 8)
+    await userEvent.keyboard("{Escape}")
+    await waitFor(() =>
+      expect(within(document.body).queryByRole("dialog")).toBeNull()
+    )
+  },
+}
+
+/**
+ * A tablet upright, 768px, under a finger: a list and its page beside
+ * the rail, the sidebar open and the conversation the rest, no narrower
+ * than `minTouchMainWidth` (432px); the app's areas in the rail, not at
+ * the sidebar's foot.
+ */
+export const TabletUpright: Story = {
+  ...viewport("tablet", 768, 1024),
   args: { sidebar: null },
   beforeEach: pretend("(pointer: coarse)"),
   render: () => <Screen screen="thread" answer="short" />,
@@ -1564,7 +1605,7 @@ export const Unfolded: Story = {
     await waitFor(() =>
       expect(
         Math.round(main.getBoundingClientRect().width)
-      ).toBeGreaterThanOrEqual(344)
+      ).toBeGreaterThanOrEqual(432)
     )
     await expect(sidebar.getBoundingClientRect().width).toBeGreaterThanOrEqual(
       208
@@ -1652,12 +1693,12 @@ export const UnfoldedSidebarEdge: Story = {
 }
 
 /**
- * Unfolded, with `minTouchMainWidth={false}`: the rail, the conversation
- * a card beside it, the sidebar folded. In the desktop's type scale (the
- * phone's is below 640px).
+ * A tablet upright, with `minTouchMainWidth={false}`: the rail, the
+ * conversation a card beside it, the sidebar folded. In the desktop's
+ * type scale (the phone's is below 640px).
  */
-export const UnfoldedFolded: Story = {
-  ...viewport("unfolded", 690, 880),
+export const TabletFolded: Story = {
+  ...viewport("tablet", 768, 1024),
   args: { sidebar: null },
   beforeEach: pretend("(pointer: coarse)"),
   render: () => (

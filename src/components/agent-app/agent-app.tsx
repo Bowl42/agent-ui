@@ -474,8 +474,8 @@ function Titlebar({
  * has no room for it beside the sidebar (a tablet, an unfolded phone),
  * the sidebar folds to the rail and opens as a sheet over the page (on a
  * touch screen, first a list and its page while the main area has
- * `minTouchMainWidth`: the sidebar open at its narrowest, the rail still
- * a column); where there is still none beside a panel, the panel is a sheet
+ * `minTouchMainWidth`, never narrower than a phone's: the sidebar open
+ * at its narrowest, the rail still a column); where there is still none beside a panel, the panel is a sheet
  * from the end.
  * Narrower than 640px (Tailwind's `sm`) it is a phone's layout: no rail
  * (its areas are at the sidebar's foot), the panel a sheet from the
@@ -497,7 +497,7 @@ function AgentApp({
   maxSidebarWidth = 480,
   onSidebarWidthChange,
   minMainWidth = 600,
-  minTouchMainWidth = 368,
+  minTouchMainWidth = 432,
   foldForPanel = true,
   railPlacement = "column",
   titlebar: titlebarProp,
@@ -525,12 +525,14 @@ function AgentApp({
    */
   minMainWidth?: number
   /**
-   * On a touch screen (an unfolded phone, a tablet upright) with no room
-   * for `minMainWidth` beside the sidebar, the main area as narrow as
-   * this beside it, a list and its page: the sidebar open at its
-   * narrowest beside the rail, before it folds to the rail; `false` to
-   * fold. Default 368: from 640px, beside the rail (48px) and the
-   * sidebar at its narrowest (208px), the sidebar always open.
+   * On a touch screen (a tablet upright) with no room for
+   * `minMainWidth` beside the sidebar, the main area as narrow as this
+   * beside it, a list and its page: the sidebar open at its narrowest
+   * beside the rail, before it folds to the rail; `false` to fold.
+   * Default 432, a large phone's width, so the main area is never
+   * narrower than a phone's: beside the rail, from 704px wide (a tablet
+   * upright, 768px), not on an unfolded phone, narrower, where the
+   * sidebar folds.
    */
   minTouchMainWidth?: number | false
   /**
