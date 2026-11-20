@@ -15,6 +15,38 @@ const frameOf = (width: number, height: number, label = "Pricing") =>
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="#fafafa"/><rect x="24" y="24" width="${Math.max(0, width - 48)}" height="56" rx="8" fill="#e4e4e7"/><text x="40" y="60" font-family="sans-serif" font-size="20" fill="#18181b">${label}</text><rect x="24" y="112" width="160" height="40" rx="8" fill="#18181b"/></svg>`
   )}`
 
+/**
+ * The same page drawn into the app's canvas, as a decoded video frame
+ * would be, at the device's pixels; a counter ticking, as a stream does.
+ */
+function drawPage(
+  canvas: HTMLCanvasElement,
+  width: number,
+  height: number,
+  tick: number
+) {
+  const ratio = window.devicePixelRatio
+  if (canvas.width !== Math.round(width * ratio)) {
+    canvas.width = Math.round(width * ratio)
+    canvas.height = Math.round(height * ratio)
+  }
+  const context = canvas.getContext("2d")
+  if (!context) return
+  context.setTransform(ratio, 0, 0, ratio, 0, 0)
+  context.fillStyle = "#fafafa"
+  context.fillRect(0, 0, width, height)
+  context.fillStyle = "#e4e4e7"
+  context.beginPath()
+  context.roundRect(24, 24, Math.max(0, width - 48), 56, 8)
+  context.fill()
+  context.fillStyle = "#18181b"
+  context.font = "20px sans-serif"
+  context.fillText(`Pricing · live ${tick}`, 40, 60)
+  context.beginPath()
+  context.roundRect(24, 112, 160, 40, 8)
+  context.fill()
+}
+
 const received = fn<(input: BrowserRemoteInput) => void>()
 const copied = fn()
 const viewChanged = fn()
@@ -23,17 +55,105 @@ const viewChanged = fn()
  * The panel's browser on a remote page: the app's side played here, its
  * frames drawn at the size the page's room says, the input recorded.
  */
+/**
+ * A video playing a canvas, as a stream would: once, and a moment after
+ * the video is given, as a stream connects, so it has no frame then.
+ */
+function stream(video: HTMLVideoElement, canvas: HTMLCanvasElement) {
+  if (video.srcObject) return
+  setTimeout(() => (video.srcObject = canvas.captureStream(10)), 50)
+}
+
+/** What the app shows the page as. */
+type Source = "picture" | "canvas" | "video"
+
 function Remote({
   initial = {},
   pending = false,
   field = false,
+  source = "picture",
+  then,
+  switchAfter = 300,
 }: {
+  /** Its frames as pictures, drawn into the app's canvas, or a video. */
+  source?: Source
+  /** A while after the first frame (switchAfter ms), another kind. */
+  then?: Source
+  switchAfter?: number
   initial?: Partial<BrowserRemote>
   pending?: boolean
   /** The page's search field, its grey bar: a press in it puts a caret there. */
   field?: boolean
 }) {
   const [remote, setRemote] = React.useState<BrowserRemote>(initial)
+  // The app's canvas; and the stream's, a canvas played as a video.
+  const [surface] = React.useState(() => document.createElement("canvas"))
+  const [streamed] = React.useState(() => document.createElement("canvas"))
+  const [video] = React.useState(() => {
+    const element = document.createElement("video")
+    element.muted = true
+    element.playsInline = true
+    element.autoplay = true
+    return element
+  })
+  // The remote browser: a viewport the page's size, as a picture, drawn
+  // into the canvas (its first frame before it is given), or a video of
+  // a stream (given at once: shown once it has a frame).
+  const show = (width: number, height: number, kind: Source) => {
+    if (kind === "canvas") drawPage(surface, width, height, 0)
+    if (kind === "video") {
+      drawPage(streamed, width, height, 0)
+      stream(video, streamed)
+    }
+    setRemote((current) => ({
+      ...current,
+      frame:
+        kind === "canvas"
+          ? { canvas: surface, width, height }
+          : kind === "video"
+            ? { video, width, height }
+            : { src: frameOf(width, height), width, height },
+    }))
+  }
+  // The canvas (or the stream's) goes on being drawn into, as a stream's
+  // frames come.
+  const frame = remote.frame
+  const live =
+    frame?.canvas || frame?.video
+      ? {
+          canvas: frame.canvas ?? streamed,
+          width: frame.width,
+          height: frame.height,
+        }
+      : undefined
+  const liveCanvas = live?.canvas
+  const liveWidth = live?.width
+  const liveHeight = live?.height
+  React.useEffect(() => {
+    if (!liveCanvas || !liveWidth || !liveHeight) return
+    let tick = 0
+    const timer = setInterval(
+      () => drawPage(liveCanvas, liveWidth, liveHeight, ++tick),
+      100
+    )
+    return () => clearInterval(timer)
+  }, [liveCanvas, liveWidth, liveHeight])
+  const kindOf = (frame: BrowserRemote["frame"]): Source =>
+    frame?.canvas ? "canvas" : frame?.video ? "video" : "picture"
+  // A while after the first frame, the other kind.
+  const first = frame !== undefined
+  const switched = React.useRef(false)
+  const switchTo = React.useEffectEvent(() => {
+    if (frame && then) show(frame.width, frame.height, then)
+  })
+  React.useEffect(() => {
+    if (!then || !first || switched.current) return
+    const timer = setTimeout(() => {
+      switched.current = true
+      switchTo()
+    }, switchAfter)
+    return () => clearTimeout(timer)
+  }, [then, switchAfter, first])
   const browser = useBrowser({
     defaultValue: {
       tabs: [
@@ -82,16 +202,12 @@ function Remote({
         browser={browser}
         onRemoteInput={(_, input) => {
           received(input)
-          // The remote browser: a viewport the page's size, drawn.
           if (input.type === "resize" && !pending)
-            setRemote((current) => ({
-              ...current,
-              frame: {
-                src: frameOf(input.width, input.height),
-                width: input.width,
-                height: input.height,
-              },
-            }))
+            show(
+              input.width,
+              input.height,
+              remote.frame ? kindOf(remote.frame) : source
+            )
           // A press focuses the field it is in, or nothing, as the page
           // says a moment later.
           if (field && input.type === "pointer" && input.action === "down") {
@@ -515,5 +631,172 @@ export const DarkScheme: Story = {
       expect.objectContaining({ dark: false })
     )
     await userEvent.keyboard("{Escape}")
+  },
+}
+
+async function drawnSurface(
+  canvasElement: HTMLElement,
+  tag: "canvas" | "video" = "canvas"
+) {
+  return waitFor(() => {
+    const box = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=browser-remote-surface]"
+    )
+    expect(box).not.toBeNull()
+    expect(box!.querySelector(tag)).not.toBeNull()
+    return box!
+  })
+}
+
+/**
+ * Its frames in the app's canvas, which the app goes on drawing into: in
+ * the picture's place, as wide as the room at the viewport's ratio, the
+ * pointer in the page's CSS pixels as on a picture.
+ */
+export const Canvas: Story = {
+  args: { source: "canvas" },
+  play: async ({ canvasElement }) => {
+    const box = await drawnSurface(canvasElement)
+    const remote = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=browser-remote]"
+    )!
+    await expect(remote).not.toHaveAttribute("data-pending")
+    await expect(box).toHaveAccessibleName("Browser")
+    const frame = sent("resize").at(-1)!
+    const rect = box.getBoundingClientRect()
+    await expect(Math.round(rect.width)).toBe(remote.offsetWidth)
+    await expect(rect.height).toBeCloseTo(
+      (rect.width / frame.width) * frame.height,
+      0
+    )
+    const drawn = box.querySelector("canvas")!.getBoundingClientRect()
+    await expect(drawn.width).toBeCloseTo(rect.width, 0)
+    await expect(drawn.height).toBeCloseTo(rect.height, 0)
+    const at = {
+      target: remote,
+      coords: { clientX: rect.left + 100, clientY: rect.top + 130 },
+    }
+    await userEvent.pointer([at, { keys: "[MouseLeft]", ...at }])
+    const down = sent("pointer").find((input) => input.action === "down")!
+    await expect(down.x).toBeCloseTo((100 / rect.width) * frame.width, 1)
+    await expect(down.y).toBeCloseTo((130 / rect.height) * frame.height, 1)
+  },
+}
+
+/**
+ * Watches the page from now on: whether, at any change, it showed
+ * nothing (no picture, canvas or video with a frame), or the spinner.
+ */
+function watchBlank(remote: HTMLElement) {
+  let blank = false
+  const check = () => {
+    const video = remote.querySelector("video")
+    if (
+      !remote.querySelector("img, canvas, video") ||
+      remote.hasAttribute("data-pending") ||
+      // A video shown before it has a frame: a blank box.
+      (video && video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA)
+    )
+      blank = true
+  }
+  const observer = new MutationObserver(check)
+  observer.observe(remote, { childList: true, subtree: true, attributes: true })
+  return () => {
+    observer.disconnect()
+    return blank
+  }
+}
+
+/**
+ * From a canvas to pictures: the canvas stays until the first picture is
+ * decoded, never a blank or the spinner between.
+ */
+export const CanvasToPicture: Story = {
+  args: { source: "canvas", then: "picture" },
+  play: async ({ canvasElement }) => {
+    await drawnSurface(canvasElement)
+    const remote = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=browser-remote]"
+    )!
+    const stop = watchBlank(remote)
+    const image = await drawn(canvasElement)
+    await expect(remote.querySelector("canvas")).toBeNull()
+    await expect(stop()).toBe(false)
+    await expect(Math.round(image.getBoundingClientRect().width)).toBe(
+      remote.offsetWidth
+    )
+  },
+}
+
+/** From pictures to the app's canvas: at once, nothing blank between. */
+export const PictureToCanvas: Story = {
+  args: { then: "canvas" },
+  play: async ({ canvasElement }) => {
+    await drawn(canvasElement)
+    const remote = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=browser-remote]"
+    )!
+    const stop = watchBlank(remote)
+    await drawnSurface(canvasElement)
+    await expect(remote.querySelector("img")).toBeNull()
+    await expect(stop()).toBe(false)
+  },
+}
+
+/**
+ * Its frames a video of the app's, e.g. a stream's: in the picture's
+ * place once it has a frame, filling the viewport's box, playing on; the
+ * pointer in the page's CSS pixels as on a picture.
+ */
+export const Video: Story = {
+  args: { source: "video" },
+  play: async ({ canvasElement }) => {
+    const box = await drawnSurface(canvasElement, "video")
+    const remote = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=browser-remote]"
+    )!
+    const video = box.querySelector("video")!
+    await expect(remote).not.toHaveAttribute("data-pending")
+    await expect(video.readyState).toBeGreaterThanOrEqual(
+      HTMLMediaElement.HAVE_CURRENT_DATA
+    )
+    await waitFor(() => expect(video.paused).toBe(false))
+    await expect(getComputedStyle(video).objectFit).toBe("fill")
+    const frame = sent("resize").at(-1)!
+    const rect = box.getBoundingClientRect()
+    await expect(Math.round(rect.width)).toBe(remote.offsetWidth)
+    await expect(rect.height).toBeCloseTo(
+      (rect.width / frame.width) * frame.height,
+      0
+    )
+    const at = {
+      target: remote,
+      coords: { clientX: rect.left + 100, clientY: rect.top + 130 },
+    }
+    await userEvent.pointer([at, { keys: "[MouseLeft]", ...at }])
+    const down = sent("pointer").find((input) => input.action === "down")!
+    await expect(down.x).toBeCloseTo((100 / rect.width) * frame.width, 1)
+    await expect(down.y).toBeCloseTo((130 / rect.height) * frame.height, 1)
+  },
+}
+
+/**
+ * From pictures to a video given before its first frame: the picture
+ * stays until the video has one, nothing blank between; and back.
+ */
+export const PictureToVideo: Story = {
+  args: { then: "video" },
+  play: async ({ canvasElement }) => {
+    await drawn(canvasElement)
+    const remote = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=browser-remote]"
+    )!
+    const stop = watchBlank(remote)
+    const box = await drawnSurface(canvasElement, "video")
+    await expect(box.querySelector("video")!.readyState).toBeGreaterThanOrEqual(
+      HTMLMediaElement.HAVE_CURRENT_DATA
+    )
+    await expect(remote.querySelector("img")).toBeNull()
+    await expect(stop()).toBe(false)
   },
 }

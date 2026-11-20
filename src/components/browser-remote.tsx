@@ -23,10 +23,36 @@ import { Spinner } from "@/components/ui/spinner"
 /** A box on the page, in its CSS pixels from its viewport's corner. */
 type BrowserRemoteBox = { x: number; y: number; width: number; height: number }
 
-/** A picture of the page's viewport, as the remote browser drew it. */
-type BrowserRemoteFrame = {
-  /** A data or blob URL of the picture. */
-  src: string
+/**
+ * The page's viewport, as the remote browser drew it: a picture, a
+ * canvas the app draws into, or a video the app plays (e.g. a stream's).
+ * A canvas or a video is shown at the viewport's ratio, as wide as the
+ * page's room, whatever its own pixels; it is the app's, put in the
+ * page and taken out again, never drawn on, played or paused.
+ */
+type BrowserRemoteFrame = (
+  | {
+      /** A data or blob URL of the picture. */
+      src: string
+      canvas?: never
+      video?: never
+    }
+  | {
+      /** The app's canvas, its first frame already drawn. */
+      canvas: HTMLCanvasElement
+      src?: never
+      video?: never
+    }
+  | {
+      /**
+       * The app's video, playing (e.g. muted, a stream as its
+       * `srcObject`); shown once it has a frame.
+       */
+      video: HTMLVideoElement
+      src?: never
+      canvas?: never
+    }
+) & {
   /** The viewport's size, in the page's CSS pixels. */
   width: number
   height: number
@@ -188,9 +214,10 @@ function keyboardShown() {
 }
 
 /**
- * A remote browser's page: its latest frame, drawn once decoded so
- * frames never flicker; the reader's pointer, wheel and keys on it sent
- * in the page's CSS pixels; text through a hidden field at the page's
+ * A remote browser's page: its latest frame (a picture, the app's canvas
+ * or its video), shown once it can be drawn whole so frames never
+ * flicker; the reader's pointer, wheel and keys on it sent in the page's
+ * CSS pixels; text through a hidden field at the page's
  * caret, so an input method composes there; its cursor; and the page's
  * own select popups and script dialogs, drawn by agentui. By touch, the
  * screen's keyboard comes up only while the page has a caret (a field of
@@ -221,7 +248,7 @@ function BrowserRemotePage({
 }) {
   const labels = { ...defaultRemoteLabels, ...labelsProp }
   const root = React.useRef<HTMLDivElement>(null)
-  const picture = React.useRef<HTMLImageElement>(null)
+  const picture = React.useRef<HTMLElement>(null)
   const field = React.useRef<HTMLTextAreaElement>(null)
   const send = React.useEffectEvent(onInput)
   // By touch (or a pen), the field keeps the focus for a keyboard's keys
@@ -245,11 +272,28 @@ function BrowserRemotePage({
   )
   const frame = remote.frame
 
-  // The frame shown: the latest, once decoded, so the last stays until
-  // the next can be drawn whole.
+  // The frame shown: the latest, once it can be drawn whole, so the last
+  // stays until then. A canvas is drawn already: at once; a video once
+  // it has a frame; a picture once decoded.
   const [decoded, setDecoded] = React.useState(frame)
+  if (frame && decoded !== frame && (frame.canvas || hasFrame(frame.video)))
+    setDecoded(frame)
   React.useEffect(() => {
-    if (!frame) return
+    if (!frame || frame.canvas) return
+    const video = frame.video
+    if (video) {
+      let current = true
+      const ready = () => {
+        if (current) setDecoded(frame)
+      }
+      // A frame come since it rendered: its event may have gone by.
+      if (hasFrame(video)) queueMicrotask(ready)
+      else video.addEventListener("loadeddata", ready)
+      return () => {
+        current = false
+        video.removeEventListener("loadeddata", ready)
+      }
+    }
     let current = true
     const next = new Image()
     next.src = frame.src
@@ -511,15 +555,25 @@ function BrowserRemotePage({
         if (!inert && onPage(event)) event.preventDefault()
       }}
     >
-      {shown && (
-        <img
+      {shown?.canvas || shown?.video ? (
+        <RemoteSurface
           ref={picture}
+          surface={shown.canvas ?? shown.video}
+          width={shown.width}
+          height={shown.height}
+          title={title}
+        />
+      ) : shown ? (
+        <img
+          ref={(element) => {
+            picture.current = element
+          }}
           src={shown.src}
           alt={title}
           draggable={false}
           className="pointer-events-none block w-full select-none"
         />
-      )}
+      ) : null}
       {!shown && (
         <div
           role="status"
@@ -620,6 +674,58 @@ function BrowserRemotePage({
         />
       )}
     </div>
+  )
+}
+
+/** Whether a video has a frame to show: its current one at least. */
+function hasFrame(video: HTMLVideoElement | undefined) {
+  return (
+    video !== undefined &&
+    video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+  )
+}
+
+/**
+ * The app's canvas or video in the picture's place: as wide as the room,
+ * at the viewport's ratio, its whole box the viewport. It is the app's:
+ * put in here, taken out when another takes its place, never drawn on;
+ * a video playing as it came in plays on.
+ */
+function RemoteSurface({
+  ref,
+  surface,
+  width,
+  height,
+  title,
+}: {
+  ref: React.RefObject<HTMLElement | null>
+  surface: HTMLCanvasElement | HTMLVideoElement
+  width: number
+  height: number
+  title: string
+}) {
+  React.useLayoutEffect(() => {
+    const element = ref.current
+    if (!element) return
+    const playing = surface instanceof HTMLVideoElement && !surface.paused
+    element.replaceChildren(surface)
+    // Moved from another document place, a video may pause: on again.
+    if (playing && surface.paused) void surface.play().catch(() => {})
+    return () => {
+      if (surface.parentNode === element) surface.remove()
+    }
+  }, [ref, surface])
+  return (
+    <div
+      ref={(element) => {
+        ref.current = element
+      }}
+      role="img"
+      aria-label={title}
+      data-slot="browser-remote-surface"
+      className="pointer-events-none block w-full select-none *:block *:size-full [&>video]:object-fill"
+      style={{ aspectRatio: `${width} / ${height}` }}
+    />
   )
 }
 

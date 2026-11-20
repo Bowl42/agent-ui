@@ -3365,13 +3365,24 @@ box, text }`). A frame's own document is read where it is the
     leaves it.
   - **A remote browser's page** (`remote`): the page itself, live, as
     a remote browser draws it, in place of a frame or a picture. The app
-    streams `frame` (`{ src, width, height }`: a data or blob URL and
-    the viewport's CSS size; none yet: a spinner, "Connecting"), and
+    streams `frame`, with `width` and `height` the viewport's CSS
+    size: `{ src }` (a data or blob URL of a picture), `{ canvas }` (a
+    canvas of the app's, its first frame drawn before it is given, that
+    the app goes on drawing into) or `{ video }` (a video of the app's,
+    playing, e.g. a stream's as its `srcObject`, muted). Where the
+    frames come from is the app's. A canvas or a video goes in the
+    picture's place, as wide as the room at `width` / `height`, filling
+    that box; it stays the app's (agentui never draws on it, plays or
+    pauses it), and its own pixels are the app's, e.g. the room's times
+    the `resize` input's `devicePixelRatio` for a sharp picture. None
+    yet: a spinner, "Connecting". It also
     gives the page's `cursor` (a CSS keyword), its `caret` (the focused
     field's box, where an input method's window opens), an open native
     `select` (`{ box, options, multiple }`) and a script's `dialog`
     (`alert`, `confirm`, `prompt` or `beforeunload`, with its message).
-    A frame is drawn once decoded, so frames never flicker; none moves
+    Each frame shows once it can be drawn whole (a picture decoded, a
+    video with a frame, a canvas at once), the last staying till then,
+    so frames never flicker, nor a change of kind; none moves
     in a transition. `onRemoteInput(page, input)` gives the reader's
     input in the page's CSS pixels, to send on (e.g. as DevTools
     Input events): `resize` (the page's room and the device pixel
