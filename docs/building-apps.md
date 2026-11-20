@@ -1900,6 +1900,14 @@ callbacks.
   its `icon` before its text, 14px in grey, and `editable: false`: no
   edit button nor E key on it, on the shelf or in the manager; send now
   and remove as any message.
+- A message that did not come from the reader (another agent or
+  session sent it to wait in the queue) says where it came from in
+  `from`: before its text on the shelf, by weight as a sender's name, cut
+  to a third of the row so the text keeps the rest; over its text in the
+  manager. It is read with the message (its buttons are described by it
+  and the text), and may hold a link to the sender; a link in it is
+  underlined when focused, as a ring would be cut. Keep `icon` for a
+  mark: it is hidden from screen readers.
 - **Edit** calls `onEdit`: the app puts the message back in the composer
   and sets `editing`, which strikes it through and says so in the header.
   Sending saves it in its place; Escape (`onCancelEdit`) leaves it as it

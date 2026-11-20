@@ -487,6 +487,91 @@ export const Command: Story = {
 }
 
 /**
+ * A message another agent or session sent waits in the queue as the
+ * reader's do: where it comes from (`from`) before its text, a fainter
+ * grey, cut to a third of the row so the text keeps it; read with it,
+ * a link to the sender kept a link; over its text in the queue's
+ * manager.
+ */
+export const From: Story = {
+  args: {
+    initial: [
+      twelve[0]!,
+      {
+        id: "qf",
+        text: "The login test fails on a clean checkout; can you look before tagging?",
+        from: (
+          <a href="#review-agent">
+            Review agent in another session with a long name
+          </a>
+        ),
+      },
+      ...twelve.slice(1, 6),
+    ],
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await userEvent.click(
+      canvasElement.querySelector<HTMLElement>(
+        "[data-slot=composer-queue-more]"
+      )!
+    )
+    await waitFor(() => expect(rows(canvasElement).length).toBeGreaterThan(1))
+    const row = rows(canvasElement)[1]!
+    const from = row.querySelector<HTMLElement>(
+      "[data-slot=composer-queue-from]"
+    )!
+    const text = row.querySelector<HTMLElement>("[id]:not([data-slot])")!
+    // Before the text, a third of the row at most, cut; the text keeps
+    // the rest.
+    const box = row.getBoundingClientRect()
+    await expect(from.getBoundingClientRect().right).toBeLessThanOrEqual(
+      text.getBoundingClientRect().left
+    )
+    await expect(from.getBoundingClientRect().width).toBeLessThanOrEqual(
+      box.width / 3 + 0.5
+    )
+    await expect(from.scrollWidth).toBeGreaterThan(from.clientWidth)
+    await expect(text.getBoundingClientRect().width).toBeGreaterThan(
+      box.width / 3
+    )
+    // Read with it: not hidden, and its buttons say whose it is.
+    await expect(from.closest("[aria-hidden=true]")).toBeNull()
+    await expect(
+      within(row).getByRole("button", { name: "Edit" })
+    ).toHaveAccessibleDescription(
+      "Review agent in another session with a long name The login test fails on a clean checkout; can you look before tagging?"
+    )
+    // Its link is one, to focus.
+    const link = within(row).getByRole("link", {
+      name: "Review agent in another session with a long name",
+    })
+    link.focus()
+    await expect(link).toHaveFocus()
+
+    // In the manager, over its text.
+    await userEvent.click(canvas.getByRole("button", { name: "Manage queue" }))
+    const dialog = await screen.findByRole("dialog", { name: "Queue" })
+    await waitFor(() => expect(dialog).toBeVisible())
+    const managed = dialogRows(dialog)[1]!
+    const over = managed.querySelector<HTMLElement>(
+      "[data-slot=composer-queue-from]"
+    )!
+    await expect(over).toHaveTextContent(
+      "Review agent in another session with a long name"
+    )
+    await expect(over.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      within(managed)
+        .getByText(/^The login test fails/)
+        .getBoundingClientRect().top
+    )
+    await expect(
+      within(managed).getByRole("link", { name: /^Review agent/ })
+    ).toBeInTheDocument()
+    await userEvent.keyboard("{Escape}")
+  },
+}
+
+/**
  * Alt+ArrowUp and Alt+ArrowDown (Option on a Mac) move a message; focus
  * stays on it and screen readers hear where it went.
  */

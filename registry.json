@@ -1531,7 +1531,7 @@
       "name": "composer-queue",
       "type": "registry:component",
       "title": "Composer Queue",
-      "description": "The messages queued while a turn runs, on a shelf above a composer: each can be edited (not one marked `editable: false`, e.g. a queued command, with its `icon` before its text), moved to the top, sent now or removed, and moved by dragging or with Alt+ArrowUp and Alt+ArrowDown, which screen readers hear; past three it shows the first and how many more, and opens a dialog to filter, select, edit, move and remove them all. Shows a message being sent and a paused queue (resume, clear). On a phone, one row over the composer that opens the dialog full screen. The app owns the queue; the shelf asks for changes.",
+      "description": "The messages queued while a turn runs, on a shelf above a composer: each can be edited (not one marked `editable: false`, e.g. a queued command, with its `icon` before its text), one from elsewhere says where (`from`: another agent or session, by weight before its text, cut to a third of the row, read with it and able to hold a link; over its text in the manager), moved to the top, sent now or removed, and moved by dragging or with Alt+ArrowUp and Alt+ArrowDown, which screen readers hear; past three it shows the first and how many more, and opens a dialog to filter, select, edit, move and remove them all. Shows a message being sent and a paused queue (resume, clear). On a phone, one row over the composer that opens the dialog full screen. The app owns the queue; the shelf asks for changes.",
       "dependencies": ["cn", "@hugeicons/react", "@hugeicons/core-free-icons"],
       "registryDependencies": [
         "Bowl42/agentui/composer",

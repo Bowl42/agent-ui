@@ -66,6 +66,14 @@ type QueuedMessage = {
    */
   icon?: React.ReactNode
   /**
+   * Who or where it comes from, when not the reader: e.g. another
+   * agent or session that sent it to wait in the queue. Before its text,
+   * by weight as a sender's name, cut to a third of the row; over its text when
+   * the queue is open. Read with it, and it may hold a link (to the
+   * sender).
+   */
+  from?: React.ReactNode
+  /**
    * `false` where it has no text to edit, e.g. a command: no edit button
    * nor E key on it, only send now and remove. Default `true`.
    */
@@ -87,6 +95,43 @@ function QueueIcon({ icon }: { icon: React.ReactNode }) {
 
 const hasIcon = (item: QueuedMessage) =>
   item.icon !== undefined && item.icon !== null && item.icon !== false
+
+const hasFrom = (item: QueuedMessage) =>
+  item.from !== undefined && item.from !== null && item.from !== false
+
+// A link in it is underlined when focused: a ring would be cut by the
+// line it is cut to.
+const fromLinks =
+  "[&_a]:underline-offset-2 [&_a]:outline-none [&_a:focus-visible]:underline [&_a:hover]:underline"
+
+/** Who or where a queued message comes from, before its text. */
+function QueueFrom({
+  id,
+  children,
+}: {
+  id: string
+  children: React.ReactNode
+}) {
+  return (
+    <span
+      id={id}
+      data-slot="composer-queue-from"
+      className={cn(
+        // A sender's name, as a chat's: by weight, in the row's grey.
+        "max-w-1/3 min-w-0 shrink-0 truncate font-medium",
+        fromLinks
+      )}
+    >
+      {children}
+    </span>
+  )
+}
+
+/** The ids that describe a queued message's buttons: where it is from, its text. */
+const describedBy = (textId: string, item: QueuedMessage) =>
+  hasFrom(item)
+    ? `${textId}-${item.id}-from ${textId}-${item.id}`
+    : `${textId}-${item.id}`
 
 type ComposerQueueLabels = {
   queued: (count: number) => string
@@ -843,6 +888,11 @@ function ComposerQueue({
               <QueueIndex position={index + 1} />
               {files.length > 0 && <QueueThumbs attachments={files} />}
               {hasIcon(item) && <QueueIcon icon={item.icon} />}
+              {hasFrom(item) && (
+                <QueueFrom id={`${textId}-${item.id}-from`}>
+                  {item.from}
+                </QueueFrom>
+              )}
               <span
                 id={`${textId}-${item.id}`}
                 className={cn(
@@ -874,7 +924,7 @@ function ComposerQueue({
                   {onEdit && item.editable !== false && (
                     <IconAction
                       label={labels.edit}
-                      aria-describedby={`${textId}-${item.id}`}
+                      aria-describedby={describedBy(textId, item)}
                       onClick={() => onEdit(item.id)}
                     >
                       <HugeiconsIcon
@@ -887,7 +937,7 @@ function ComposerQueue({
                   {onReorder && index > top && (
                     <IconAction
                       label={labels.moveToTop}
-                      aria-describedby={`${textId}-${item.id}`}
+                      aria-describedby={describedBy(textId, item)}
                       onClick={() => toTop(item.id)}
                     >
                       <HugeiconsIcon
@@ -900,7 +950,7 @@ function ComposerQueue({
                   {onSendNow && (
                     <IconAction
                       label={labels.sendNow}
-                      aria-describedby={`${textId}-${item.id}`}
+                      aria-describedby={describedBy(textId, item)}
                       onClick={() => {
                         leave(item.id)
                         onSendNow(item.id)
@@ -916,7 +966,7 @@ function ComposerQueue({
                   {onRemove && (
                     <IconAction
                       label={labels.remove}
-                      aria-describedby={`${textId}-${item.id}`}
+                      aria-describedby={describedBy(textId, item)}
                       onClick={() => {
                         leave(item.id)
                         remove([item.id])
@@ -1367,7 +1417,7 @@ function ComposerQueueDialog({
                     <Checkbox
                       checked={isSelected}
                       aria-label={labels.select(position)}
-                      aria-describedby={`${textId}-${item.id}`}
+                      aria-describedby={describedBy(textId, item)}
                       aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown E Delete Meta+Enter"
                       onCheckedChange={(checked) =>
                         setSelected((current) =>
@@ -1478,6 +1528,18 @@ function ComposerQueueDialog({
                       </form>
                     ) : (
                       <>
+                        {hasFrom(item) && (
+                          <div
+                            id={`${textId}-${item.id}-from`}
+                            data-slot="composer-queue-from"
+                            className={cn(
+                              "truncate text-xs leading-5 font-medium text-muted-foreground",
+                              fromLinks
+                            )}
+                          >
+                            {item.from}
+                          </div>
+                        )}
                         <div className="flex min-w-0 items-start gap-1">
                           {hasIcon(item) && (
                             // On the text's first line.
@@ -1532,7 +1594,7 @@ function ComposerQueueDialog({
                             item.editable !== false && (
                               <IconAction
                                 label={labels.edit}
-                                aria-describedby={`${textId}-${item.id}`}
+                                aria-describedby={describedBy(textId, item)}
                                 onClick={() => startEdit(item)}
                               >
                                 <HugeiconsIcon
@@ -1545,7 +1607,7 @@ function ComposerQueueDialog({
                           {onSendNow && (
                             <IconAction
                               label={labels.sendNow}
-                              aria-describedby={`${textId}-${item.id}`}
+                              aria-describedby={describedBy(textId, item)}
                               onClick={() => {
                                 focusRow(
                                   visible[index + 1] ?? visible[index - 1]
@@ -1563,7 +1625,7 @@ function ComposerQueueDialog({
                           {onRemove && (
                             <IconAction
                               label={labels.remove}
-                              aria-describedby={`${textId}-${item.id}`}
+                              aria-describedby={describedBy(textId, item)}
                               onClick={() => {
                                 focusRow(
                                   visible[index + 1] ?? visible[index - 1]
