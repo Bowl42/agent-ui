@@ -744,6 +744,37 @@ export const PictureToCanvas: Story = {
 }
 
 /**
+ * Whether this browser plays a canvas's stream in a video, a frame
+ * within 3s: not every one under test does (WebKit on Linux).
+ */
+async function streamsPlay() {
+  const canvas = document.createElement("canvas")
+  const video = document.createElement("video")
+  video.muted = true
+  video.autoplay = true
+  video.srcObject = canvas.captureStream(10)
+  // On the page, as the app's would be: WebKit plays no other.
+  video.style.position = "fixed"
+  video.style.opacity = "0"
+  document.body.append(video)
+  // Drawn on, as a stream's frames come: WebKit's stream has a frame only
+  // for a drawing after it began.
+  let tick = 0
+  const drawing = setInterval(() => drawPage(canvas, 40, 40, ++tick), 50)
+  const played = await new Promise<boolean>((resolve) => {
+    const timer = setTimeout(() => resolve(false), 3000)
+    video.addEventListener("loadeddata", () => {
+      clearTimeout(timer)
+      resolve(true)
+    })
+  })
+  clearInterval(drawing)
+  video.srcObject = null
+  video.remove()
+  return played
+}
+
+/**
  * Its frames a video of the app's, e.g. a stream's: in the picture's
  * place once it has a frame, filling the viewport's box, playing on; the
  * pointer in the page's CSS pixels as on a picture.
@@ -751,10 +782,16 @@ export const PictureToCanvas: Story = {
 export const Video: Story = {
   args: { source: "video" },
   play: async ({ canvasElement }) => {
-    const box = await drawnSurface(canvasElement, "video")
     const remote = canvasElement.querySelector<HTMLElement>(
       "[data-slot=browser-remote]"
     )!
+    // A video with no frame ever: the spinner stays, nothing blank.
+    if (!(await streamsPlay())) {
+      await expect(remote).toHaveAttribute("data-pending")
+      await expect(remote.querySelector("video")).toBeNull()
+      return
+    }
+    const box = await drawnSurface(canvasElement, "video")
     const video = box.querySelector("video")!
     await expect(remote).not.toHaveAttribute("data-pending")
     await expect(video.readyState).toBeGreaterThanOrEqual(
@@ -792,6 +829,13 @@ export const PictureToVideo: Story = {
       "[data-slot=browser-remote]"
     )!
     const stop = watchBlank(remote)
+    // A video with no frame ever: the picture stays.
+    if (!(await streamsPlay())) {
+      await expect(remote.querySelector("img")).not.toBeNull()
+      await expect(remote.querySelector("video")).toBeNull()
+      await expect(stop()).toBe(false)
+      return
+    }
     const box = await drawnSurface(canvasElement, "video")
     await expect(box.querySelector("video")!.readyState).toBeGreaterThanOrEqual(
       HTMLMediaElement.HAVE_CURRENT_DATA
