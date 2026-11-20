@@ -202,6 +202,8 @@ type Layout = {
   titlebarPanelSlot: HTMLElement | null
   /** That place's width, the panel's, in pixels; null, none. */
   setTitlebarPanelWidth: (width: number | null) => void
+  /** The panel expanded over the main area: the header's place goes too. */
+  setTitlebarCovered: (covered: boolean) => void
 }
 
 const LayoutContext = React.createContext<Layout | null>(null)
@@ -233,6 +235,7 @@ function useAgentAppLayout(): Layout {
       titlebarSlot: null,
       titlebarPanelSlot: null,
       setTitlebarPanelWidth: () => {},
+      setTitlebarCovered: () => {},
     }
   )
 }
@@ -364,6 +367,7 @@ function Titlebar({
   onSlot,
   onPanelSlot,
   panelWidth,
+  covered,
 }: {
   titlebar: AgentAppTitlebar
   labels: { back: string; forward: string; toggleSidebar: string }
@@ -373,6 +377,8 @@ function Titlebar({
   onPanelSlot: (element: HTMLDivElement | null) => void
   /** The panel's, for the place for its bar; null, none open. */
   panelWidth: number | null
+  /** The panel expanded over the main area, its header gone with it. */
+  covered: boolean
 }) {
   const { open, toggleSidebar } = useSidebar()
   const { folded, pinned } = useAgentAppLayout()
@@ -436,7 +442,10 @@ function Titlebar({
         data-slot="agent-app-titlebar-header"
         // Its end on the card's inside, past its edge's line: where a
         // panel's bar ends too.
-        className="flex min-w-0 flex-1 items-center border-e border-transparent"
+        className={cn(
+          "flex min-w-0 flex-1 items-center border-e border-transparent",
+          covered && "hidden"
+        )}
       />
       {/* Over a panel beside the main area, its bar: as wide as it (set
           by the panel), the line between them on up through the bar. */}
@@ -690,6 +699,7 @@ function AgentApp({
   const [titlebarPanelWidth, setTitlebarPanelWidth] = React.useState<
     number | null
   >(null)
+  const [titlebarCovered, setTitlebarCovered] = React.useState(false)
   // Its height, the window's own title bar's where it has one: on the
   // root, for what opens in a portal too (the folded sidebar's sheet).
   const hasTitlebar = titlebar !== null
@@ -726,6 +736,7 @@ function AgentApp({
     titlebarSlot: titlebar ? titlebarSlot : null,
     titlebarPanelSlot: titlebar ? titlebarPanelSlot : null,
     setTitlebarPanelWidth,
+    setTitlebarCovered,
   }
 
   return (
@@ -809,6 +820,7 @@ function AgentApp({
                 onSlot={setTitlebarSlot}
                 onPanelSlot={setTitlebarPanelSlot}
                 panelWidth={titlebarPanelWidth}
+                covered={titlebarCovered}
               />
             )}
             <SheetReset />
@@ -1546,7 +1558,15 @@ function AgentAppPanels({
   React.useLayoutEffect(() => {
     if (bar) barWas.current = bar
   })
-  const { setTitlebarPanelWidth } = layout
+  const { setTitlebarPanelWidth, setTitlebarCovered } = layout
+  // Expanded under a titlebar, the header's place over the main area
+  // goes with it: the panel's bar takes the row.
+  const coversTitlebar = over && bar !== null
+  React.useLayoutEffect(() => {
+    if (!coversTitlebar) return
+    setTitlebarCovered(true)
+    return () => setTitlebarCovered(false)
+  }, [coversTitlebar, setTitlebarCovered])
   // The titlebar's place as wide as the panel, with the line before it
   // and the card's edge after it.
   React.useLayoutEffect(() => {
@@ -1692,6 +1712,9 @@ function AgentAppPanels({
         data-panel-motion={motion ?? undefined}
         className={cn(
           "min-h-0 flex-1",
+          // The panel's own display is inline (flex): the main area's
+          // goes only by an important rule, the panel then its whole.
+          "*:data-covered:hidden!",
           moves &&
             "*:data-panel:transition-[flex-grow] *:data-panel:motion-size"
         )}
@@ -1700,9 +1723,9 @@ function AgentAppPanels({
             state in it stays. */}
         <ResizablePanel
           id="agent-app-main-panel"
+          data-covered={over || undefined}
           minSize={book ? 0 : 320}
           className={cn(
-            over && "hidden",
             cards && "py-2",
             cards && layout.railInSidebar && "ps-2"
           )}
@@ -1756,7 +1779,7 @@ function AgentAppPanels({
                 // its own), nor at the hinge, nor moving of itself.
                 const first = placed.current !== opening.times
                 placed.current = opening.times
-                if (!first && !book && !moving.current)
+                if (!first && !book && !moving.current && !over)
                   onSizeChange?.(Math.round(size.inPixels))
               }}
               className={cards ? "p-2" : undefined}

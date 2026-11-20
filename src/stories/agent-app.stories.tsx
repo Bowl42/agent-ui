@@ -3198,12 +3198,25 @@ export const BrowserPanel: Story = {
     await onPanelLines(panel, panel.querySelector("[data-slot=browser-bar]")!)
 
     // Expanded over the main area, which stays as it was, and back.
+    await panelsStill()
     const width = panel.getBoundingClientRect().width
     await userEvent.click(within(panel).getByRole("button", { name: "Expand" }))
     await expect(message).not.toBeVisible()
+    // The whole area: the main area's panel gone, not only its content.
+    const group = panel.closest<HTMLElement>(
+      "[data-slot=resizable-panel-group]"
+    )!
     await waitFor(() =>
-      expect(panel.getBoundingClientRect().width).toBeGreaterThan(width)
+      expect(
+        Math.abs(
+          panel.getBoundingClientRect().width -
+            group.getBoundingClientRect().width
+        )
+      ).toBeLessThanOrEqual(1)
     )
+    await expect(
+      document.querySelector("#agent-app-main-panel")
+    ).not.toBeVisible()
     await userEvent.click(
       within(panel).getByRole("button", { name: "Collapse" })
     )
@@ -5093,7 +5106,7 @@ export const TitlebarPanel: Story = {
   ...viewport("titlebar-panel", 1280, 800),
   args: { sidebar: null },
   render: () => <App titlebar panel />,
-  play: async ({ canvasElement }) => {
+  play: async ({ canvas, canvasElement }) => {
     const titlebar = canvasElement.querySelector<HTMLElement>(
       "[data-slot=agent-app-titlebar]"
     )!
@@ -5254,6 +5267,36 @@ export const TitlebarPanel: Story = {
     await userEvent.click(trigger)
     await waitFor(() =>
       expect(over.querySelector("[data-slot=browser-bar]")).not.toBeNull()
+    )
+    // Expanded: the whole area, its bar the whole row past the sidebar,
+    // nothing of the header's under its tabs; collapsed, as it was.
+    await panelsStill()
+    const narrow = over.getBoundingClientRect().width
+    await userEvent.click(within(over).getByRole("button", { name: "Expand" }))
+    const panel = canvas.getByRole("complementary", { name: "Browser" })
+    const group = panel.closest<HTMLElement>(
+      "[data-slot=resizable-panel-group]"
+    )!
+    await waitFor(() =>
+      expect(
+        Math.abs(
+          panel.getBoundingClientRect().width -
+            group.getBoundingClientRect().width
+        )
+      ).toBeLessThanOrEqual(1)
+    )
+    await expect(header).not.toBeVisible()
+    await expect(Math.round(over.getBoundingClientRect().left)).toBe(
+      Math.round(group.getBoundingClientRect().left)
+    )
+    await userEvent.click(
+      within(over).getByRole("button", { name: "Collapse" })
+    )
+    await expect(header).toBeVisible()
+    await waitFor(() =>
+      expect(
+        Math.abs(over.getBoundingClientRect().width - narrow)
+      ).toBeLessThanOrEqual(1)
     )
   },
 }
