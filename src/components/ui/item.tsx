@@ -187,7 +187,7 @@ function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="item-content"
       className={cn(
-        "flex flex-1 flex-col gap-1 group-data-[size=xs]/item:gap-0 [&+[data-slot=item-content]]:flex-none",
+        "flex min-w-0 flex-1 flex-col gap-1 group-data-[size=xs]/item:gap-0 [&+[data-slot=item-content]]:flex-none",
         // agentui: in a compact item, with a line under its title, as
         // the sidebar's two-line rows: 4px over and under, 8px on a
         // phone; its buttons beside it as tall as they were.
@@ -224,19 +224,38 @@ function ItemLink({
   })
 }
 
-function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
+function ItemTitle({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="item-title"
       className={cn(
-        "line-clamp-1 flex w-fit items-center gap-2 text-sm leading-5 font-medium underline-offset-4",
-        // agentui: no wider than its content's column, so a part of it
-        // cut short (truncate) is cut there, not over the next column.
-        "max-w-full",
+        // agentui: as wide as its words but no wider than its column
+        // (max-w-fit on its own width, not w-fit), so a part cut short is
+        // cut there, not over the next column; and as narrow as that
+        // column: a width of fit-content made a grid's column as wide
+        // as its words in Firefox and WebKit, whatever its min-width.
+        "line-clamp-1 flex max-w-fit min-w-0 items-center gap-2 text-sm leading-5 font-medium underline-offset-4",
         className
       )}
       {...props}
-    />
+    >
+      {/* agentui: its text one line, ending in an ellipsis: a flex box
+          takes no line clamp, so a long title wrapped or ran past its
+          column. Its elements (a badge, a link) as they are. */}
+      {React.Children.map(children, (child) =>
+        typeof child === "string" || typeof child === "number" ? (
+          <span data-slot="item-title-text" className="min-w-0 truncate">
+            {child}
+          </span>
+        ) : (
+          child
+        )
+      )}
+    </div>
   )
 }
 

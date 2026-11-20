@@ -749,3 +749,51 @@ export const Compact: Story = {
     ).toBe(true)
   },
 }
+
+/**
+ * A title longer than its column is one line, cut with an ellipsis (a
+ * flex box takes no line clamp: its text wrapped, or ran past the
+ * column); so in a grid's column too, which shrinks below its length.
+ */
+export const LongTitle: Story = {
+  render: (args) => (
+    <>
+      <Item {...args} className="w-70" data-testid="flex">
+        <ItemMedia variant="icon">
+          <HugeiconsIcon icon={BubbleChatIcon} strokeWidth={2} />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>
+            Rename the settings page and move its sections under one heading
+            each, then update every link to it
+          </ItemTitle>
+          <ItemDescription>Queued a minute ago.</ItemDescription>
+        </ItemContent>
+      </Item>
+      <div className="grid w-70 grid-cols-[auto_1fr]" data-testid="grid">
+        <span>•</span>
+        <ItemTitle>
+          Rename the settings page and move its sections under one heading each
+        </ItemTitle>
+      </div>
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const id of ["flex", "grid"]) {
+      const box = canvasElement.querySelector<HTMLElement>(
+        `[data-testid=${id}]`
+      )!
+      const title = box.querySelector<HTMLElement>("[data-slot=item-title]")!
+      const text = title.querySelector<HTMLElement>(
+        "[data-slot=item-title-text]"
+      )!
+      // One line, within its column, cut.
+      await expect(text.getBoundingClientRect().height).toBe(20)
+      await expect(title.getBoundingClientRect().right).toBeLessThanOrEqual(
+        box.getBoundingClientRect().right + 0.5
+      )
+      await expect(text.scrollWidth).toBeGreaterThan(text.clientWidth)
+      await expect(getComputedStyle(text).textOverflow).toBe("ellipsis")
+    }
+  },
+}
