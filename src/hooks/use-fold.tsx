@@ -146,8 +146,7 @@ function FoldFindText({
   })
   const ref = React.useCallback((node: HTMLDivElement | null) => {
     if (!node) return
-    // React sets `hidden` only as true or false.
-    node.setAttribute("hidden", "until-found")
+    // beforematch bubbles from the hidden text to here.
     const reveal = () => flushSync(() => found.current())
     node.addEventListener("beforematch", reveal)
     return () => node.removeEventListener("beforematch", reveal)
@@ -158,11 +157,27 @@ function FoldFindText({
     <div
       ref={ref}
       data-slot="fold-find-text"
-      className="whitespace-pre-wrap"
-    >
-      {value}
-    </div>
+      // React sets `hidden` only as true or false; set by a ref, it was a
+      // write between the layout reads of the commit's other components
+      // (a Clamp's each), and opening a find over 200 turns forced a
+      // layout for each (`pnpm perf`). In the markup, it is there as the
+      // text is made.
+      dangerouslySetInnerHTML={{
+        __html: `<div hidden="until-found" class="whitespace-pre-wrap">${escapeHtml(value)}</div>`,
+      }}
+    />
   )
+}
+
+const escapes: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+}
+
+/** Text as HTML's, to put in markup. */
+function escapeHtml(text: string) {
+  return text.replace(/[&<>]/g, (character) => escapes[character]!)
 }
 
 export {
