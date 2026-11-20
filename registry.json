@@ -190,14 +190,14 @@
             "-moz-osx-font-smoothing": "grayscale",
             "text-autospace": "normal"
           },
-          ":where(code, kbd, pre, samp)": {
+          ":where(code), :where(kbd), :where(pre), :where(samp)": {
             "text-autospace": "no-autospace"
           },
           "[data-slot=agent-app-titlebar]": {
             "-webkit-app-region": "drag",
             "app-region": "drag"
           },
-          "[data-slot=agent-app-titlebar] :is(button, a, input, select, textarea, [role=button], [tabindex], [data-slot=agent-app-titlebar-panel])": {
+          "[data-slot=agent-app-titlebar] button, [data-slot=agent-app-titlebar] a, [data-slot=agent-app-titlebar] input, [data-slot=agent-app-titlebar] select, [data-slot=agent-app-titlebar] textarea, [data-slot=agent-app-titlebar] [role=button], [data-slot=agent-app-titlebar] [tabindex], [data-slot=agent-app-titlebar] [data-slot=agent-app-titlebar-panel]": {
             "-webkit-app-region": "no-drag",
             "app-region": "no-drag"
           },
@@ -205,11 +205,11 @@
             "-webkit-app-region": "drag",
             "app-region": "drag"
           },
-          "[data-titlebar] :is(button, a, input, select, textarea, [role=button], [tabindex])": {
+          "[data-titlebar] button, [data-titlebar] a, [data-titlebar] input, [data-titlebar] select, [data-titlebar] textarea, [data-titlebar] [role=button], [data-titlebar] [tabindex]": {
             "-webkit-app-region": "no-drag",
             "app-region": "no-drag"
           },
-          ":is([role=dialog], [role=alertdialog], [role=menu], [role=listbox])": {
+          "[role=dialog], [role=alertdialog], [role=menu], [role=listbox]": {
             "-webkit-app-region": "no-drag",
             "app-region": "no-drag"
           },
@@ -234,10 +234,10 @@
             "overflow-y": "auto",
             "overscroll-behavior": "contain"
           },
-          ".dark :is([data-slot=dialog-overlay], [data-slot=alert-dialog-overlay], [data-slot=sheet-overlay], [data-slot=drawer-overlay])": {
+          ".dark [data-slot=dialog-overlay], .dark [data-slot=alert-dialog-overlay], .dark [data-slot=sheet-overlay], .dark [data-slot=drawer-overlay]": {
             "background-image": "linear-gradient(oklch(0 0 0 / 35%), oklch(0 0 0 / 35%))"
           },
-          ":where([data-slot$=menu-item], [data-slot$=menu-sub-trigger], [data-slot=menubar-item], [data-slot=menubar-sub-trigger], [data-slot=select-item], [data-slot=combobox-item], [data-slot=command-item]):not([data-variant=destructive]) > svg:first-child": {
+          ":where([data-slot$=menu-item]):not([data-variant=destructive]) > svg:first-child, :where([data-slot$=menu-sub-trigger]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=menubar-item]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=menubar-sub-trigger]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=select-item]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=combobox-item]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=command-item]):not([data-variant=destructive]) > svg:first-child": {
             "color": "var(--muted-foreground)"
           },
           "[data-slot=accordion-trigger]:disabled, [data-slot=radio-group-item][data-disabled]": {
@@ -248,7 +248,7 @@
             "--scroll-fade-block": "initial",
             "--scroll-fade-inline": "initial"
           },
-          ":where([data-slot$=menu-item], [data-slot$=menu-sub-trigger], [data-slot=menubar-item], [data-slot=select-item], [data-slot=combobox-item], [data-slot=command-item], [data-slot=composer-select-item]):hover": {
+          ":where([data-slot$=menu-item]):hover, :where([data-slot$=menu-sub-trigger]):hover, :where([data-slot=menubar-item]):hover, :where([data-slot=select-item]):hover, :where([data-slot=combobox-item]):hover, :where([data-slot=command-item]):hover, :where([data-slot=composer-select-item]):hover": {
             "transition-property": "background-color",
             "transition-duration": "var(--motion-hover)",
             "transition-timing-function": "var(--ease-ui)"
@@ -280,7 +280,7 @@
             "opacity": "1"
           }
         },
-        ":root[data-window-controls-overlay] [data-slot=agent-app]:not([data-titlebar]) :is([data-slot=sidebar-header], [data-slot=agent-app-rail])": {
+        ":root[data-window-controls-overlay] [data-slot=agent-app]:not([data-titlebar]) [data-slot=sidebar-header], :root[data-window-controls-overlay] [data-slot=agent-app]:not([data-titlebar]) [data-slot=agent-app-rail]": {
           "padding-top": "calc(env(titlebar-area-height, 2rem) + 0.5rem)"
         },
         ":root[data-window-controls-overlay] [data-slot=agent-app]:not([data-titlebar]) [data-slot=agent-app-sidebar-bar] ~ [data-slot=sidebar-header]": {
@@ -1952,7 +1952,7 @@
       "name": "questionnaire",
       "type": "registry:ui",
       "title": "Questionnaire",
-      "description": "shadcn/ui's base-nova questionnaire, fixed: choices are light rows, not a stack of form fields: no border (but a keyboard focus's ring) and a grey row when checked; invalid, the choices and the Other field stay grey and the error is a line of an icon and red words under them; a choice's number key leads it in a hairline square and shows the choice, filled when checked, in place of the radio or checkbox; the Other field among the choices (QuestionnaireInput in QuestionnaireChoices) is one of their rows, not a form field, its placeholder in grey (\"Something else…\"), led by the key after the choices', which types in it, and grey like a checked choice once it has words. A single choice chosen (a click, its number key) goes on to the next question, not on the last nor by the arrow keys (advance); a field-only question, come to, is typed in; QuestionnaireNavigation is Previous, Skip, Next and Submit, each where it applies, and with onDecline a quiet Decline (QuestionnaireDecline, labels.decline) on every question, the way out of the whole questionnaire; QuestionnaireActions is a row, a Decline at its start; one question shows no progress. Its spacing on the 4px module (docs/grid.md).",
+      "description": "shadcn/ui's base-nova questionnaire, fixed: the field's selection colours are its own (::selection), not its descendants' too, a rule every element of the page tried on every restyle; choices are light rows, not a stack of form fields: no border (but a keyboard focus's ring) and a grey row when checked; invalid, the choices and the Other field stay grey and the error is a line of an icon and red words under them; a choice's number key leads it in a hairline square and shows the choice, filled when checked, in place of the radio or checkbox; the Other field among the choices (QuestionnaireInput in QuestionnaireChoices) is one of their rows, not a form field, its placeholder in grey (\"Something else…\"), led by the key after the choices', which types in it, and grey like a checked choice once it has words. A single choice chosen (a click, its number key) goes on to the next question, not on the last nor by the arrow keys (advance); a field-only question, come to, is typed in; QuestionnaireNavigation is Previous, Skip, Next and Submit, each where it applies, and with onDecline a quiet Decline (QuestionnaireDecline, labels.decline) on every question, the way out of the whole questionnaire; QuestionnaireActions is a row, a Decline at its start; one question shows no progress. Its spacing on the 4px module (docs/grid.md).",
       "dependencies": [
         "cn",
         "@shadcn/react",
@@ -2092,7 +2092,7 @@
       "name": "native-select",
       "type": "registry:ui",
       "title": "Native Select",
-      "description": "shadcn/ui's base-nova native select, fixed: in dark, no fill, its border alone (3:1) outlining it, so it is not a grey slab on a card or a dialog. Its spacing on the 4px module (docs/grid.md).",
+      "description": "shadcn/ui's base-nova native select, fixed: in dark, no fill, its border alone (3:1) outlining it, so it is not a grey slab on a card or a dialog. Its selection's colours are its own (::selection), not its descendants' too, a rule every element of the page tried on every restyle. Its spacing on the 4px module (docs/grid.md).",
       "dependencies": ["cn", "@hugeicons/react", "@hugeicons/core-free-icons"],
       "files": [
         {

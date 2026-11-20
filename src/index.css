@@ -248,14 +248,14 @@
     -moz-osx-font-smoothing: grayscale;
     text-autospace: normal;
     }
-  :where(code, kbd, pre, samp) {
+  :where(code), :where(kbd), :where(pre), :where(samp) {
     text-autospace: no-autospace;
     }
   [data-slot=agent-app-titlebar] {
     -webkit-app-region: drag;
     app-region: drag;
     }
-  [data-slot=agent-app-titlebar] :is(button, a, input, select, textarea, [role=button], [tabindex], [data-slot=agent-app-titlebar-panel]) {
+  [data-slot=agent-app-titlebar] button, [data-slot=agent-app-titlebar] a, [data-slot=agent-app-titlebar] input, [data-slot=agent-app-titlebar] select, [data-slot=agent-app-titlebar] textarea, [data-slot=agent-app-titlebar] [role=button], [data-slot=agent-app-titlebar] [tabindex], [data-slot=agent-app-titlebar] [data-slot=agent-app-titlebar-panel] {
     -webkit-app-region: no-drag;
     app-region: no-drag;
     }
@@ -263,11 +263,11 @@
     -webkit-app-region: drag;
     app-region: drag;
     }
-  [data-titlebar] :is(button, a, input, select, textarea, [role=button], [tabindex]) {
+  [data-titlebar] button, [data-titlebar] a, [data-titlebar] input, [data-titlebar] select, [data-titlebar] textarea, [data-titlebar] [role=button], [data-titlebar] [tabindex] {
     -webkit-app-region: no-drag;
     app-region: no-drag;
     }
-  :is([role=dialog], [role=alertdialog], [role=menu], [role=listbox]) {
+  [role=dialog], [role=alertdialog], [role=menu], [role=listbox] {
     -webkit-app-region: no-drag;
     app-region: no-drag;
     }
@@ -292,10 +292,10 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     }
-  .dark :is([data-slot=dialog-overlay], [data-slot=alert-dialog-overlay], [data-slot=sheet-overlay], [data-slot=drawer-overlay]) {
+  .dark [data-slot=dialog-overlay], .dark [data-slot=alert-dialog-overlay], .dark [data-slot=sheet-overlay], .dark [data-slot=drawer-overlay] {
     background-image: linear-gradient(oklch(0 0 0 / 35%), oklch(0 0 0 / 35%));
     }
-  :where([data-slot$=menu-item], [data-slot$=menu-sub-trigger], [data-slot=menubar-item], [data-slot=menubar-sub-trigger], [data-slot=select-item], [data-slot=combobox-item], [data-slot=command-item]):not([data-variant=destructive]) > svg:first-child {
+  :where([data-slot$=menu-item]):not([data-variant=destructive]) > svg:first-child, :where([data-slot$=menu-sub-trigger]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=menubar-item]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=menubar-sub-trigger]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=select-item]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=combobox-item]):not([data-variant=destructive]) > svg:first-child, :where([data-slot=command-item]):not([data-variant=destructive]) > svg:first-child {
     color: var(--muted-foreground);
     }
   [data-slot=accordion-trigger]:disabled, [data-slot=radio-group-item][data-disabled] {
@@ -306,7 +306,7 @@
     --scroll-fade-block: initial;
     --scroll-fade-inline: initial;
     }
-  :where([data-slot$=menu-item], [data-slot$=menu-sub-trigger], [data-slot=menubar-item], [data-slot=select-item], [data-slot=combobox-item], [data-slot=command-item], [data-slot=composer-select-item]):hover {
+  :where([data-slot$=menu-item]):hover, :where([data-slot$=menu-sub-trigger]):hover, :where([data-slot=menubar-item]):hover, :where([data-slot=select-item]):hover, :where([data-slot=combobox-item]):hover, :where([data-slot=command-item]):hover, :where([data-slot=composer-select-item]):hover {
     transition-property: background-color;
     transition-duration: var(--motion-hover);
     transition-timing-function: var(--ease-ui);
@@ -346,7 +346,7 @@
     opacity: 1;
     }
 }
-  :root[data-window-controls-overlay] [data-slot=agent-app]:not([data-titlebar]) :is([data-slot=sidebar-header], [data-slot=agent-app-rail]) {
+  :root[data-window-controls-overlay] [data-slot=agent-app]:not([data-titlebar]) [data-slot=sidebar-header], :root[data-window-controls-overlay] [data-slot=agent-app]:not([data-titlebar]) [data-slot=agent-app-rail] {
     padding-top: calc(env(titlebar-area-height, 2rem) + 0.5rem);
 }
   :root[data-window-controls-overlay] [data-slot=agent-app]:not([data-titlebar]) [data-slot=agent-app-sidebar-bar] ~ [data-slot=sidebar-header] {

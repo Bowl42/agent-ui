@@ -1522,7 +1522,9 @@ function Markdown({
           // (space-y-0: Streamdown's own space-y-4 out.)
           "flex min-w-0 flex-col gap-3 space-y-0 text-base/7 text-pretty wrap-anywhere",
           // motion: words fading in as they stream, slower than a control
-          "motion-safe:data-streaming:*:transition-opacity motion-safe:data-streaming:*:duration-600 motion-safe:data-streaming:*:ease-out motion-safe:data-streaming:*:starting:opacity-0",
+          // (one rule, not one a property: each rule on `> *` is tried on
+          // every element of the page, every restyle)
+          "motion-safe:data-streaming:*:[transition:opacity_600ms_var(--ease-out)] motion-safe:data-streaming:*:starting:opacity-0",
           className
         )}
         components={merged}
