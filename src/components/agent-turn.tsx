@@ -2100,7 +2100,16 @@ function KeptMedia({ parts }: { parts: AgentToolCall[] }) {
           key={part.id}
           data-slot="agent-turn-step-media"
           data-part-id={part.id}
-          className="max-w-full min-w-0"
+          className={cn(
+            // As wide as its card, the card as wide as it is alone in the
+            // conversation: up to 6 of the 12 columns, here of the row's
+            // (a card's own span, a share of what it is in, was a share of
+            // this box: half of it, beside an empty half).
+            "max-w-span-6 min-w-0 [&_[data-slot=media-gallery-item]]:max-w-full",
+            // Several pictures, or a video or a recording: a row of their
+            // own, their spans the row's.
+            "has-data-[slot=media-gallery-player]:max-w-full has-data-[slot=media-gallery-player]:basis-full has-[[data-slot=media-gallery-item]~[data-slot=media-gallery-item]]:max-w-full has-[[data-slot=media-gallery-item]~[data-slot=media-gallery-item]]:basis-full"
+          )}
         >
           {part.media}
         </div>

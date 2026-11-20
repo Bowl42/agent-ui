@@ -3661,6 +3661,109 @@ const phoneShot = (alt: string, hue: number): MediaImage => ({
   )}`,
 })
 
+/** A screenshot of a size, its name on it. */
+const screenshot = (
+  alt: string,
+  width: number,
+  height: number,
+  hue: number
+): MediaImage => ({
+  alt,
+  width,
+  height,
+  src: `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="hsl(${hue} 40% 80%)"/><text x="50%" y="50%" font-family="sans-serif" font-size="48" text-anchor="middle" fill="#1a1a1a">${alt}</text></svg>`
+  )}`,
+})
+
+/**
+ * Screenshots of every shape kept in sight under the folded work, each
+ * card as wide as it is alone in the conversation (its picture's width,
+ * up to 6 of the column's 12 columns), not half of that beside an empty
+ * half; a step's several pictures a row of their own.
+ */
+export const MediaKeptShapes: Story = {
+  args: {
+    id: "turn:kept-shapes",
+    status: "done",
+    duration: "1m 02s",
+    parts: [
+      ...(
+        [
+          ["shot:desktop", screenshot("Desktop", 1920, 1080, 200)],
+          ["shot:phone", screenshot("Phone", 390, 844, 120)],
+          ["shot:phone-2", screenshot("Phone, signed in", 390, 844, 30)],
+        ] as const
+      ).map(([id, image]): AgentTurnPart => ({
+        type: "tool",
+        id,
+        status: "done",
+        title: "Took a screenshot",
+        media: <MediaGallery items={[image]} />,
+      })),
+      {
+        type: "tool",
+        id: "shot:pair",
+        status: "done",
+        title: "Took two screenshots",
+        media: (
+          <MediaGallery
+            items={[
+              screenshot("Before", 1920, 1080, 260),
+              screenshot("After", 1920, 1080, 300),
+            ]}
+          />
+        ),
+      },
+      { type: "content", id: "answer", content: <p>All four render.</p> },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    await expect(work()).toHaveAttribute("aria-expanded", "false")
+    const kept = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=agent-turn-kept-media]"
+    )!
+    await waitFor(() =>
+      expect(
+        kept.querySelectorAll("[data-slot=media-gallery-item] img")
+      ).toHaveLength(5)
+    )
+    const row = kept.getBoundingClientRect().width
+    const style = getComputedStyle(kept)
+    const inner =
+      row -
+      parseFloat(style.paddingInlineStart) -
+      parseFloat(style.paddingInlineEnd)
+    // 6 of the row's 12 columns, as the theme reckons them.
+    const probe = document.createElement("div")
+    probe.className = "w-span-6 shrink-0"
+    kept.append(probe)
+    const six = probe.getBoundingClientRect().width
+    probe.remove()
+    const items = [
+      ...kept.querySelectorAll<HTMLElement>(
+        "[data-slot=agent-turn-step-media]"
+      ),
+    ]
+    for (const item of items.slice(0, 3)) {
+      const card = item.querySelector<HTMLElement>(
+        "[data-slot=media-gallery-item]"
+      )!
+      // The card fills its place: no empty half beside it.
+      await expect(card.getBoundingClientRect().width).toBeCloseTo(
+        item.getBoundingClientRect().width,
+        0
+      )
+    }
+    // The wide one up to 6 of the column's 12 columns, the tall ones at
+    // their pictures' width.
+    await expect(items[0]!.getBoundingClientRect().width).toBeCloseTo(six, 0)
+    await expect(items[1]!.getBoundingClientRect().width).toBeLessThan(six)
+    // Several pictures: a row of their own.
+    await expect(items[3]!.getBoundingClientRect().width).toBeCloseTo(inner, 0)
+  },
+}
+
 /**
  * Screenshots two steps took, a phone's, kept in sight under the folded
  * work: side by side, not one under the other, each at its own shape
