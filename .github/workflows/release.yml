@@ -40,6 +40,12 @@ jobs:
           if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
             echo "::error::$VERSION is released already" && exit 1
           fi
+          # The README's install addresses at this version, so an app
+          # copying them gets it: `pnpm readme:version`, pushed first.
+          named=$(grep -Eo 'Bowl42/agentui/v[0-9]+\.[0-9]+\.[0-9]+/' README.md | sort -u)
+          if [ "$named" != "Bowl42/agentui/$VERSION/" ]; then
+            echo "::error::README.md names ${named:-no version}; run pnpm readme:version $VERSION, push, then release" && exit 1
+          fi
           checks=$(gh run list --workflow check.yml --commit "$GITHUB_SHA" \
             --event push --json conclusion --jq '.[0].conclusion // "none"')
           if [ "$checks" != success ]; then

@@ -141,8 +141,11 @@ first, in a file with none. `pnpm registry:check` checks both.
 
 - [Conventional Commits](https://www.conventionalcommits.org/):
   `type(scope): description`, one concern per commit.
-- Releases are made by the maintainers, with the Release workflow (the
-  Actions tab, "Run workflow" on main, its version): once main's checks
+- Releases are made by the maintainers. First `pnpm readme:version
+vX.Y.Z` points the README's install addresses at the new version;
+  commit and push it. Then the Release workflow (the Actions tab, "Run
+  workflow" on main, its version), which refuses a version the README
+  does not name: once main's checks
   have passed on that commit, it runs `scripts/release.ts`, which commits
   the built registry off main (`public/r/<item>.json`, each item with its
   files' content, this registry's dependencies named by their built
