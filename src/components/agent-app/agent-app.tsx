@@ -1611,7 +1611,7 @@ function AgentAppPanels({
     const to = returnTo.current
     returnTo.current = null
     if (!open && to?.isConnected && lost) to.focus({ preventScroll: true })
-  }, [open, place])
+  }, [open, place, id])
 
   // The panel's content too: rendered once, into an element of its own,
   // which goes where the panel is, beside or in a sheet.

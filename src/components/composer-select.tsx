@@ -487,6 +487,10 @@ function ComposerSelectList({
   // The item Tab goes to: the chosen one, else the first that can be
   // chosen, once they are rendered.
   const [tabbable, setTabbable] = React.useState<string | null>(value)
+  // After every render, as the items are the app's children: counted on
+  // the page. Each set bails out where the number is the same, so no
+  // render follows but where one changed.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- read after each render
   React.useLayoutEffect(() => {
     const list = ref.current
     setCount(

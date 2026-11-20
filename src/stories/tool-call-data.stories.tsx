@@ -177,7 +177,6 @@ export const LongValue: Story = {
 
 /** An empty object or an array: the JSON, formatted, no fields. */
 export const Array_: Story = {
-  name: "Array",
   args: { value: '[{"id":1},{"id":2}]' },
   play: async ({ canvasElement }) => {
     const root = canvasElement.querySelector<HTMLElement>(
