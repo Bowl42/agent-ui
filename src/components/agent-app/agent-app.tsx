@@ -1833,7 +1833,9 @@ function AgentAppPanels({
           data-slot="agent-app-panel-sheet"
           data-expanded={expanded || undefined}
           className={cn(
-            "gap-0 overflow-hidden border-0 data-[side=left]:border-0 data-[side=right]:border-0",
+            // On the main area's colour, as the panel beside it: its
+            // content made for that, not a popover's lighter one in dark.
+            "gap-0 overflow-hidden border-0 bg-background text-foreground data-[side=left]:border-0 data-[side=right]:border-0",
             expanded
               ? // The whole window, clear of its notches and bars.
                 "inset-0 h-auto w-auto max-w-none rounded-none pt-safe-or-0 pr-[env(safe-area-inset-right)] pb-safe pl-[env(safe-area-inset-left)] data-[side=left]:w-auto data-[side=right]:w-auto data-[side=left]:sm:max-w-none data-[side=right]:sm:max-w-none"
@@ -1876,8 +1878,10 @@ function AgentAppPanels({
           id={id}
           data-slot="agent-app-panel-drawer"
           data-expanded={expanded || undefined}
-          // Expanded, the whole screen, its top clear of the notch.
+          // On the main area's colour, as beside; expanded, the whole
+          // screen, its top clear of the notch.
           className={cn(
+            "bg-background text-foreground",
             expanded &&
               "pt-safe-or-0 data-[swipe-direction=down]:rounded-t-none data-[swipe-direction=down]:border-t-0"
           )}
