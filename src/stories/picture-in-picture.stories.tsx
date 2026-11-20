@@ -220,6 +220,111 @@ export const Default: Story = {
   },
 }
 
+/** Its height and corners' radius (as drawn) each frame, until it stands. */
+async function sizes(element: HTMLElement) {
+  const seen: { height: number; radius: number }[] = []
+  for (let frame = 0; frame < 30; frame++) {
+    const { width, height } = element.getBoundingClientRect()
+    seen.push({
+      height: Math.round(height),
+      radius: Math.min(
+        parseFloat(getComputedStyle(element).borderTopLeftRadius),
+        width / 2,
+        height / 2
+      ),
+    })
+    await new Promise(requestAnimationFrame)
+  }
+  return seen
+}
+
+/**
+ * From a card to a pill and back, its box changes size, not at once: its
+ * corner kept, its corners rounding as it goes.
+ */
+export const ChangesForm: Story = {
+  play: async ({ canvasElement }) => {
+    const { stage, window } = parts(canvasElement)
+    await waitFor(() =>
+      expect(Math.round(window.getBoundingClientRect().width)).toBe(320)
+    )
+    const card = Math.round(window.getBoundingClientRect().height)
+    const corner = () => {
+      const box = window.getBoundingClientRect()
+      const place = stage.getBoundingClientRect()
+      return [
+        Math.round(place.right - box.right),
+        Math.round(place.bottom - box.bottom),
+      ]
+    }
+    const kept = corner()
+    within(window).getByRole("button", { name: "Minimize" }).click()
+    const down = await sizes(window)
+    // Between the two, a frame or more; at the end, a pill.
+    await expect(down.some(({ height }) => height > 40 && height < card)).toBe(
+      true
+    )
+    await expect(down.at(-1)!.height).toBe(40)
+    // Its corners rounding on, never back, to the pill's.
+    for (const [at, { radius }] of down.entries())
+      await expect(radius).toBeGreaterThanOrEqual(
+        (down[at - 1]?.radius ?? 0) - 0.5
+      )
+    await expect(down.at(-1)!.radius).toBe(20)
+    await expect(corner()).toEqual(kept)
+    await expect(window.style.overflow).toBe("")
+    within(window)
+      .getByRole("button", { name: "Show the preview: Pricing · example.com" })
+      .click()
+    const up = await sizes(window)
+    await expect(up.some(({ height }) => height > 40 && height < card)).toBe(
+      true
+    )
+    await expect(up.at(-1)!.height).toBe(card)
+    await expect(corner()).toEqual(kept)
+  },
+}
+
+/** Its own `open` as the app's: the reader's button hides and shows it. */
+function Closing() {
+  const [open, setOpen] = React.useState(true)
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        className="self-start rounded-md border px-2 py-1 text-sm"
+        onClick={() => setOpen(!open)}
+      >
+        {open ? "Hide it" : "Show it"}
+      </button>
+      <Stage open={open} onClose={() => setOpen(false)} />
+    </div>
+  )
+}
+
+/**
+ * Closed while rendered (`open={false}`), it shrinks and fades out, out of
+ * reach meanwhile, and is then gone; opened again, it comes as at first.
+ */
+export const Closes: Story = {
+  render: () => <Closing />,
+  play: async ({ canvas, canvasElement }) => {
+    const window = () =>
+      canvasElement.querySelector<HTMLElement>("[data-slot=picture-in-picture]")
+    await userEvent.click(
+      within(window()!).getByRole("button", { name: "Close" })
+    )
+    // On its way out: still there, closed, not to be reached.
+    await expect(window()).toHaveAttribute("data-closed")
+    await expect(window()).toHaveAttribute("inert")
+    await expect(window()!.getAnimations().length).toBeGreaterThan(0)
+    await waitFor(() => expect(window()).toBeNull())
+    await userEvent.click(canvas.getByRole("button", { name: "Show it" }))
+    await expect(window()).not.toHaveAttribute("data-closed")
+    await expect(window()).toHaveAccessibleName("Pricing · example.com")
+  },
+}
+
 /**
  * Several pages: dots say how many, the agent's one current. A dot, the
  * arrow keys or a sideways scroll go through them; away from the

@@ -94,6 +94,20 @@ const reducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
+/** A theme's `--motion-*` in ms, as it reaches an element. */
+const motion = (element: Element, name: string) => {
+  const value = getComputedStyle(element).getPropertyValue(name).trim()
+  return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000) || 0
+}
+
+/** Its box as laid out (no transform) and its corners' radius. */
+const boxOf = (element: HTMLElement) => {
+  const width = element.offsetWidth
+  const height = element.offsetHeight
+  const radius = parseFloat(getComputedStyle(element).borderTopLeftRadius) || 0
+  return { width, height, radius: Math.min(radius, width / 2, height / 2) }
+}
+
 /**
  * What a press on starts no drag: its own buttons, and what the app
  * marks `data-no-drag`. Its preview's buttons drag it, and are pressed
@@ -159,6 +173,7 @@ function PictureInPicture({
   defaultFollowing = true,
   onFollowingChange,
   onShownChange,
+  open = true,
   corner: cornerProp,
   defaultCorner = "bottom-end",
   onCornerChange,
@@ -177,6 +192,11 @@ function PictureInPicture({
   ...props
 }: Omit<React.ComponentProps<"section">, "title" | "children"> & {
   items: readonly PictureInPictureItem[]
+  /**
+   * False, it fades and shrinks out, then is gone; true again, it comes
+   * back as it first came. Rendered only while shown, it goes at once.
+   */
+  open?: boolean
   /** The id of the one the agent is on, which it follows. */
   active?: string | undefined
   /** Whether it shows the one the agent is on; else the reader's pick. */
@@ -212,6 +232,9 @@ function PictureInPicture({
   const root = React.useRef<HTMLElement>(null)
   const preview = React.useRef<HTMLDivElement>(null)
   const id = React.useId()
+  // Out of the page once its way out is over.
+  const [gone, setGone] = React.useState(!open)
+  if (open && gone) setGone(false)
 
   const agents = items.find((item) => item.id === active) ?? items[0]
   const pickedItem = items.find((item) => item.id === picked)
@@ -223,6 +246,80 @@ function PictureInPicture({
       ? "pill"
       : (forms[shown.id] ?? shown.form ?? "card")
   const away = !following && agents !== undefined && shown !== agents
+
+  // Closed: gone once its way out (motion-pop's) is over.
+  React.useEffect(() => {
+    const element = root.current
+    if (open) return
+    let current = true
+    Promise.all(
+      (element?.getAnimations() ?? []).map((animation) => animation.finished)
+    )
+      .catch(() => {})
+      .then(() => {
+        if (current) setGone(true)
+      })
+    return () => {
+      current = false
+    }
+  }, [open])
+
+  // From one form to the other, its box changes size from where it was
+  // (its corner kept), what it shows clipped to it meanwhile.
+  const present = shown !== undefined && !gone
+  const last = React.useRef<
+    (ReturnType<typeof boxOf> & { form: PictureInPictureForm }) | null
+  >(null)
+  const resizing = React.useRef<Animation | null>(null)
+  React.useLayoutEffect(() => {
+    const element = root.current
+    const was = last.current
+    if (!element) {
+      last.current = null
+      return
+    }
+    // Mid-change, it starts from where that has got to.
+    const running = resizing.current
+    const from = running ? boxOf(element) : was
+    running?.cancel()
+    const to = boxOf(element)
+    last.current = { form, ...to }
+    if (!from || !was || was.form === form) return
+    const duration = motion(element, "--motion-size")
+    if (reducedMotion() || duration === 0) return
+    const box = (size: ReturnType<typeof boxOf>) => ({
+      width: `${size.width}px`,
+      height: `${size.height}px`,
+      borderRadius: `${size.radius}px`,
+    })
+    element.style.overflow = "hidden"
+    const change = element.animate([box(from), box(to)], {
+      duration,
+      easing: getComputedStyle(element).getPropertyValue("--ease-ui").trim(),
+    })
+    resizing.current = change
+    const done = () => {
+      if (resizing.current !== change) return
+      resizing.current = null
+      element.style.overflow = ""
+    }
+    change.onfinish = done
+    change.oncancel = done
+  }, [form, present])
+
+  // Its size as it changes otherwise (an attention strip, a longer line),
+  // so a change of form starts from it.
+  React.useEffect(() => {
+    const element = root.current
+    if (!element) return
+    const observer = new ResizeObserver(() => {
+      const was = last.current
+      if (was && !resizing.current)
+        last.current = { form: was.form, ...boxOf(element) }
+    })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [present])
 
   const setFollowing = (next: boolean) => {
     if (followingProp === undefined) setOwnFollowing(next)
@@ -372,7 +469,7 @@ function PictureInPicture({
     if (far && items[index + step]) turn(step)
   }
 
-  if (!shown) return null
+  if (!shown || gone) return null
 
   const [vertical, horizontal] = corner.split("-") as [
     "top" | "bottom",
@@ -442,6 +539,8 @@ function PictureInPicture({
       data-corner={corner}
       data-form={form}
       data-attention={shown.attention ? "" : undefined}
+      data-closed={open ? undefined : ""}
+      {...(open ? {} : { inert: true, "aria-hidden": true })}
       aria-labelledby={titleId}
       aria-describedby={keysId}
       aria-keyshortcuts={
@@ -454,7 +553,12 @@ function PictureInPicture({
         // Over what it floats on, as a menu is: raised, on the page's
         // colour (a step lighter in dark).
         "group/pip absolute z-20 flex cursor-grab touch-none flex-col bg-background text-foreground shadow-float ring-1 ring-foreground/10 outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing dark:bg-muted",
-        "animate-in motion-pop fade-in-0 zoom-in-95",
+        // Its ring fades as it is focused or calls; its size changes by
+        // the change of form's own animation.
+        "transition-shadow",
+        open
+          ? "animate-in motion-pop fade-in-0 zoom-in-95"
+          : "pointer-events-none animate-out motion-pop fade-out-0 zoom-out-95",
         form === "card"
           ? "w-80 rounded-xl max-sm:w-60"
           : "h-10 w-max max-w-96 min-w-40 rounded-full max-sm:max-w-80",
@@ -683,7 +787,7 @@ function PictureInPicture({
         <div
           key="pill"
           data-slot="picture-in-picture-pill"
-          className="flex h-full min-w-0 animate-in items-center gap-2 ps-3 pe-1 text-2sm motion-fade fade-in-0 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-muted-foreground"
+          className="flex h-10 min-w-0 shrink-0 animate-in items-center gap-2 ps-3 pe-1 text-2sm motion-fade fade-in-0 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-muted-foreground"
         >
           {shown.attention ? (
             <HugeiconsIcon icon={Alert02Icon} strokeWidth={2} />
