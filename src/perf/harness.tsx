@@ -13,6 +13,14 @@ declare module "vitest/browser" {
     browserTotals: () => Promise<Totals>
     browserMemory: () => Promise<Memory>
     throttle: (rate: number) => Promise<void>
+    profileStart: () => Promise<void>
+    profileStop: (name: string) => Promise<string>
+    selectorsStart: () => Promise<void>
+    selectorsStop: (
+      top: number
+    ) => Promise<
+      [ms: number, attempts: number, matches: number, selector: string][]
+    >
   }
 }
 
@@ -165,6 +173,44 @@ export function reportFrames(
   console.log(
     `PERF ${name}: median ${median((s) => s.total)}ms (style ${median((s) => s.style)}, layout ${median((s) => s.layout)}, script ${median((s) => s.script)}; main thread ${median((s) => s.task)}; n=${samples.length}, frames included)`
   )
+}
+
+/**
+ * Profiles a step's CPU (Chromium only): written to
+ * `.vitest/profiles/<name>.cpuprofile` to open in DevTools.
+ */
+export async function profile<T>(name: string, step: () => Promise<T> | T) {
+  await commands.profileStart()
+  try {
+    return await step()
+  } finally {
+    console.log(`PERF profile: ${await commands.profileStop(name)}`)
+  }
+}
+
+/**
+ * The selectors a step's style recalculation spent most on (Chromium
+ * only): printed, the costliest first.
+ */
+export async function selectors(
+  name: string,
+  step: () => Promise<unknown> | unknown,
+  top = 15
+) {
+  await commands.selectorsStart()
+  try {
+    await step()
+  } finally {
+    for (const [
+      ms,
+      attempts,
+      matches,
+      selector,
+    ] of await commands.selectorsStop(top))
+      console.log(
+        `PERF selectors ${name}: ${ms}ms ${attempts} tried ${matches} matched  ${selector}`
+      )
+  }
 }
 
 /** What the page holds, garbage collected: heap, DOM nodes, layout objects. */

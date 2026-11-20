@@ -17,6 +17,7 @@ import {
   render,
   report,
   reportFrames,
+  sync,
   timeWithFrames,
 } from "./harness"
 
@@ -101,6 +102,17 @@ for (const count of [100, 1000, 3000]) {
       )
     }
     report(`message-scroller chunk, ${count} messages`, samples)
+    // The browser's own work too: the render, its style and layout.
+    const frames = []
+    for (let step = 0; step < 40; step++)
+      frames.push(
+        await measureFrames(() =>
+          sync(() =>
+            write(step % 12 === 11 ? "\n\nNext paragraph " : `more${step} `)
+          )
+        )
+      )
+    reportFrames(`message-scroller chunk, ${count} messages`, frames)
   })
 
   test(`message-scroller: scroll ${count} messages`, async () => {

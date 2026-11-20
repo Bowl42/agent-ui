@@ -66,6 +66,10 @@ first, in a file with none. `pnpm registry:check` checks both.
   layout (some also count the browser's own style, layout and script
   time over the frames after a step, which no script in the page sees); they assert nothing, as times depend on the machine. Run them
   before and after a change to a hot path and give both in the commit.
+  To find where a step's time goes, the harness's `profile(name, step)`
+  writes a CPU profile to `.vitest/profiles` (for DevTools' Performance
+  panel), and `selectors(name, step)` prints the selectors its style
+  recalculation spent most on.
 
 ## Rules
 
@@ -109,6 +113,12 @@ first, in a file with none. `pnpm registry:check` checks both.
   Vite's template's `DOM.Iterable`), which reports what 6 does not, such
   as an attribute given twice. A shadcn file that fails either is a bug
   to fix like any other.
+- **No group-has-\* over what streams.** `group-has-*/name` (a part
+  styled by what its group holds) makes Chromium restyle the whole group
+  whenever a node is added anywhere in it: in a message or a code block,
+  every word or line streamed in. Let the group set a variable with its
+  own `has-*` (`Message`'s `--message-lift`), or match a sibling
+  (`[[data-slot=x]~&]:`), and measure it with `pnpm perf`.
 - **Every component has stories.** Each story runs in Chromium, Firefox and
   WebKit, and again in the dark theme in Chromium; it executes its `play`
   function and fails on accessibility violations (WCAG 2.2 AA). Do not turn an axe rule off to make a story

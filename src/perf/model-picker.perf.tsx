@@ -3,7 +3,16 @@ import { expect, test } from "vitest"
 
 import { ModelPicker, type ModelGroup } from "@/components/model-picker"
 
-import { frame, memory, render, report, sync, timeWithFrames } from "./harness"
+import {
+  frame,
+  measureFrames,
+  memory,
+  render,
+  report,
+  reportFrames,
+  sync,
+  timeWithFrames,
+} from "./harness"
 
 const groups: ModelGroup[] = Array.from({ length: 10 }, (_, group) => ({
   id: `group-${group}`,
@@ -81,5 +90,13 @@ test("model picker: 10 groups of 50 models", async () => {
       samples.push(await timeWithFrames(() => sync(() => input(query)), 2))
     }
     report(`model picker keystroke "${query}"`, samples)
+    // The browser's own work too: style, layout and paint of the rows.
+    const frames = []
+    for (let run = 0; run < 5; run++) {
+      sync(() => input(""))
+      await settle()
+      frames.push(await measureFrames(() => sync(() => input(query))))
+    }
+    reportFrames(`model picker keystroke "${query}"`, frames)
   }
 })

@@ -59,10 +59,10 @@ for (const { language, line } of cases) {
     const host = render(<Output language={language} />)
     // Let the highlighter load in the component.
     sync(() => write(line(0)))
-    for (let i = 0; i < 50 && !host.querySelector("[class^='code-']"); i++) {
-      await frame()
-    }
-    expect(host.querySelector("[class^='code-']")).not.toBeNull()
+    // Tokens are spans: a kind's class for code, a style for ANSI's colours.
+    const token = "[class^='code-'], span[style]"
+    for (let i = 0; i < 50 && !host.querySelector(token); i++) await frame()
+    expect(host.querySelector(token)).not.toBeNull()
 
     let index = 1
     const marks = [1000, 3000]

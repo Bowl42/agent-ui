@@ -1,3 +1,6 @@
+import { mkdir, writeFile } from "node:fs/promises"
+import path from "node:path"
+
 import { playwright } from "@vitest/browser-playwright"
 import type { CDPSession } from "playwright"
 import { defineConfig, mergeConfig } from "vitest/config"
@@ -71,6 +74,88 @@ const throttle: BrowserCommand<[rate: number]> = async ({ page }, rate) => {
   await session.send("Emulation.setCPUThrottlingRate", { rate })
 }
 
+/** Starts a CPU profile of the page (Chromium only). */
+const profileStart: BrowserCommand<[]> = async ({ page }) => {
+  const session = await cdp(page)
+  await session.send("Profiler.enable")
+  await session.send("Profiler.setSamplingInterval", { interval: 100 })
+  await session.send("Profiler.start")
+}
+
+/**
+ * Stops it and writes it to `.vitest/profiles/<name>.cpuprofile`, for
+ * DevTools' Performance panel; returns the path.
+ */
+const profileStop: BrowserCommand<[name: string]> = async ({ page }, name) => {
+  const session = await cdp(page)
+  const { profile } = await session.send("Profiler.stop")
+  const directory = path.resolve(".vitest/profiles")
+  await mkdir(directory, { recursive: true })
+  const file = path.join(directory, `${name}.cpuprofile`)
+  await writeFile(file, JSON.stringify(profile))
+  return file
+}
+
+let tracing: { events: unknown[]; done: Promise<void> } | undefined
+
+/** Starts a trace of style recalculation's selector stats (Chromium only). */
+const selectorsStart: BrowserCommand<[]> = async ({ page }) => {
+  const session = await cdp(page)
+  const events: unknown[] = []
+  session.on("Tracing.dataCollected", ({ value }) => events.push(...value))
+  const done = new Promise<void>((resolve) =>
+    session.once("Tracing.tracingComplete", () => resolve())
+  )
+  tracing = { events, done }
+  await session.send("Tracing.start", {
+    traceConfig: {
+      includedCategories: ["disabled-by-default-blink.debug"],
+    },
+  })
+}
+
+/**
+ * Stops it and returns the selectors that cost most to match, summed
+ * over the recalculations: [elapsed ms, match attempts, matches, selector].
+ */
+const selectorsStop: BrowserCommand<[top: number]> = async ({ page }, top) => {
+  const session = await cdp(page)
+  await session.send("Tracing.end")
+  await tracing!.done
+  const totals = new Map<string, [number, number, number]>()
+  for (const event of tracing!.events as {
+    name: string
+    args?: {
+      selector_stats?: {
+        selector_timings: {
+          selector: string
+          "elapsed (us)": number
+          match_attempts: number
+          match_count: number
+        }[]
+      }
+    }
+  }[]) {
+    for (const timing of event.args?.selector_stats?.selector_timings ?? []) {
+      const total = totals.get(timing.selector) ?? [0, 0, 0]
+      total[0] += timing["elapsed (us)"] / 1000
+      total[1] += timing.match_attempts
+      total[2] += timing.match_count
+      totals.set(timing.selector, total)
+    }
+  }
+  tracing = undefined
+  return [...totals]
+    .sort((a, b) => b[1][0] - a[1][0])
+    .slice(0, top)
+    .map(([selector, [ms, attempts, matches]]) => [
+      Math.round(ms * 100) / 100,
+      attempts,
+      matches,
+      selector,
+    ])
+}
+
 // Benchmarks of the components' hot paths (scrolling, typing, streaming),
 // in Chromium. Not part of `pnpm check`: run `pnpm perf` before and after a
 // change and compare.
@@ -85,6 +170,8 @@ export default mergeConfig(
       name: "perf",
       include: ["src/perf/**/*.perf.tsx"],
       testTimeout: 120_000,
+      // The results are console lines.
+      silent: false,
       browser: {
         enabled: true,
         headless: true,
@@ -110,7 +197,15 @@ export default mergeConfig(
               }
             : { browser },
         ],
-        commands: { browserTotals, browserMemory, throttle },
+        commands: {
+          browserTotals,
+          browserMemory,
+          throttle,
+          profileStart,
+          profileStop,
+          selectorsStart,
+          selectorsStop,
+        },
       },
     },
   })
