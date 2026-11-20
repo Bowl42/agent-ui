@@ -116,6 +116,7 @@ function createWindowing(viewport: () => HTMLElement | null) {
   return {
     /** Watches an item; without observers to window by, it is near. */
     observe(element: HTMLElement, item: WindowedItem) {
+      watchSelection()
       start()
       if (!near || !far || !sizes) {
         item.near()
@@ -177,9 +178,27 @@ function nearItsEnd(element: Element, atEnd: boolean, count: number) {
   return true
 }
 
+// Whether the page has a selection, kept as it changes: the far observer
+// asks of every item leaving the window, and reading the selection there
+// made the browser lay out the page again first (the scroller had just
+// rendered), at every step of a scroll.
+let selecting = false
+let watchingSelection = false
+
+function watchSelection() {
+  if (watchingSelection || typeof document === "undefined") return
+  watchingSelection = true
+  document.addEventListener("selectionchange", () => {
+    const selection = document.getSelection()
+    selecting =
+      selection !== null && selection.rangeCount > 0 && !selection.isCollapsed
+  })
+}
+
 /** Holds the focus or the selection, so it stays mounted. */
 function inUse(element: Element) {
   if (element.contains(document.activeElement)) return true
+  if (!selecting) return false
   const selection = document.getSelection()
   return Boolean(
     selection &&
