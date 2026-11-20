@@ -3495,7 +3495,7 @@ e.g. its pages and terminals when the panel is closed:
   seven, "2/12"); it then stays there, and "Follow" takes it back
   (`following`, `onFollowingChange`).
 - **Card or pill.** A card has its title and `preview` (16:10,
-  `aspectRatio`; 320px wide, 240px on a phone); a pill is one line: its
+  `aspectRatio`; 320px wide, 240px on a phone, upright or on its side); a pill is one line: its
   icon, `line` and `status`, up to 384px. An item opens as its `form`
   says (a card if it has a preview); Minimize makes it a pill, and the
   pill's line a card again (or, with no preview, expands it). A
@@ -3503,8 +3503,13 @@ e.g. its pages and terminals when the panel is closed:
   its last lines when it is a card.
 - **Moving.** Dragged by any part but its buttons (and what has
   `data-no-drag`), it lands in the corner it is let go nearest or thrown
-  towards; a tap on the preview is still a press. Shift and the arrow
-  keys move it. `corner`, `defaultCorner`, `onCornerChange` by the
+  towards, rising a little while held; a tap on the preview is still a
+  press, and a finger's press moved less than 10px is a tap. Let go
+  with its middle past a side, it tucks into that side, only a 24px tab
+  showing (its alert icon while it calls for the reader); the tab, or a
+  drag back, brings it out (`tucked`, `defaultTucked`,
+  `onTuckedChange`): on a phone, the conversation whole without closing
+  it. Shift and the arrow keys move it, out past its side tuck it. `corner`, `defaultCorner`, `onCornerChange` by the
   reading direction; 16px (`inset`) from its place's edges and the safe
   areas.
 - **Closing.** Rendered only while shown, it goes at once; to see it

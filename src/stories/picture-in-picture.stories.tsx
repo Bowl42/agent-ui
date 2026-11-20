@@ -548,7 +548,7 @@ export const DragToCorner: Story = {
     await userEvent.keyboard("{Shift>}{ArrowRight}{/Shift}")
     await inCorner(canvasElement, "bottom", "right")
     await expect(window).toHaveAccessibleDescription(
-      "Shift and the arrow keys move it to another corner."
+      "Shift and the arrow keys move it to another corner, or tuck it into the side."
     )
   },
 }
@@ -569,6 +569,118 @@ export const RightToLeft: Story = {
 }
 
 /** On a phone, a card is 240px wide; its buttons take a finger. */
+const tucked = fn()
+
+/** What of it shows inside the stage, across. */
+const inView = (canvasElement: HTMLElement) => {
+  const { stage, window } = parts(canvasElement)
+  const place = stage.getBoundingClientRect()
+  const box = window.getBoundingClientRect()
+  return Math.round(
+    Math.min(box.right, place.right) - Math.max(box.left, place.left)
+  )
+}
+
+/**
+ * Let go half past the side, it tucks into it, only its tab showing (24px),
+ * what it shows out of reach; its tab brings it out again, to its
+ * corner. Shift and an arrow out past its side tuck it too, and back
+ * bring it out.
+ */
+export const TuckIntoSide: Story = {
+  args: { onTuckedChange: tucked },
+  beforeEach: () => {
+    tucked.mockClear()
+  },
+  play: async ({ canvasElement }) => {
+    const { stage, window } = parts(canvasElement)
+    const bar = window.querySelector<HTMLElement>(
+      "[data-slot=picture-in-picture-bar]"
+    )!
+    const place = stage.getBoundingClientRect()
+    const from = bar.getBoundingClientRect()
+    await dragBy(bar, place.right + 40 - (from.left + from.width / 2), 0)
+    await waitFor(() => expect(tucked).toHaveBeenCalledWith(true))
+    await expect(window).toHaveAttribute("data-tucked")
+    await waitFor(() => expect(inView(canvasElement)).toBe(24 + 1))
+    await expect(
+      window
+        .querySelector("[data-slot=picture-in-picture-bar]")!
+        .closest("[inert]")
+    ).not.toBeNull()
+    const tab = within(window).getByRole("button", {
+      name: "Bring back: Pricing · example.com",
+    })
+    await userEvent.click(tab)
+    await waitFor(() => expect(tucked).toHaveBeenLastCalledWith(false))
+    await inCorner(canvasElement, "bottom", "right")
+    await expect(window).not.toHaveAttribute("data-tucked")
+    // By the keys: out past its side, up it, and back.
+    window.focus()
+    await userEvent.keyboard("{Shift>}{ArrowRight}{/Shift}")
+    await expect(window).toHaveAttribute("data-tucked")
+    await userEvent.keyboard("{Shift>}{ArrowUp}{/Shift}")
+    await expect(window).toHaveAttribute("data-corner", "top-end")
+    await expect(window).toHaveAttribute("data-tucked")
+    await userEvent.keyboard("{Shift>}{ArrowLeft}{/Shift}")
+    await expect(window).not.toHaveAttribute("data-tucked")
+    await inCorner(canvasElement, "top", "right")
+    await expect(window).toHaveFocus()
+  },
+}
+
+/** A finger's press moved a little is still a tap; past 10px, a drag. */
+export const FingerSlop: Story = {
+  play: async ({ canvasElement }) => {
+    const { window } = parts(canvasElement)
+    const box = window.getBoundingClientRect()
+    const finger = (type: string, dx: number) =>
+      window.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: true,
+          pointerId: 3,
+          pointerType: "touch",
+          isPrimary: true,
+          clientX: box.left + 60 + dx,
+          clientY: box.top + 18,
+          buttons: type === "pointerup" ? 0 : 1,
+        })
+      )
+    finger("pointerdown", 0)
+    finger("pointermove", 6)
+    await expect(window).not.toHaveAttribute("data-dragging")
+    finger("pointermove", 12)
+    await expect(window).toHaveAttribute("data-dragging", "move")
+    // Picked up: it rises a little.
+    await waitFor(() => expect(getComputedStyle(window).scale).toBe("1.02"))
+    finger("pointerup", 12)
+    await expect(window).not.toHaveAttribute("data-dragging")
+    await inCorner(canvasElement, "bottom", "right")
+  },
+}
+
+/** A phone on its side: as small as on a phone upright, 240px. */
+export const PhoneLandscape: Story = {
+  parameters: {
+    viewport: {
+      options: {
+        landscape: {
+          name: "Phone on its side",
+          styles: { width: "844px", height: "390px" },
+          type: "mobile",
+        },
+      },
+    },
+  },
+  globals: { viewport: { value: "landscape", isRotated: false } },
+  play: async ({ canvasElement }) => {
+    const { window } = parts(canvasElement)
+    await waitFor(() =>
+      expect(Math.round(window.getBoundingClientRect().width)).toBe(240)
+    )
+  },
+}
+
 export const Phone: Story = {
   args: { items: [pricing, docs] },
   parameters: {

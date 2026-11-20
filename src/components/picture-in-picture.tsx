@@ -6,6 +6,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Alert02Icon,
   ArrowExpand01Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
   Cancel01Icon,
   MinusSignIcon,
 } from "@hugeicons/core-free-icons"
@@ -52,6 +54,8 @@ type PictureInPictureLabels = {
   restore: string
   /** Back to what the agent is on, after the reader went elsewhere. */
   follow: string
+  /** Its tab while tucked into the side, read with its title. */
+  untuck: string
   /** A dot's name: "2 of 3: Pricing". */
   item: (index: number, count: number, title: string) => string
   /** How to move it by keyboard, read with its name. */
@@ -64,15 +68,19 @@ const defaultLabels: PictureInPictureLabels = {
   minimize: "Minimize",
   restore: "Show the preview",
   follow: "Follow",
+  untuck: "Bring back",
   item: (index, count, title) => `${index} of ${count}: ${title}`,
   keys: (many) =>
     many
-      ? "Left and right arrows go through what is open. Shift and the arrow keys move it to another corner."
-      : "Shift and the arrow keys move it to another corner.",
+      ? "Left and right arrows go through what is open. Shift and the arrow keys move it to another corner, or tuck it into the side."
+      : "Shift and the arrow keys move it to another corner, or tuck it into the side.",
 }
 
-/** Past this, a press is a drag, not a tap or a click. */
-const dragFrom = 4
+/** Past this, a press is a drag, not a tap or a click: a finger's wider. */
+const dragFrom = { mouse: 4, touch: 10 }
+
+/** What shows of it tucked into the side: its tab, in px. */
+const tab = 24
 
 /** How far ahead a flick is thrown, in ms of its speed. */
 const throwAhead = 120
@@ -160,7 +168,8 @@ function PipButton({
  * (its icon, its `line`, its `status`), as it says (`form`) or as the
  * reader made it; a terminal is best a pill of its last line. Dragged by
  * any part but its buttons, it lands in the corner it is let go nearest
- * or thrown towards; Shift and the arrow keys move it too. A call for
+ * or thrown towards; let go half past a side, it tucks into it, its tab
+ * bringing it out. Shift and the arrow keys move and tuck it too. A call for
  * the reader (`attention`) is a strip in the text's colour with a ring,
  * read out, the window nudged once. "Expand" (`onExpand`, e.g. into the
  * side panel) and "Close" (`onClose`) are the app's; `onShownChange`
@@ -177,6 +186,9 @@ function PictureInPicture({
   corner: cornerProp,
   defaultCorner = "bottom-end",
   onCornerChange,
+  tucked: tuckedProp,
+  defaultTucked = false,
+  onTuckedChange,
   onExpand,
   onClose,
   inset = 16,
@@ -208,6 +220,14 @@ function PictureInPicture({
   corner?: PictureInPictureCorner
   defaultCorner?: PictureInPictureCorner
   onCornerChange?: (corner: PictureInPictureCorner) => void
+  /**
+   * Tucked into the side of its corner, only its tab showing: let go half
+   * past the side, or Shift and the arrow out; its tab, or a drag back,
+   * brings it back.
+   */
+  tucked?: boolean
+  defaultTucked?: boolean
+  onTuckedChange?: (tucked: boolean) => void
   /** Its "Expand" button, for the one it shows: none without. */
   onExpand?: (id: string) => void
   /** Its "Close" button: none without. */
@@ -220,6 +240,8 @@ function PictureInPicture({
 }) {
   const labels = { ...defaultLabels, ...labelsProp }
   const [ownCorner, setOwnCorner] = React.useState(defaultCorner)
+  const [ownTucked, setOwnTucked] = React.useState(defaultTucked)
+  const tucked = (tuckedProp ?? ownTucked) && open
   const corner = cornerProp ?? ownCorner
   const [ownFollowing, setOwnFollowing] = React.useState(defaultFollowing)
   const following = followingProp ?? ownFollowing
@@ -284,6 +306,7 @@ function PictureInPicture({
     running?.cancel()
     const to = boxOf(element)
     last.current = { form, ...to }
+    element.style.setProperty("--pip-width", `${to.width}px`)
     if (!from || !was || was.form === form) return
     const duration = motion(element, "--motion-size")
     if (reducedMotion() || duration === 0) return
@@ -313,6 +336,8 @@ function PictureInPicture({
     const element = root.current
     if (!element) return
     const observer = new ResizeObserver(() => {
+      // Its width, for its place tucked into the side.
+      element.style.setProperty("--pip-width", `${element.offsetWidth}px`)
       const was = last.current
       if (was && !resizing.current)
         last.current = { form: was.form, ...boxOf(element) }
@@ -391,6 +416,8 @@ function PictureInPicture({
     x: number
     y: number
     mode: "press" | "move" | "turn"
+    /** How far it goes before it is a drag. */
+    from: number
     onPreview: boolean
     time: number
     vx: number
@@ -416,7 +443,8 @@ function PictureInPicture({
     element.style.transform = `translate(${rect.left - to.left}px, ${rect.top - to.top}px)`
     // Seen there before it goes.
     void element.offsetWidth
-    element.style.transition = "transform var(--motion-slide) var(--ease-slide)"
+    element.style.transition =
+      "transform var(--motion-slide) var(--ease-slide), scale var(--motion-fade) var(--ease-ui)"
     element.style.transform = ""
     const done = () => {
       element.style.transition = ""
@@ -429,19 +457,26 @@ function PictureInPicture({
     const rect = from.current
     from.current = null
     if (rect) settle(rect)
-  }, [corner, settle])
+  }, [corner, tucked, settle])
 
-  const move = (next: PictureInPictureCorner) => {
+  /** To a corner, tucked into its side or not: from where it is. */
+  const move = (next: PictureInPictureCorner, tuck = false) => {
     const element = root.current
     if (!element) return
     const rect = element.getBoundingClientRect()
-    if (next === corner) {
+    if (next === corner && tuck === tucked) {
       settle(rect)
       return
     }
     from.current = rect
-    if (cornerProp === undefined) setOwnCorner(next)
-    onCornerChange?.(next)
+    if (next !== corner) {
+      if (cornerProp === undefined) setOwnCorner(next)
+      onCornerChange?.(next)
+    }
+    if (tuck !== tucked) {
+      if (tuckedProp === undefined) setOwnTucked(tuck)
+      onTuckedChange?.(tuck)
+    }
     // Kept where it is, if the app keeps its corner.
     requestAnimationFrame(() => {
       if (from.current) {
@@ -540,6 +575,7 @@ function PictureInPicture({
       data-form={form}
       data-attention={shown.attention ? "" : undefined}
       data-closed={open ? undefined : ""}
+      data-tucked={tucked ? "" : undefined}
       {...(open ? {} : { inert: true, "aria-hidden": true })}
       aria-labelledby={titleId}
       aria-describedby={keysId}
@@ -553,14 +589,15 @@ function PictureInPicture({
         // Over what it floats on, as a menu is: raised, on the page's
         // colour (a step lighter in dark).
         "group/pip absolute z-20 flex cursor-grab touch-none flex-col bg-background text-foreground shadow-float ring-1 ring-foreground/10 outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing dark:bg-muted",
-        // Its ring fades as it is focused or calls; its size changes by
-        // the change of form's own animation.
-        "transition-shadow",
+        // Its ring fades as it is focused or calls; picked up, it rises a
+        // little. Its size changes by the change of form's own animation.
+        "transition-[box-shadow,scale] data-[dragging=move]:scale-102",
         open
           ? "animate-in motion-pop fade-in-0 zoom-in-95"
           : "pointer-events-none animate-out motion-pop fade-out-0 zoom-out-95",
         form === "card"
-          ? "w-80 rounded-xl max-sm:w-60"
+          ? // A phone's width, or its height on its side.
+            "w-80 rounded-xl max-sm:w-60 [@media(max-height:30rem)]:w-60"
           : "h-10 w-max max-w-96 min-w-40 rounded-full max-sm:max-w-80",
         // Calling for the reader: a ring as strong as the text.
         "data-attention:ring-2 data-attention:ring-foreground",
@@ -568,9 +605,10 @@ function PictureInPicture({
       )}
       style={{
         [vertical]: edge(vertical),
-        [horizontal === "start" ? "insetInlineStart" : "insetInlineEnd"]: edge(
-          horizontal === "start" ? "left" : "right"
-        ),
+        [horizontal === "start" ? "insetInlineStart" : "insetInlineEnd"]: tucked
+          ? // Past the side but its tab, clear of the safe area.
+            `calc(env(safe-area-inset-${horizontal === "start" ? "left" : "right"}, 0px) + ${tab}px - var(--pip-width, 100vw))`
+          : edge(horizontal === "start" ? "left" : "right"),
         ...style,
       }}
       onPointerDown={(event) => {
@@ -583,6 +621,7 @@ function PictureInPicture({
           x: event.clientX,
           y: event.clientY,
           mode: "press",
+          from: event.pointerType === "mouse" ? dragFrom.mouse : dragFrom.touch,
           onPreview: many && preview.current?.contains(target) === true,
           time: event.timeStamp,
           vx: 0,
@@ -598,7 +637,7 @@ function PictureInPicture({
         const dx = event.clientX - state.x
         const dy = event.clientY - state.y
         if (state.mode === "press") {
-          if (Math.hypot(dx, dy) < dragFrom) return
+          if (Math.hypot(dx, dy) < state.from) return
           // Across a preview of several: a turn; else it moves.
           state.mode =
             state.onPreview && Math.abs(dx) > Math.abs(dy) * 1.5
@@ -666,10 +705,14 @@ function PictureInPicture({
         const x = rect.left + rect.width / 2 + speed(state.vx) * throwAhead
         const y = rect.top + rect.height / 2 + speed(state.vy) * throwAhead
         const left = x < place.left + place.width / 2
+        // Its middle let go past a side (not thrown there: a flick to a
+        // corner is not one out): tucked into it.
+        const middle = rect.left + rect.width / 2
         move(
           `${y < place.top + place.height / 2 ? "top" : "bottom"}-${
             left !== rtl ? "start" : "end"
-          }` as PictureInPictureCorner
+          }` as PictureInPictureCorner,
+          middle < place.left || middle > place.right
         )
       }}
       onPointerCancel={(event) => {
@@ -703,16 +746,62 @@ function PictureInPicture({
         }[event.key]
         if (!to) return
         event.preventDefault()
-        move(to.join("-") as PictureInPictureCorner)
+        const next = to.join("-") as PictureInPictureCorner
+        const sideways = event.key === "ArrowLeft" || event.key === "ArrowRight"
+        // Out past its own side: tucked; back from it: out again, there.
+        if (sideways && next === corner) move(corner, true)
+        else if (sideways && tucked) move(corner, false)
+        else move(next, tucked)
       }}
       {...props}
     >
       <span id={keysId} className="sr-only">
         {labels.keys(many)}
       </span>
+      {tucked && (
+        // Its edge, in from the side: a tap, or a drag back, brings it out.
+        <button
+          type="button"
+          data-slot="picture-in-picture-tab"
+          aria-label={`${labels.untuck}: ${shown.title}`}
+          onClick={(event) => {
+            // Gone as it comes out: the focus to the window, not the page.
+            if (event.currentTarget.contains(document.activeElement))
+              root.current?.focus({ preventScroll: true })
+            move(corner, false)
+          }}
+          className={cn(
+            "touch-target absolute inset-y-0 z-10 flex w-6 items-center justify-center bg-background text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset dark:bg-muted [&_svg]:size-4",
+            horizontal === "end"
+              ? "start-0 rounded-s-[inherit]"
+              : "end-0 rounded-e-[inherit]",
+            // Calling for the reader: in the text's colour, as its strip.
+            shown.attention &&
+              "bg-foreground text-background hover:text-background"
+          )}
+        >
+          <HugeiconsIcon
+            icon={
+              shown.attention
+                ? Alert02Icon
+                : horizontal === "end"
+                  ? ArrowLeft01Icon
+                  : ArrowRight01Icon
+            }
+            strokeWidth={2}
+            className={shown.attention ? undefined : "rtl:rotate-180"}
+          />
+        </button>
+      )}
+      {tucked && shown.attention && (
+        <span role="status" className="sr-only">
+          {shown.attention}
+        </span>
+      )}
       {form === "card" ? (
         <div
           key="card"
+          inert={tucked}
           className="flex min-h-0 animate-in flex-col overflow-hidden rounded-xl motion-fade fade-in-0"
         >
           <div
@@ -786,6 +875,7 @@ function PictureInPicture({
       ) : (
         <div
           key="pill"
+          inert={tucked}
           data-slot="picture-in-picture-pill"
           className="flex h-10 min-w-0 shrink-0 animate-in items-center gap-2 ps-3 pe-1 text-2sm motion-fade fade-in-0 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-muted-foreground"
         >
