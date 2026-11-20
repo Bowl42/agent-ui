@@ -1332,19 +1332,22 @@ export const Sidebar: Story = {
     await waitFor(() =>
       expect(document.querySelector("[data-slot=tooltip-content]")).toBeNull()
     )
-    // Its mark ends where its conversations' marks do.
-    await onOneLine(
-      "status marks",
-      {
-        project: vesper
-          .querySelector("[data-slot=status-mark]")!
-          .getBoundingClientRect().right,
-        conversation: sidebar()
-          .getByRole("link", { name: "A quick question Unread" })
-          .querySelector("[data-slot=status-mark]")!
-          .getBoundingClientRect().right,
-      },
-      { edge: "end" }
+    // Its mark ends where its conversations' marks do, once its row's
+    // buttons have gone (on motion-hover).
+    await waitFor(() =>
+      onOneLine(
+        "status marks",
+        {
+          project: vesper
+            .querySelector("[data-slot=status-mark]")!
+            .getBoundingClientRect().right,
+          conversation: sidebar()
+            .getByRole("link", { name: "A quick question Unread" })
+            .querySelector("[data-slot=status-mark]")!
+            .getBoundingClientRect().right,
+        },
+        { edge: "end" }
+      )
     )
     // legacy's warning is beside its name, not at the row's end.
     const legacy = projects.getByRole("button", { name: /^legacy/ })
@@ -3200,12 +3203,33 @@ export const BrowserPanel: Story = {
     // Expanded over the main area, which stays as it was, and back.
     await panelsStill()
     const width = panel.getBoundingClientRect().width
-    await userEvent.click(within(panel).getByRole("button", { name: "Expand" }))
-    await expect(message).not.toBeVisible()
-    // The whole area: the main area's panel gone, not only its content.
     const group = panel.closest<HTMLElement>(
       "[data-slot=resizable-panel-group]"
     )!
+    const main = document.querySelector<HTMLElement>("#agent-app-main-panel")!
+    const mainWidth = main.getBoundingClientRect().width
+    // Its content, in the panel's own element.
+    const content = main.firstElementChild!.firstElementChild!
+    const contentWidth = content.getBoundingClientRect().width
+    within(panel).getByRole("button", { name: "Expand" }).click()
+    // The main area narrowing to nothing, its content as wide as it was
+    // (cut, not laid out again), out of reach meanwhile.
+    await waitFor(() =>
+      expect(group).toHaveAttribute("data-panel-motion", "expanding")
+    )
+    await waitFor(() => {
+      const now = main.getBoundingClientRect().width
+      expect(now).toBeGreaterThan(0)
+      expect(now).toBeLessThan(mainWidth - 1)
+    })
+    await expect(content).toHaveAttribute("inert")
+    // (Within the handle's px, gone as it expands.)
+    await expect(
+      Math.abs(content.getBoundingClientRect().width - contentWidth)
+    ).toBeLessThan(1)
+    await panelsStill()
+    await expect(message).not.toBeVisible()
+    // The whole area: the main area's panel gone, not only its content.
     await waitFor(() =>
       expect(
         Math.abs(
@@ -3217,16 +3241,17 @@ export const BrowserPanel: Story = {
     await expect(
       document.querySelector("#agent-app-main-panel")
     ).not.toBeVisible()
-    await userEvent.click(
-      within(panel).getByRole("button", { name: "Collapse" })
+    within(panel).getByRole("button", { name: "Collapse" }).click()
+    // Back at once, widening from nothing.
+    await waitFor(() =>
+      expect(group).toHaveAttribute("data-panel-motion", "collapsing")
     )
     await expect(message).toBeVisible()
     await expect(message).toHaveTextContent("@vite.config.ts")
-    await waitFor(() =>
-      expect(
-        Math.abs(panel.getBoundingClientRect().width - width)
-      ).toBeLessThanOrEqual(1)
-    )
+    await panelsStill()
+    await expect(
+      Math.abs(panel.getBoundingClientRect().width - width)
+    ).toBeLessThanOrEqual(1)
     // No line under the header, nor the panel's tabs: one card, split.
     await expect(
       getComputedStyle(canvas.getByRole("banner")).borderBottomWidth

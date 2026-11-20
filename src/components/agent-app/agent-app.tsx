@@ -1702,6 +1702,56 @@ function AgentAppPanels({
   }, [motion])
   const present = open || motion === "closing"
 
+  // Expanded or back beside, the main area narrows to nothing or widens
+  // from it as the theme's motion-size, its content as wide as it was,
+  // cut, not laid out again; only then gone (or from then back).
+  const [taking, setTaking] = React.useState<
+    "narrowing" | "returning" | "widening" | null
+  >(null)
+  const [overWas, setOverWas] = React.useState(over)
+  if (overWas !== over) {
+    setOverWas(over)
+    setTaking(
+      animates() && open && motion === null
+        ? over
+          ? "narrowing"
+          : "returning"
+        : null
+    )
+  }
+  // The main area's width as it went, for its content as it comes back.
+  const mainWidth = React.useRef<number | null>(null)
+  const mainId = "agent-app-main-panel"
+  React.useLayoutEffect(() => {
+    const element = document.getElementById(mainId)
+    if (!taking || !element) return
+    if (taking === "returning") {
+      // Back at nothing for a frame, then to its width.
+      const frame = requestAnimationFrame(() => setTaking("widening"))
+      return () => cancelAnimationFrame(frame)
+    }
+    const stop = () => setTaking(null)
+    const done = (event: TransitionEvent) => {
+      if (event.target === element && event.propertyName === "flex-grow") stop()
+    }
+    element.addEventListener("transitionend", done)
+    // Where no transition ends (a hidden tab), it ends all the same.
+    const timer = window.setTimeout(stop, 500)
+    return () => {
+      element.removeEventListener("transitionend", done)
+      window.clearTimeout(timer)
+    }
+  }, [taking])
+  const mainContent = React.useRef<HTMLDivElement>(null)
+  React.useLayoutEffect(() => {
+    const content = mainContent.current
+    if (!content) return
+    if (taking === "narrowing")
+      mainWidth.current = content.getBoundingClientRect().width
+    content.style.minWidth =
+      taking && mainWidth.current ? `${mainWidth.current}px` : ""
+  }, [taking])
+
   // The main area in the same place wherever the panel is: moving it does
   // not render the main area again, and the app's state in it stays.
   return (
@@ -1709,12 +1759,24 @@ function AgentAppPanels({
       {present && host && createPortal(panel, host)}
       <ResizablePanelGroup
         // Its panels moving, for whatever waits for them to stand.
-        data-panel-motion={motion ?? undefined}
+        data-panel-motion={
+          motion ??
+          (taking === null
+            ? undefined
+            : taking === "narrowing"
+              ? "expanding"
+              : "collapsing")
+        }
         className={cn(
           "min-h-0 flex-1",
           // The panel's own display is inline (flex): the main area's
           // goes only by an important rule, the panel then its whole.
           "*:data-covered:hidden!",
+          // Narrowing to nothing, or back at nothing a frame: then widening.
+          "*:data-taking:overflow-hidden",
+          "*:data-[taking=narrowing]:grow-0! *:data-[taking=returning]:grow-0!",
+          "*:data-[taking=narrowing]:transition-[flex-grow] *:data-[taking=widening]:transition-[flex-grow]",
+          "*:data-taking:motion-size",
           moves &&
             "*:data-panel:transition-[flex-grow] *:data-panel:motion-size"
         )}
@@ -1722,8 +1784,9 @@ function AgentAppPanels({
         {/* Hidden, not unmounted, while the panel is expanded: the app's
             state in it stays. */}
         <ResizablePanel
-          id="agent-app-main-panel"
-          data-covered={over || undefined}
+          id={mainId}
+          data-covered={(over && taking === null) || undefined}
+          data-taking={taking ?? undefined}
           minSize={book ? 0 : 320}
           className={cn(
             cards && "py-2",
@@ -1741,6 +1804,7 @@ function AgentAppPanels({
               cards && "overflow-hidden rounded-xl bg-background shadow-float"
             )}
             inert={over}
+            ref={mainContent}
             style={
               book && !cards
                 ? { paddingInlineEnd: Math.max(0, book.hinge - 1) }
@@ -1779,7 +1843,13 @@ function AgentAppPanels({
                 // its own), nor at the hinge, nor moving of itself.
                 const first = placed.current !== opening.times
                 placed.current = opening.times
-                if (!first && !book && !moving.current && !over)
+                if (
+                  !first &&
+                  !book &&
+                  !moving.current &&
+                  !over &&
+                  taking === null
+                )
                   onSizeChange?.(Math.round(size.inPixels))
               }}
               className={cards ? "p-2" : undefined}
@@ -2101,7 +2171,8 @@ function useAgentAppPanelBar(): HTMLElement | null {
 
 /**
  * Expands the panel of the `AgentAppPanels` it is in, and back: for its
- * bar's actions. Beside the main area, over it; as a sheet or a phone's
+ * bar's actions. Beside the main area, over it, the main area narrowing
+ * to nothing as it widens (and back); as a sheet or a phone's
  * drawer, over the whole window, clear of its safe areas. None beside on
  * a foldable's own screen.
  */

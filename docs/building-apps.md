@@ -978,8 +978,14 @@ the `--motion-*` properties (`--motion-mark`, 1200ms, is how long
   meanwhile: what draws past its edges (a focus ring on its first row)
   needs room inside it, e.g. `-m-0.5 p-0.5`.
 - `AgentAppPanels`' panel widens from nothing and narrows to it as a
-  button opens and closes it (not as it is dragged); its group carries
-  `data-panel-motion` meanwhile.
+  button opens and closes it (not as it is dragged), and the main area
+  narrows to nothing and widens from it as `AgentAppPanelExpand` expands
+  the panel beside it and back; its group carries `data-panel-motion`
+  meanwhile (`opening`, `closing`, `settling`, `expanding`,
+  `collapsing`).
+- `PictureInPicture` changes size from a card to a pill and back, its
+  corner kept; with `open={false}` it shrinks and fades out as a popup
+  does, and is then gone.
 - `FloatingButton` fades and grows in; with `visible` it stays rendered
   and fades and shrinks out too.
 
@@ -3197,7 +3203,8 @@ function PanelBrowser(props: React.ComponentProps<typeof Browser>) {
 ```
 
 - `AgentAppPanelExpand` expands the panel and back: beside the
-  conversation, over it; as a sheet (no room beside) or a phone's
+  conversation, over it, the conversation narrowing to nothing as the
+  panel widens (and back), as wide as it was and cut meanwhile; as a sheet (no room beside) or a phone's
   drawer, over the whole window, clear of its safe areas. It goes back
   to its size when the panel closes.
 - `open(page)` opens it in a new tab after the one shown, or goes to the
@@ -3500,6 +3507,10 @@ e.g. its pages and terminals when the panel is closed:
   keys move it. `corner`, `defaultCorner`, `onCornerChange` by the
   reading direction; 16px (`inset`) from its place's edges and the safe
   areas.
+- **Closing.** Rendered only while shown, it goes at once; to see it
+  out, keep it rendered and set `open={false}`: it shrinks and fades
+  out, then is gone, and comes back as it first came when `open` is
+  true again.
 - **Calling for the reader.** An item's `attention` is a strip under a
   card or the pill's line, in the text's colour with a ring, read out,
   and the window is nudged once; it never expands by itself.
