@@ -3436,40 +3436,62 @@ marks, size)`, and shows its `marks` and `highlight`. The words of
 
 ### `picture-in-picture`
 
-What an agent has open, small in a corner while the conversation goes
-on, e.g. a remote browser's page when the panel is closed:
+What an agent is on, small in a corner while the conversation goes on,
+e.g. its pages and terminals when the panel is closed:
 
 ```tsx
 <main className="relative">
   {" "}
   {/* its place: the nearest positioned ancestor */}…
-  {page && !panelOpen && (
+  {items.length > 0 && !panelOpen && (
     <PictureInPicture
-      title={page.title}
-      icon={<Favicon page={page} />}
-      badge={pages.length > 1 && <PageCount pages={pages} />} // a button through them
-      attention={page.needsYou && "Sign in to continue"}
-      onExpand={() => openPanel(page)} // into the panel; it then goes
-      onClose={() => hide(page)} // the page stays open
-    >
-      <img src={page.thumbnail} alt="" className="size-full" />
-    </PictureInPicture>
+      items={[
+        {
+          id: "pricing",
+          title: "Pricing",
+          icon: <Favicon />,
+          preview: <img src={frame} alt="" className="size-full" />,
+        },
+        {
+          id: "tests",
+          title: "pnpm test",
+          icon: <TerminalIcon />,
+          line: lastLine,
+          status: "Running · 12s",
+          preview: <PictureInPictureLines lines={output} />,
+          form: "pill",
+        },
+      ]}
+      active={agentIsOn} // it follows this one
+      onShownChange={(id) => stream(id)} // frames for the one shown only
+      onExpand={(id) => openPanel(id)} // into the panel; it then goes
+      onClose={() => hideForNow()} // what is open stays open
+    />
   )}
 </main>
 ```
 
-- Dragged by any part but its bar's buttons and its badge (and what has
-  `data-no-drag`), it lands in the corner it is let go nearest or
-  thrown towards; a tap on its content is still a press. Focused, the
-  arrow keys move it. `corner`, `defaultCorner` and `onCornerChange`
-  keep its corner (`top-start`, `bottom-end`…, by the reading
-  direction).
-- It is 320px wide (192px on a phone), its content at `aspectRatio`
-  (16:10), 16px (`inset`) from its place's edges and the safe areas.
-- `badge` sits on its top start corner; `attention` is a strip under the
-  content in the text's colour, read out as it comes, and a ring.
-- The app renders it while it shows and decides what is in it: stop
-  sending frames while it is not rendered.
+- **Following.** It shows the item the agent is on (`active`) and goes
+  with it. The reader goes through the others by a swipe across the
+  preview, a sideways scroll, the left and right arrows or a dot (past
+  seven, "2/12"); it then stays there, and "Follow" takes it back
+  (`following`, `onFollowingChange`).
+- **Card or pill.** A card has its title and `preview` (16:10,
+  `aspectRatio`; 320px wide, 240px on a phone); a pill is one line: its
+  icon, `line` and `status`, up to 384px. An item opens as its `form`
+  says (a card if it has a preview); Minimize makes it a pill, and the
+  pill's line a card again (or, with no preview, expands it). A
+  terminal is best a pill of its last line, `PictureInPictureLines`
+  its last lines when it is a card.
+- **Moving.** Dragged by any part but its buttons (and what has
+  `data-no-drag`), it lands in the corner it is let go nearest or thrown
+  towards; a tap on the preview is still a press. Shift and the arrow
+  keys move it. `corner`, `defaultCorner`, `onCornerChange` by the
+  reading direction; 16px (`inset`) from its place's edges and the safe
+  areas.
+- **Calling for the reader.** An item's `attention` is a strip under a
+  card or the pill's line, in the text's colour with a ring, read out,
+  and the window is nudged once; it never expands by itself.
 
 ### `viewer`
 
