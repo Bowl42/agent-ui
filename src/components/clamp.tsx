@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { flushSync } from "react-dom"
 import { cn } from "cn"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowDown01Icon, ArrowUp02Icon } from "@hugeicons/core-free-icons"
@@ -157,12 +156,14 @@ function Clamp({
       )
   }
 
-  // Read when its size changes, after layout, so many clamps mounting at
-  // once force no layout; rendered at once, before the paint.
-  React.useEffect(() => {
+  // Read as it mounts, before the paint, so its row comes with it (a frame
+  // late, what is below it would jump down): many clamps mounting at once
+  // read one layout between them. Then when its size changes, after
+  // layout, rendered with the next frame.
+  React.useLayoutEffect(() => {
     const element = content.current
     if (!element) return
-    const observer = new ResizeObserver(() => {
+    const measure = () => {
       const width = element.clientWidth
       // Not laid out (hidden, or skipped off screen by a content-visibility
       // row of a conversation): what it measured stays, so it does not
@@ -178,16 +179,14 @@ function Clamp({
       const long = longAt.current !== null
       // Counted only where it is said, and when its size changed.
       const words = long ? wordsIn(element.textContent ?? "") : 0
-      // Rendered before the paint: its row a frame late, what is below it
-      // would jump down.
-      flushSync(() =>
-        setMeasured((last) =>
-          last.total === total && last.long === long && last.words === words
-            ? last
-            : { total, long, words }
-        )
+      setMeasured((last) =>
+        last.total === total && last.long === long && last.words === words
+          ? last
+          : { total, long, words }
       )
-    })
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
     observer.observe(element)
     return () => observer.disconnect()
   }, [lines])

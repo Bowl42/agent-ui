@@ -220,27 +220,42 @@ export const Default: Story = {
   },
 }
 
-/** Its height and corners' radius (as drawn) each frame, until it stands. */
-async function sizes(element: HTMLElement) {
-  const seen: { height: number; radius: number }[] = []
-  for (let frame = 0; frame < 30; frame++) {
-    const { width, height } = element.getBoundingClientRect()
-    seen.push({
-      height: Math.round(height),
-      radius: Math.min(
-        parseFloat(getComputedStyle(element).borderTopLeftRadius),
-        width / 2,
-        height / 2
-      ),
-    })
-    await new Promise(requestAnimationFrame)
-  }
-  return seen
+/**
+ * Its change of size, held halfway: its height and corners' radius (as
+ * drawn) there, then let go to its end. Held, not sampled each frame: a
+ * slow machine's frames may come after it is over.
+ */
+async function halfway(element: HTMLElement) {
+  let change: Animation | undefined
+  await waitFor(() => {
+    change = element
+      .getAnimations()
+      .find(
+        (animation) =>
+          !(animation instanceof CSSAnimation) &&
+          !(animation instanceof CSSTransition) &&
+          (animation.effect as KeyframeEffect | null)
+            ?.getKeyframes()
+            .some((frame) => "height" in frame)
+      )
+    expect(change).toBeDefined()
+  })
+  change!.pause()
+  change!.currentTime = Number(change!.effect!.getTiming().duration) / 2
+  const { width, height } = element.getBoundingClientRect()
+  const radius = Math.min(
+    parseFloat(getComputedStyle(element).borderTopLeftRadius),
+    width / 2,
+    height / 2
+  )
+  change!.finish()
+  return { height, radius }
 }
 
 /**
  * From a card to a pill and back, its box changes size, not at once: its
- * corner kept, its corners rounding as it goes.
+ * corner kept, its corners rounding as it goes, what it shows cut
+ * meanwhile.
  */
 export const ChangesForm: Story = {
   play: async ({ canvasElement }) => {
@@ -248,7 +263,7 @@ export const ChangesForm: Story = {
     await waitFor(() =>
       expect(Math.round(window.getBoundingClientRect().width)).toBe(320)
     )
-    const card = Math.round(window.getBoundingClientRect().height)
+    const card = window.getBoundingClientRect().height
     const corner = () => {
       const box = window.getBoundingClientRect()
       const place = stage.getBoundingClientRect()
@@ -259,28 +274,26 @@ export const ChangesForm: Story = {
     }
     const kept = corner()
     within(window).getByRole("button", { name: "Minimize" }).click()
-    const down = await sizes(window)
-    // Between the two, a frame or more; at the end, a pill.
-    await expect(down.some(({ height }) => height > 40 && height < card)).toBe(
-      true
+    const down = await halfway(window)
+    // Halfway between a card's and a pill's, its corner where it was.
+    await expect(down.height).toBeGreaterThan(40)
+    await expect(down.height).toBeLessThan(card)
+    await expect(down.radius).toBeGreaterThan(14)
+    await expect(down.radius).toBeLessThan(20)
+    await waitFor(() =>
+      expect(Math.round(window.getBoundingClientRect().height)).toBe(40)
     )
-    await expect(down.at(-1)!.height).toBe(40)
-    // Its corners rounding on, never back, to the pill's.
-    for (const [at, { radius }] of down.entries())
-      await expect(radius).toBeGreaterThanOrEqual(
-        (down[at - 1]?.radius ?? 0) - 0.5
-      )
-    await expect(down.at(-1)!.radius).toBe(20)
     await expect(corner()).toEqual(kept)
-    await expect(window.style.overflow).toBe("")
+    await waitFor(() => expect(window.style.overflow).toBe(""))
     within(window)
       .getByRole("button", { name: "Show the preview: Pricing · example.com" })
       .click()
-    const up = await sizes(window)
-    await expect(up.some(({ height }) => height > 40 && height < card)).toBe(
-      true
+    const up = await halfway(window)
+    await expect(up.height).toBeGreaterThan(40)
+    await expect(up.height).toBeLessThan(card)
+    await waitFor(() =>
+      expect(window.getBoundingClientRect().height).toBeCloseTo(card, 0)
     )
-    await expect(up.at(-1)!.height).toBe(card)
     await expect(corner()).toEqual(kept)
   },
 }
