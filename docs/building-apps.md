@@ -4846,6 +4846,12 @@ copies it into the app, which owns it from then on and may change it.
     `icon`, `title`, `outcome` and `details` take the place of the turn's
     (a subagent's robot and "Exploring the build scripts"); `progress` is
     a line under its words while it is closed ("Reading scripts/build.ts").
+- Parts are compared by identity: a part that changes (a step done, more
+  of its output, more words) is a new object, and the rest are the same
+  ones, as a store's immutable updates give them. A run whose parts are
+  all the same objects is not rendered again, so a chunk streamed into a
+  turn of 300 steps costs what it costs in a turn of 30 (0.6 ms, not
+  2.6 ms; `pnpm perf`). A part changed in place is not seen.
 - `describeCommand(command, description?)` (in `src/lib`, exported from
   the block too) is the same rule for an app's own use: it gives
   `{ kind: "read", paths }`, `{ kind: "search", pattern, paths }`,

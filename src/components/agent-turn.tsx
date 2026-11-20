@@ -2538,6 +2538,23 @@ function runs(parts: AgentTurnPart[]) {
 /** It ends with what the agent said: an answer under its work. */
 const answers = (parts: AgentTurnPart[]) => parts.at(-1)?.type === "content"
 
+/**
+ * The set last returned while the next has the same members: a set in
+ * the turn's context, new with every part streamed, re-rendered every
+ * step of the turn.
+ */
+function useSameSet<T>(set: ReadonlySet<T>): ReadonlySet<T> {
+  const [kept, setKept] = React.useState(set)
+  if (
+    kept !== set &&
+    (kept.size !== set.size || [...set].some((item) => !kept.has(item)))
+  ) {
+    setKept(set)
+    return set
+  }
+  return kept
+}
+
 /** Failed commands that ran again, and then did not fail. */
 function resolvedFailures(parts: AgentTurnPart[]) {
   const resolved = new Set<string>()
@@ -2768,7 +2785,9 @@ function Segment({
     [outer.labels, labelsProp]
   )
   const ended = status === "stopped" || status === "error"
-  const ownResolved = React.useMemo(() => resolvedFailures(parts), [parts])
+  const ownResolved = useSameSet(
+    React.useMemo(() => resolvedFailures(parts), [parts])
+  )
   const resolved = segment?.resolved ?? ownResolved
   const failures = parts.filter(
     (part) =>
@@ -3044,6 +3063,19 @@ function Segment({
 }
 
 /** Parts in flow, shared by turns and replaced attempts. */
+/**
+ * A run re-rendered only when one of its parts is new: those of a long
+ * turn's finished runs are the same objects with every part streamed at
+ * its end (parts are compared by identity: a changed part is a new one).
+ */
+const MemoWork = React.memo(
+  Work,
+  (before, after) =>
+    before.split === after.split &&
+    before.parts.length === after.parts.length &&
+    before.parts.every((part, index) => part === after.parts[index])
+)
+
 function renderRuns(
   items: ReturnType<typeof runs>,
   nested: boolean,
@@ -3052,7 +3084,7 @@ function renderRuns(
 ) {
   return items.map((run, index) =>
     run.type === "work" ? (
-      <Work
+      <MemoWork
         key={run.parts[0]!.id}
         parts={run.parts}
         split={index === splitAt}
@@ -3165,7 +3197,9 @@ function AgentTurn(
   const nest = React.useContext(StepDetailsContext)
   const { id, status, parts, className, labels } = props
   const groups = React.useMemo(() => segments(parts), [parts])
-  const resolved = React.useMemo(() => resolvedFailures(parts), [parts])
+  const resolved = useSameSet(
+    React.useMemo(() => resolvedFailures(parts), [parts])
+  )
   // Not steered, or a subagent's: one piece, as it always was.
   if (nest || groups.length === 1) return <Segment {...props} />
   return (
