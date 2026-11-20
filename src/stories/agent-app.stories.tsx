@@ -5097,6 +5097,33 @@ export const PageFooter: Story = {
 }
 
 /**
+ * A narrow desktop window's titlebar, the panel a sheet: under the
+ * titlebar, 8px under it as the folded sidebar's, its buttons in sight;
+ * expanded, the whole window under it still.
+ */
+export const TitlebarPanelSheet: Story = {
+  ...viewport("titlebar-panel-sheet", 730, 720),
+  args: { sidebar: null },
+  render: () => <App titlebar panel />,
+  play: async ({ canvasElement }) => {
+    const titlebar = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=agent-app-titlebar]"
+    )!
+    const sheet = await body.findByRole("dialog", { name: "Browser" })
+    await waitFor(() => expect(sheet).toBeVisible())
+    const under = titlebar.getBoundingClientRect().bottom
+    await waitFor(() =>
+      expect(Math.round(sheet.getBoundingClientRect().top)).toBe(
+        Math.round(under) + 8
+      )
+    )
+    await expect(
+      Math.round(window.innerHeight - sheet.getBoundingClientRect().bottom)
+    ).toBe(8)
+  },
+}
+
+/**
  * A desktop window's titlebar over an open panel, a browser: its tabs in
  * the titlebar's row over the panel, as wide as it, the line between the
  * two on up through the bar; no row of their own under it. The panel's

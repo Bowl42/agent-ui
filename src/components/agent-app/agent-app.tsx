@@ -1838,8 +1838,10 @@ function AgentAppPanels({
               ? // The whole window, clear of its notches and bars.
                 "inset-0 h-auto w-auto max-w-none rounded-none pt-safe-or-0 pr-[env(safe-area-inset-right)] pb-safe pl-[env(safe-area-inset-left)] data-[side=left]:w-auto data-[side=right]:w-auto data-[side=left]:sm:max-w-none data-[side=right]:sm:max-w-none"
               : // A card floating over the page, 8px in from its edges,
-                // as the main area is a card.
-                "rounded-xl shadow-float data-[side=left]:inset-y-2 data-[side=left]:left-2 data-[side=left]:h-auto data-[side=left]:w-112 data-[side=right]:inset-y-2 data-[side=right]:right-2 data-[side=right]:h-auto data-[side=right]:w-112 data-[side=left]:sm:max-w-112 data-[side=right]:sm:max-w-112"
+                // as the main area is a card; under a titlebar, 8px
+                // under it, as the folded sidebar's sheet, its buttons
+                // in sight.
+                "rounded-xl shadow-float data-[side=left]:top-safe-offset-2 data-[side=left]:bottom-2 data-[side=left]:left-2 data-[side=left]:h-auto data-[side=left]:w-112 data-[side=right]:top-safe-offset-2 data-[side=right]:right-2 data-[side=right]:bottom-2 data-[side=right]:h-auto data-[side=right]:w-112 data-[side=left]:sm:max-w-112 data-[side=right]:sm:max-w-112"
           )}
           {...(barProp
             ? { "aria-labelledby": `${id}-side-title` }
