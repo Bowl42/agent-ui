@@ -1647,6 +1647,27 @@
       ]
     },
     {
+      "name": "picture-in-picture",
+      "type": "registry:component",
+      "title": "Picture in Picture",
+      "description": "A small window floating in a corner of its place (the nearest positioned ancestor, e.g. the main area), e.g. what an agent has open while the conversation goes on: raised on the page's colour, its bar its title (and icon), Expand (onExpand) and Close (onClose). Dragged by any part but its buttons, it lands in the corner it is let go nearest or thrown towards, sliding there (none with reduced motion); a tap is not a drag, so its content can be pressed. Focused, the arrow keys move it to another corner. corner/defaultCorner/onCornerChange in the reading direction (start, end). The app's badge sits on its top start corner (e.g. a count of pages that is a button) and its attention under the content, a strip in the text's colour read out as it comes, with a ring as strong as the text. 16px (inset) from its place's edges and the screen's safe areas; 320px wide, 192px on a phone; its content at aspectRatio (16:10). The app renders it while it shows.",
+      "dependencies": [
+        "cn",
+        "@hugeicons/react",
+        "@hugeicons/core-free-icons"
+      ],
+      "registryDependencies": [
+        "Bowl42/agentui/button",
+        "Bowl42/agentui/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/picture-in-picture.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "code-readout",
       "type": "registry:component",
       "title": "Code Readout",

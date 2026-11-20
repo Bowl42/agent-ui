@@ -38,7 +38,7 @@ callbacks.
 | What the reader can do with a turn (copy, retry, fork), when it was and what it used   | `AgentTurnFooter` with `copy-button`, `AgentTurnRetry`, `AgentTurnAction`s, `AgentTurnMore` and `AgentTurnInfo`, below                                                                                                                                       |
 | Code, terminal output, diffs                                                           | `CodeBlock`; a diff: `diff-block`; a whole file to read: `code-viewer`; a tool call's input and output: `tool-call-data`, below                                                                                                                              |
 | A search's matches in text or code                                                     | `search-highlight`, below                                                                                                                                                                                                                                    |
-| What is open beside the conversation: a preview, files, changes, output                | `browser` in the `agent-app` panel                                                                                                                                                                                                                           |
+| What is open beside the conversation: a preview, files, changes, output                | `browser` in the `agent-app` panel; small in a corner while it is closed: `picture-in-picture`                                                                                                                                                               |
 | A file open in that panel: a folder, an image, video, audio, a PDF, a table, terminals | `viewer` and its viewers: `files-viewer`, `media-viewer` (images, video, audio), `pdf-viewer`, `table-viewer`, `terminal-viewer`, below                                                                                                                      |
 | Choosing a folder, e.g. a project's directory on a machine                             | `folder-picker`                                                                                                                                                                                                                                              |
 | Files and images the user sent                                                         | chips where they were in the message, as the composer showed them (`ComposerMessage` in `UserMessageText`): never larger once sent; a chip opens it beside (`media-viewer`)                                                                                  |
@@ -3433,6 +3433,43 @@ marks, size)`, and shows its `marks` and `highlight`. The words of
   and its own toolbar: a `BrowserToolbar` with `BrowserToolbarButton`s
   and an `InputGroup` for its address, so it looks the same.
 - `labels` gives its words in other languages.
+
+### `picture-in-picture`
+
+What an agent has open, small in a corner while the conversation goes
+on, e.g. a remote browser's page when the panel is closed:
+
+```tsx
+<main className="relative">
+  {" "}
+  {/* its place: the nearest positioned ancestor */}…
+  {page && !panelOpen && (
+    <PictureInPicture
+      title={page.title}
+      icon={<Favicon page={page} />}
+      badge={pages.length > 1 && <PageCount pages={pages} />} // a button through them
+      attention={page.needsYou && "Sign in to continue"}
+      onExpand={() => openPanel(page)} // into the panel; it then goes
+      onClose={() => hide(page)} // the page stays open
+    >
+      <img src={page.thumbnail} alt="" className="size-full" />
+    </PictureInPicture>
+  )}
+</main>
+```
+
+- Dragged by any part but its bar's buttons and its badge (and what has
+  `data-no-drag`), it lands in the corner it is let go nearest or
+  thrown towards; a tap on its content is still a press. Focused, the
+  arrow keys move it. `corner`, `defaultCorner` and `onCornerChange`
+  keep its corner (`top-start`, `bottom-end`…, by the reading
+  direction).
+- It is 320px wide (192px on a phone), its content at `aspectRatio`
+  (16:10), 16px (`inset`) from its place's edges and the safe areas.
+- `badge` sits on its top start corner; `attention` is a strip under the
+  content in the text's colour, read out as it comes, and a ring.
+- The app renders it while it shows and decides what is in it: stop
+  sending frames while it is not rendered.
 
 ### `viewer`
 
