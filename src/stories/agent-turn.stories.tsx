@@ -209,7 +209,8 @@ const left = (element: Element) =>
 /** Where an element's middle is, up and down. */
 const middle = (element: Element) => {
   const box = element.getBoundingClientRect()
-  return box.top + box.height / 2
+  // To a hundredth: WebKit's boxes are off by a few millionths.
+  return Math.round((box.top + box.height / 2) * 100) / 100
 }
 
 // The stream of the mockup: an agent moves a waiting step into its run.

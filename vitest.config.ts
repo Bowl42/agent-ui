@@ -22,8 +22,10 @@ export default mergeConfig(
       // passes on a rerun is that, not a defect. One that fails three
       // times still fails.
       retry: 2,
-      // A CI runner is many times slower than a developer's machine.
-      testTimeout: process.env.CI ? 60_000 : 15_000,
+      // A CI runner is many times slower than a developer's machine; on
+      // that, the longest stories (a phone's or a tablet's app, some 8s)
+      // pass 15s while other work loads it too.
+      testTimeout: process.env.CI ? 60_000 : 30_000,
       projects: [
         {
           // Plain functions, e.g. a parser: in Node, no browser.

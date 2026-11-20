@@ -914,6 +914,8 @@ export const PhoneLoading: Story = {
     await expect(await picker.findByText("Loading…")).toBeVisible()
     await waitFor(() => expect(unloaded.calls).toHaveLength(1))
     unloaded.calls[0]!.resolve()
+    // Loaded, and its first folder holding the focus, as the reader sees it.
+    await waitFor(() => expect(picker.queryByText("Loading…")).toBeNull())
     await waitFor(() =>
       expect(picker.getByRole("option", { name: "examples" })).toHaveFocus()
     )
