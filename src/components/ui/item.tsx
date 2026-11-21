@@ -239,6 +239,8 @@ function ItemTitle({
         // column: a width of fit-content made a grid's column as wide
         // as its words in Firefox and WebKit, whatever its min-width.
         "line-clamp-1 flex max-w-fit min-w-0 items-center gap-2 text-sm leading-5 font-medium underline-offset-4",
+        // agentui: a link as its text (ItemLink) cut to one line too.
+        "*:data-[slot=item-link]:min-w-0 *:data-[slot=item-link]:truncate",
         className
       )}
       {...props}

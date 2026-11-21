@@ -753,7 +753,8 @@ export const Compact: Story = {
 /**
  * A title longer than its column is one line, cut with an ellipsis (a
  * flex box takes no line clamp: its text wrapped, or ran past the
- * column); so in a grid's column too, which shrinks below its length.
+ * column); so in a grid's column too, which shrinks below its length,
+ * and a link as its text (ItemLink).
  */
 export const LongTitle: Story = {
   render: (args) => (
@@ -776,16 +777,26 @@ export const LongTitle: Story = {
           Rename the settings page and move its sections under one heading each
         </ItemTitle>
       </div>
+      <Item {...args} className="w-70" data-testid="link">
+        <ItemContent>
+          <ItemTitle>
+            <ItemLink href="#settings">
+              Rename the settings page and move its sections under one heading
+              each, then update every link to it
+            </ItemLink>
+          </ItemTitle>
+        </ItemContent>
+      </Item>
     </>
   ),
   play: async ({ canvasElement }) => {
-    for (const id of ["flex", "grid"]) {
+    for (const id of ["flex", "grid", "link"]) {
       const box = canvasElement.querySelector<HTMLElement>(
         `[data-testid=${id}]`
       )!
       const title = box.querySelector<HTMLElement>("[data-slot=item-title]")!
       const text = title.querySelector<HTMLElement>(
-        "[data-slot=item-title-text]"
+        "[data-slot=item-title-text], [data-slot=item-link]"
       )!
       // One line, within its column, cut.
       await expect(text.getBoundingClientRect().height).toBe(20)
