@@ -640,6 +640,81 @@ export const Columns: Story = {
 }
 
 /**
+ * Columns that go as the list narrows (`hideBelow` on an `ItemMeta`):
+ * the same in every row, the titles keeping their room, no space left
+ * where a column went. Wide, a branch, a cost and a time; under 512px
+ * the cost goes; under 448px the branch too.
+ */
+export const ColumnsNarrowing: Story = {
+  args: { size: "sm" },
+  render: (args) => (
+    <div className="flex flex-col gap-6">
+      {[640, 480, 400].map((width) => (
+        <ItemGroup
+          key={width}
+          aria-label={`Runs at ${width}px`}
+          columns={3}
+          style={{ width }}
+          data-testid={`at-${width}`}
+        >
+          {runs.map((run) => (
+            <Item key={run.title} {...args} role="listitem">
+              <ItemContent>
+                <ItemTitle>{run.title}</ItemTitle>
+              </ItemContent>
+              <ItemMeta align="start" hideBelow="md">
+                main
+              </ItemMeta>
+              <ItemMeta hideBelow="lg">{run.cost}</ItemMeta>
+              <ItemMeta>{run.time}</ItemMeta>
+            </Item>
+          ))}
+        </ItemGroup>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const shown = (width: number) => {
+      const group = canvasElement.querySelector<HTMLElement>(
+        `[data-testid=at-${width}]`
+      )!
+      const item = group.querySelector<HTMLElement>("[data-slot=item]")!
+      const metas = Array.from(
+        item.querySelectorAll<HTMLElement>("[data-slot=item-meta]")
+      ).filter((meta) => meta.checkVisibility())
+      return { item, metas }
+    }
+    await expect(shown(640).metas.map((meta) => meta.textContent)).toEqual([
+      "main",
+      "$0.42",
+      "2m",
+    ])
+    await expect(shown(480).metas.map((meta) => meta.textContent)).toEqual([
+      "main",
+      "2m",
+    ])
+    await expect(shown(400).metas.map((meta) => meta.textContent)).toEqual([
+      "2m",
+    ])
+    // No space where a column went: the last 16px past the one before,
+    // and the row's end where it is with every column.
+    for (const width of [640, 480, 400]) {
+      const { item, metas } = shown(width)
+      const last = metas.at(-1)!.getBoundingClientRect()
+      const end =
+        item.getBoundingClientRect().right -
+        parseFloat(getComputedStyle(item).paddingRight) -
+        parseFloat(getComputedStyle(item).borderRightWidth)
+      await expect(Math.abs(last.right - end)).toBeLessThanOrEqual(1)
+      if (metas.length > 1)
+        await expect(
+          Math.round(last.left - metas.at(-2)!.getBoundingClientRect().right)
+        ).toBe(16)
+    }
+  },
+}
+
+/**
  * A title with a part cut short (a project and its long path): cut in its
  * column, not run over the facts beside it.
  */

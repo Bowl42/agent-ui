@@ -10,7 +10,9 @@ import { Separator } from "@/components/ui/separator"
 // stand in columns across them, each as wide as its widest, as a table's
 // would: media (where any item has it), content, then that many
 // columns, in each item's subgrid. On a phone, a list as without, each
-// item's parts in a row.
+// item's parts in a row. A column with `hideBelow` goes where the list is
+// narrower (the group is their container): its 16px apart a margin of
+// its own, not the grid's gap, so a column gone leaves no space.
 function ItemGroup({
   className,
   style,
@@ -28,7 +30,7 @@ function ItemGroup({
       className={cn(
         "group/item-group flex w-full flex-col gap-4 has-data-[size=sm]:gap-2 has-data-[size=xs]:gap-2 has-data-[size=compact]:gap-y-0",
         columns !== undefined &&
-          "sm:grid sm:grid-cols-[minmax(0,1fr)_repeat(var(--item-columns),auto)] gap-x-4 has-data-[size=sm]:gap-x-4 has-data-[size=xs]:gap-x-4 sm:has-data-[slot=item-media]:grid-cols-[auto_minmax(0,1fr)_repeat(var(--item-columns),auto)]",
+          "@container/item-group gap-x-0 sm:grid sm:grid-cols-[minmax(0,1fr)_repeat(var(--item-columns),auto)] has-data-[size=sm]:gap-x-0 has-data-[size=xs]:gap-x-0 sm:has-data-[slot=item-media]:grid-cols-[auto_minmax(0,1fr)_repeat(var(--item-columns),auto)]",
         className
       )}
       style={
@@ -91,7 +93,7 @@ function ItemSeparator({
 // ItemLink, it is hovered where its link is, and its link's focus ring
 // is round it.
 const itemVariants = cva(
-  "group/item has-data-[slot=item-link]:relative has-[[data-slot=item-link]:hover]:bg-muted flex w-full flex-wrap items-center rounded-lg border text-sm transition-colors outline-none motion-hover aria-selected:bg-muted data-active:bg-muted [&[aria-current]:not([aria-current=false])]:bg-muted sm:group-data-columns/item-group:col-span-full sm:group-data-columns/item-group:grid sm:group-data-columns/item-group:grid-cols-subgrid sm:group-data-columns/item-group:gap-x-4 sm:group-data-columns/item-group:group-has-data-[slot=item-media]/item-group:*:data-[slot=item-content]:col-start-2 sm:group-data-columns/item-group:*:data-[slot=item-media]:col-start-1 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a,button]:transition-colors [a,button]:hover:bg-muted [a,button]:active:bg-muted [button]:text-start [button]:disabled:pointer-events-none [button]:disabled:opacity-50",
+  "group/item has-data-[slot=item-link]:relative has-[[data-slot=item-link]:hover]:bg-muted flex w-full flex-wrap items-center rounded-lg border text-sm transition-colors outline-none motion-hover aria-selected:bg-muted data-active:bg-muted [&[aria-current]:not([aria-current=false])]:bg-muted sm:group-data-columns/item-group:col-span-full sm:group-data-columns/item-group:grid sm:group-data-columns/item-group:grid-cols-subgrid sm:group-data-columns/item-group:gap-x-0 sm:group-data-columns/item-group:*:data-[slot=item-actions]:ms-4 sm:group-data-columns/item-group:*:data-[slot=item-meta]:ms-4 sm:group-data-columns/item-group:group-has-data-[slot=item-media]/item-group:*:data-[slot=item-content]:ms-4 sm:group-data-columns/item-group:group-has-data-[slot=item-media]/item-group:*:data-[slot=item-content]:col-start-2 sm:group-data-columns/item-group:*:data-[slot=item-media]:col-start-1 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a,button]:transition-colors [a,button]:hover:bg-muted [a,button]:active:bg-muted [button]:text-start [button]:disabled:pointer-events-none [button]:disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -290,13 +292,33 @@ function ItemDescription({
 // grey, on one line, its digits of one width; in an ItemGroup with
 // `columns`, in a column of the same fact of every item, at its end
 // (`align="start"`: at its start, for words).
+/**
+ * agentui: where an ItemGroup with `columns` is narrower than this, a
+ * column goes (the same in every row): e.g. a cost, then a branch, as the
+ * list narrows beside an open sidebar, so the titles keep their room.
+ * Tailwind's container sizes: md 448px, lg 512px, xl 576px, 2xl 672px,
+ * 3xl 768px.
+ */
+type ItemHideBelow = "md" | "lg" | "xl" | "2xl" | "3xl"
+
+const hideBelowClass: Record<ItemHideBelow, string> = {
+  md: "@max-md/item-group:hidden",
+  lg: "@max-lg/item-group:hidden",
+  xl: "@max-xl/item-group:hidden",
+  "2xl": "@max-2xl/item-group:hidden",
+  "3xl": "@max-3xl/item-group:hidden",
+}
+
 function ItemMeta({
   className,
   align = "end",
+  hideBelow,
   ...props
 }: React.ComponentProps<"div"> & {
   /** Its column's end (numbers, by default) or start (words). */
   align?: "start" | "end"
+  /** Gone where its ItemGroup (with `columns`) is narrower than this. */
+  hideBelow?: ItemHideBelow | undefined
 }) {
   return (
     <div
@@ -305,6 +327,7 @@ function ItemMeta({
       className={cn(
         "shrink-0 text-xs leading-4 whitespace-nowrap text-muted-foreground tabular-nums",
         align === "end" ? "text-end" : "text-start",
+        hideBelow && hideBelowClass[hideBelow],
         className
       )}
       {...props}
@@ -367,4 +390,5 @@ export {
   ItemDescription,
   ItemHeader,
   ItemFooter,
+  type ItemHideBelow,
 }
