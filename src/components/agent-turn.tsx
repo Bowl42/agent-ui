@@ -3672,8 +3672,8 @@ function AgentTurnStep({
 
 /**
  * The keys of the folds a part of a turn is in, outermost first: open
- * them (`useSetFold`) to show it, e.g. a search's match, then find it by
- * `[data-part-id="…"]` to scroll to it. Its own fold, if it has one
+ * them (`useSetFold`) to show it, e.g. a search's match, then
+ * `scrollToMessage(messageId, { part })` scrolls to its `[data-part-id]`. Its own fold, if it has one
  * (reasoning, a tool call's details), is keyed by its id; a call merged
  * into another's line (a file's second edit) is in that line's.
  */

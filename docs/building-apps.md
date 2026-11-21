@@ -5012,9 +5012,20 @@ strokeWidth={2} />, title: <>Allowed
 - **Showing a part** (a search's match, a link to a tool call):
   `agentTurnFolds(turn, partId)` gives the keys of the folds it is in
   (give the turn's `status` too while it runs); open them with
-  `useSetFold`, and its own (its id) for its details, then find it by
-  `[data-part-id="…"]` and scroll to it. A call merged into another's
+  `useSetFold`, and its own (its id) for its details, then
+  `scrollToMessage(messageId, { part: partId })` (`useMessageScroller`)
+  puts it 16px below the viewport's start once it is drawn, and holds it
+  there while what is above it settles. A call merged into another's
   row (a file's second edit) is in that row's fold.
+
+  ```tsx
+  const setFold = useSetFold()
+  const { scrollToMessage } = useMessageScroller()
+  const show = (turn: Turn, part: string) => {
+    for (const key of agentTurnFolds(turn, part)) setFold(key, true)
+    scrollToMessage(turn.id, { part })
+  }
+  ```
 
 For DOM text search across these folds, use `conversation-find`; the folds
 keep their content hidden until found only while its find is open.

@@ -385,6 +385,9 @@ function useMessageScrollerRelease() {
 // agentui: how long a message is marked once the reader is taken to it,
 // as the theme's animate-highlight lasts.
 const highlightTime = 1200
+
+// agentui: a part scrolled to is this far below the viewport's start.
+const partMargin = 16
 const highlighted = new Map<string, ReturnType<typeof setTimeout>>()
 
 /** Marks a message's item for `highlightTime`, again from the start. */
@@ -423,15 +426,46 @@ function useMessageScroller() {
          * (a search's result, a link to it): the accent fading out.
          */
         highlight?: boolean
+        /**
+         * agentui: a part of it (`[data-part-id]`, e.g. an AgentTurn's
+         * step) at the viewport's start, not the message's start: open
+         * its folds first (`agentTurnFolds`, `useSetFold`).
+         */
+        part?: string
       }
     ) => {
       pin?.end()
-      const { highlight: mark = false, ...rest } = options ?? {}
+      const { highlight: mark = false, part, ...rest } = options ?? {}
       const scrolled = scroll(messageId, rest)
-      if (pin && scrolled && rest.behavior !== "smooth")
-        hold(pin, () => scroll(messageId, { ...rest, behavior: "auto" }), {
-          settle: settleTime,
+      // Its part, once mounted and its folds opened: the next frame.
+      const toPart = (behavior: ScrollBehavior | undefined) => {
+        const viewport = pin?.viewport()
+        const target = viewport?.querySelector<HTMLElement>(
+          `[data-slot=message-scroller-item][data-message-id="${CSS.escape(messageId)}"] [data-part-id="${CSS.escape(part!)}"]`
+        )
+        if (!viewport || !target) return false
+        const top =
+          target.getBoundingClientRect().top -
+          viewport.getBoundingClientRect().top +
+          viewport.scrollTop -
+          (rest.scrollMargin ?? partMargin)
+        viewport.scrollTo({ top, ...(behavior ? { behavior } : {}) })
+        return true
+      }
+      const again =
+        part === undefined
+          ? () => scroll(messageId, { ...rest, behavior: "auto" })
+          : () => {
+              if (!toPart("auto")) scroll(messageId, { ...rest, behavior: "auto" })
+            }
+      if (scrolled && part !== undefined)
+        window.requestAnimationFrame(() => {
+          if (!toPart(rest.behavior)) return
+          if (pin && rest.behavior !== "smooth")
+            hold(pin, again, { settle: settleTime })
         })
+      else if (pin && scrolled && rest.behavior !== "smooth")
+        hold(pin, again, { settle: settleTime })
       if (scrolled && mark) highlight(messageId)
       return scrolled
     },

@@ -1593,6 +1593,88 @@ export const LongToolHeavy: Story = {
   },
 }
 
+function PartButton() {
+  const { scrollToMessage } = useMessageScroller()
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="absolute end-3 top-3 z-10"
+      onClick={() => scrollToMessage("long", { part: "long:step-9" })}
+    >
+      Step 9
+    </Button>
+  )
+}
+
+/**
+ * Taken to a part of a message (a tool call opened from elsewhere): with
+ * `scrollToMessage(id, { part })`, its `[data-part-id]` at the viewport's
+ * start, 16px below it, not the message's start. Folds it is in are the
+ * app's to open first (`agentTurnFolds`).
+ */
+export const ScrollToPart: Story = {
+  render: () => (
+    <div className="relative flex h-120 w-md max-w-full flex-col overflow-hidden rounded-xl border">
+      <MessageScrollerProvider>
+        <PartButton />
+        <MessageScroller>
+          <MessageScrollerViewport aria-label="Conversation">
+            <MessageScrollerContent className="p-4">
+              {history.slice(0, 4).map((message) => (
+                <MessageScrollerItem key={message.id} messageId={message.id}>
+                  <Message align={message.role === "user" ? "end" : "start"}>
+                    <MessageContent>{message.text.slice(0, 80)}</MessageContent>
+                  </Message>
+                </MessageScrollerItem>
+              ))}
+              <MessageScrollerItem messageId="long">
+                <Message>
+                  <MessageContent className="flex flex-col gap-2">
+                    {Array.from({ length: 16 }, (_, index) => (
+                      <p
+                        key={index}
+                        data-part-id={`long:step-${index + 1}`}
+                        className="py-4"
+                      >
+                        Step {index + 1}: read a file and edit it.
+                      </p>
+                    ))}
+                  </MessageContent>
+                </Message>
+              </MessageScrollerItem>
+              {history.slice(4, 8).map((message) => (
+                <MessageScrollerItem key={message.id} messageId={message.id}>
+                  <Message align={message.role === "user" ? "end" : "start"}>
+                    <MessageContent>{message.text.slice(0, 80)}</MessageContent>
+                  </Message>
+                </MessageScrollerItem>
+              ))}
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+        </MessageScroller>
+      </MessageScrollerProvider>
+    </div>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const viewport = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=message-scroller-viewport]"
+    )!
+    const part = canvasElement.querySelector<HTMLElement>(
+      '[data-part-id="long:step-9"]'
+    )!
+    await userEvent.click(canvas.getByRole("button", { name: "Step 9" }))
+    await waitFor(() =>
+      expect(
+        Math.round(
+          part.getBoundingClientRect().top -
+            viewport.getBoundingClientRect().top
+        )
+      ).toBe(16)
+    )
+  },
+}
+
 function HighlightTo({ messageId }: { messageId: string }) {
   const { scrollToMessage } = useMessageScroller()
   React.useEffect(() => {
