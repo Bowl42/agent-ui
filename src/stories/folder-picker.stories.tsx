@@ -40,6 +40,7 @@ function Demo({
   withPlaces = false,
   create = false,
   embedded = false,
+  autoFocus = false,
 }: {
   onChoose: (folder: ViewerFile) => void
   onPlaceChange: (id: string) => void
@@ -48,6 +49,7 @@ function Demo({
   withPlaces?: boolean
   create?: boolean
   embedded?: boolean
+  autoFocus?: boolean
 }) {
   const [open, setOpen] = React.useState(false)
   const [tree, setTree] = React.useState(folderTree)
@@ -138,6 +140,7 @@ function Demo({
           <h2 className="mb-3 text-lg font-semibold">Add a project</h2>
           <FolderPickerPanel
             {...props}
+            autoFocus={autoFocus}
             className="h-120"
             status={
               selected === "~/Documents" ? "Not a git repository" : undefined
@@ -469,6 +472,18 @@ export const Embedded: Story = {
     await expect(status).toHaveAttribute("role", "status")
     await expect(status).toHaveAttribute("aria-live", "polite")
     await expect(canvas.getByRole("button", { name: "Choose" })).toBeDisabled()
+  },
+}
+
+/**
+ * Embedded with `autoFocus`, the panel a page's whole content: its path
+ * field focused as it is shown, as the dialog's is.
+ */
+export const EmbeddedAutoFocus: Story = {
+  args: { embedded: true, autoFocus: true },
+  play: async ({ canvasElement }) => {
+    const field = canvasElement.querySelector("[data-folder-picker-path]")
+    await waitFor(() => expect(document.activeElement).toBe(field))
   },
 }
 

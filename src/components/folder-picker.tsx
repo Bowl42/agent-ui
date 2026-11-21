@@ -141,6 +141,11 @@ type FolderPickerPanelProps = {
   canChoose?: ((folder: ViewerFile) => boolean) | undefined
   /** A Cancel button before Choose. */
   onCancel?: (() => void) | undefined
+  /**
+   * The path field focused as it is shown, as in `FolderPicker`'s dialog:
+   * e.g. a panel that is a page's or a step's whole content.
+   */
+  autoFocus?: boolean | undefined
   /** The element the buttons go in, e.g. a `DialogFooter`; a row by default. */
   footer?: React.ReactElement<{ children?: React.ReactNode }> | undefined
   labels?: Partial<FolderPickerLabels> | undefined
@@ -237,6 +242,7 @@ function FolderPickerPanel({
   onChoose,
   canChoose,
   onCancel,
+  autoFocus = false,
   footer,
   labels: labelsProp,
   viewerLabels,
@@ -537,6 +543,7 @@ function FolderPickerPanel({
       className={mobile ? undefined : "me-1 h-7 min-w-0 flex-1"}
       data-folder-picker-path=""
       ref={pathInput}
+      autoFocus={autoFocus}
       id={pathId}
       aria-label={labels.path}
       placeholder={labels.pathPlaceholder}

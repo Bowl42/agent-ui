@@ -3859,7 +3859,8 @@ perf`). A level changed in place is not seen.
   `viewerLabels` supply the words.
 - `FolderPicker` supplies the dialog, title, description and Cancel button.
   `FolderPickerPanel` supplies the same chooser for a page; `footer` can place
-  its buttons in an app's footer.
+  its buttons in an app's footer; `autoFocus` focuses its path field as it
+  is shown, as the dialog does.
 
 ### `media-viewer`
 
