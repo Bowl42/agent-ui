@@ -1077,14 +1077,55 @@ function cellsToHtml(rows: readonly string[][]) {
     .join("")}</tbody></table>`
 }
 
+/** A line that is a table's row: it starts with a pipe (in a quote too). */
+const tableRow = /^[ \t]*(?:>[ \t]*)*\|/
+/** A line that opens or closes fenced code. */
+const codeFence = /^[ \t]*(?:>[ \t]*)*(`{3,}|~{3,})/
+
+/** Whether `markdown`'s end is inside fenced code, where pipes are code. */
+function inCode(markdown: string) {
+  let open: string | undefined
+  for (const line of markdown.split("\n")) {
+    const fence = codeFence.exec(line)?.[1]
+    if (!fence) continue
+    if (open === undefined) open = fence
+    else if (fence[0] === open[0] && fence.length >= open.length)
+      open = undefined
+  }
+  return open !== undefined
+}
+
+/**
+ * A streaming answer up to its tables' whole rows: the row being
+ * written waits for its line's end, and a heading row for the rule under
+ * it. So a table is never pipes in a paragraph that become a table, nor
+ * do its columns shift with each word of a row. Its columns then only
+ * widen as rows come, until it is as wide as it may be.
+ */
+function wholeTableRows(markdown: string) {
+  let text = markdown
+  const end = text.lastIndexOf("\n")
+  if (tableRow.test(text.slice(end + 1))) text = text.slice(0, end + 1)
+  if (text.endsWith("\n")) {
+    // The last whole line, a heading row alone: its rule not here yet.
+    const start = text.lastIndexOf("\n", text.length - 2)
+    const before =
+      start < 0 ? "" : text.slice(text.lastIndexOf("\n", start - 1) + 1, start)
+    if (tableRow.test(text.slice(start + 1, -1)) && !tableRow.test(before))
+      text = text.slice(0, start + 1)
+  }
+  return text === markdown || inCode(text) ? markdown : text
+}
+
 const tableClass =
   "w-full border-collapse text-sm leading-5 break-normal wrap-normal tabular-nums [&_tbody_tr:last-child>td]:border-b-0"
 
 /**
  * A table of the answer's: rules between rows only, numbers lined up.
- * Under it, a button copies it (as an HTML table, which a spreadsheet or
- * a document pastes as one, and as Markdown text) and one shows it full
- * screen, its heading held at the top as it scrolls.
+ * Over it, its size, a button that copies it (as an HTML table, which a
+ * spreadsheet or a document pastes as one, and as Markdown text) and one
+ * that shows it full screen, its heading held at the top as it scrolls.
+ * In a message scroller, wider than the text where it needs to be.
  */
 function Table(all: ElementProps<"table">) {
   const { labels } = React.useContext(MarkdownContext)
@@ -1127,26 +1168,32 @@ function Table(all: ElementProps<"table">) {
     />
   )
   return (
-    <div data-slot="markdown-table" className="flex min-w-0 flex-col">
+    <div
+      data-slot="markdown-table"
+      className={cn(
+        "flex min-w-0 flex-col",
+        // In a message scroller (its viewport `@container/message-scroller`),
+        // a table of the answer's own wider than the text takes the room
+        // either side, centred, as wide as it needs: at most the room less
+        // 48px each side (clear of a conversation map there), and 1152px.
+        // Never narrower than the text; where there is no more room, it
+        // scrolls as before.
+        "@min-[0px]/message-scroller:[[data-slot=markdown]>&]:w-max @min-[0px]/message-scroller:[[data-slot=markdown]>&]:max-w-[min(100cqw-6rem,72rem)] @min-[0px]/message-scroller:[[data-slot=markdown]>&]:min-w-full @min-[0px]/message-scroller:[[data-slot=markdown]>&]:self-center"
+      )}
+    >
+      {/* Over it, its size and its buttons: seen as the table's, where
+          the eye comes to it. */}
       <div
-        data-slot="markdown-table-content"
-        // Wider than the lane it scrolls: a keyboard can focus it to scroll.
-        tabIndex={0}
-        className="w-full min-w-0 scrollbar-thin overflow-x-auto rounded-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        data-slot="markdown-table-header"
+        className="-me-2 flex items-center gap-0.5 pointer-coarse:-me-3"
       >
-        <table
-          data-streamdown="table"
-          className={cn(tableClass, className)}
-          {...props}
+        <span
+          // A screen reader says a table's size itself.
+          aria-hidden="true"
+          className="min-w-0 flex-1 truncate text-xs text-muted-foreground tabular-nums"
         >
-          {children}
-        </table>
-      </div>
-      {/* Its buttons at its end, as an answer's own are under it. */}
-      <div
-        data-slot="markdown-table-actions"
-        className="-me-2 flex justify-end gap-0.5 pointer-coarse:-me-3"
-      >
+          {size}
+        </span>
         {copyButton}
         <Tooltip>
           <TooltipTrigger
@@ -1164,6 +1211,20 @@ function Table(all: ElementProps<"table">) {
           </TooltipTrigger>
           <TooltipContent>{labels.tableFullScreen}</TooltipContent>
         </Tooltip>
+      </div>
+      <div
+        data-slot="markdown-table-content"
+        // Wider than the lane it scrolls: a keyboard can focus it to scroll.
+        tabIndex={0}
+        className="w-full min-w-0 scrollbar-thin overflow-x-auto rounded-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        <table
+          data-streamdown="table"
+          className={cn(tableClass, className)}
+          {...props}
+        >
+          {children}
+        </table>
       </div>
       <Dialog open={full} onOpenChange={setFull}>
         <DialogContent
@@ -1379,7 +1440,8 @@ const components: Components = {
  * `@streamdown/math`), formulas are KaTeX in the text's colour, their
  * TeX shown as code while streaming or on failure and copied as written.
  * With `isAnimating`, new blocks fade in (opacity, 600ms) while streaming,
- * never with reduced motion or when a finished message opens.
+ * never with reduced motion or when a finished message opens; a table
+ * comes a whole row at a time, each fading in.
  */
 function Markdown({
   className,
@@ -1500,6 +1562,7 @@ function Markdown({
       props.plugins?.mermaid,
     ]
   )
+  const streaming = props.isAnimating && props.mode !== "static"
   return (
     <MarkdownContext.Provider value={context}>
       <Streamdown
@@ -1507,9 +1570,7 @@ function Markdown({
         // While it streams, each new block fades in (opacity only): a
         // starting style applies only to an element just inserted, and
         // only under data-streaming, so a finished answer opens as it is.
-        data-streaming={
-          props.isAnimating && props.mode !== "static" ? "" : undefined
-        }
+        data-streaming={streaming ? "" : undefined}
         // 16px lines 28px apart, as ChatGPT's and Claude's answers, about
         // 85 characters to the conversation's 752px (47 CJK ones),
         // room between CJK text's dense lines. Lines break evenly (no word
@@ -1525,11 +1586,17 @@ function Markdown({
           // (one rule, not one a property: each rule on `> *` is tried on
           // every element of the page, every restyle)
           "motion-safe:data-streaming:*:[transition:opacity_600ms_var(--ease-out)] motion-safe:data-streaming:*:starting:opacity-0",
+          // and a table's rows, whole, as they come
+          "motion-safe:data-streaming:[&_tbody>tr]:[transition:opacity_600ms_var(--ease-out)] motion-safe:data-streaming:[&_tbody>tr]:starting:opacity-0",
           className
         )}
         components={merged}
         {...props}
         rehypePlugins={rehypePlugins}
+        {...(streaming &&
+          typeof props.children === "string" && {
+            children: wholeTableRows(props.children),
+          })}
         {...(math ? { plugins: { ...props.plugins, math } } : {})}
         // An unfinished formula stays source until its closing fence arrives.
         remend={{ katex: false, ...props.remend }}

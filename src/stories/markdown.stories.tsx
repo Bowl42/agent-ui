@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import * as React from "react"
 import { expect, fn, spyOn, userEvent, waitFor, within } from "storybook/test"
 
 import { createMathPlugin, math } from "@streamdown/math"
@@ -6,10 +7,17 @@ import "katex/dist/katex.min.css"
 
 import { mermaid } from "@streamdown/mermaid"
 
+import { cn } from "cn"
 import { Chip } from "@/components/chip"
 import { Markdown } from "@/components/markdown"
 import { registerLanguages } from "@/lib/highlighter"
 import { Message, MessageContent } from "@/components/ui/message"
+import {
+  MessageScroller,
+  MessageScrollerContent,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@/components/ui/message-scroller"
 
 import { foldedLines, frames, insideBorder } from "./code-fold"
 
@@ -18,15 +26,19 @@ const meta = {
   component: Markdown,
   parameters: { layout: "padded" },
   decorators: [
-    (Story) => (
-      <div className="mx-auto w-3xl max-w-full">
-        <Message>
-          <MessageContent>
-            <Story />
-          </MessageContent>
-        </Message>
-      </div>
-    ),
+    (Story, { parameters }) =>
+      // A story in a conversation of its own, in a scroller.
+      parameters.conversation ? (
+        <Story />
+      ) : (
+        <div className="mx-auto w-3xl max-w-full">
+          <Message>
+            <MessageContent>
+              <Story />
+            </MessageContent>
+          </Message>
+        </div>
+      ),
   ],
 } satisfies Meta<typeof Markdown>
 
@@ -1194,6 +1206,238 @@ export const TableFullScreen: Story = {
       expect(within(document.body).queryByRole("dialog")).toBeNull()
     )
     await waitFor(() => expect(document.activeElement).toBe(open))
+  },
+}
+
+const plans = [
+  "| Tier | Pick | Price | Spec |",
+  "| --- | --- | --- | --- |",
+  "| Small services (a few containers, a bot, monitoring) | Alpha KVM 2, at its sale price until the 14th | about $8.79 a month | 2 cores, 8 GB, 100 GB NVMe |",
+  "| Main server (a database, cluster nodes) | Beta RS 1000 or 2000, in the flash sale | €15.2 a month for 4 cores, €31.4 for 8 | dedicated cores, DDR5 |",
+  "| Dedicated (many services, much memory) | Gamma LE-6, back in stock now and then | $31.9 a month | 16 cores, 128 GB, 2×4 TB and 2×512 GB NVMe |",
+]
+const plansAnswer = `For services only, compare what each price buys.\n\n${plans.join("\n")}\n\nThe flash sale is the one to wait for.`
+
+/** An answer in a conversation's column, in a scroller as wide as given. */
+function InAConversation({
+  className,
+  children,
+}: {
+  className: string
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className={cn(
+        "h-150 max-w-full overflow-hidden rounded-xl border",
+        className
+      )}
+    >
+      <MessageScrollerProvider>
+        <MessageScroller>
+          <MessageScrollerViewport aria-label="Conversation">
+            <MessageScrollerContent className="mx-auto w-full max-w-column px-4 py-4">
+              <Message>
+                <MessageContent>{children}</MessageContent>
+              </Message>
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+        </MessageScroller>
+      </MessageScrollerProvider>
+    </div>
+  )
+}
+
+/**
+ * Over a table, its size and its buttons, where the eye comes to it:
+ * seen as the table's, not the answer's.
+ */
+export const TableHeader: Story = {
+  args: { children: tables, mode: "static" },
+  play: async ({ canvas, canvasElement }) => {
+    const header = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=markdown-table-header]"
+    )!
+    const table = canvasElement.querySelector("table")!
+    await expect(header.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      table.getBoundingClientRect().top
+    )
+    await expect(header).toHaveTextContent("3 rows · 3 columns")
+    for (const name of ["Copy table", "Full screen"])
+      await expect(header.contains(canvas.getByRole("button", { name }))).toBe(
+        true
+      )
+  },
+}
+
+/**
+ * In a wide conversation, a table wider than the text takes the room
+ * either side, centred, as wide as its columns need, clear of the
+ * scroller's edges by 48px; the text keeps its width, and a table that
+ * fits keeps the text's.
+ */
+export const TableSpread: Story = {
+  parameters: { conversation: true },
+  args: { mode: "static", children: `${plansAnswer}\n\n${tables}` },
+  render: (args) => (
+    <InAConversation className="w-320">
+      <Markdown {...args} />
+    </InAConversation>
+  ),
+  play: async ({ canvasElement }) => {
+    const lane = canvasElement
+      .querySelector("[data-slot=markdown]")!
+      .getBoundingClientRect()
+    const viewport = canvasElement
+      .querySelector("[data-slot=message-scroller-viewport]")!
+      .getBoundingClientRect()
+    const [wide, fits] = [
+      ...canvasElement.querySelectorAll<HTMLElement>(
+        "[data-slot=markdown-table]"
+      ),
+    ].map((table) => table.getBoundingClientRect())
+    await expect(wide!.width).toBeGreaterThan(lane.width + 32)
+    // Centred on the text.
+    await expect(
+      Math.abs(lane.left - wide!.left - (wide!.right - lane.right))
+    ).toBeLessThanOrEqual(1)
+    await expect(wide!.left - viewport.left).toBeGreaterThanOrEqual(48)
+    await expect(fits!.width).toBe(lane.width)
+    await expect(fits!.left).toBe(lane.left)
+    // Its columns whole: nothing to scroll.
+    const content = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=markdown-table-content]"
+    )!
+    await expect(content.scrollWidth).toBeLessThanOrEqual(content.clientWidth)
+  },
+}
+
+/**
+ * In a conversation with no room beside the text, a wide table keeps
+ * the text's width and scrolls.
+ */
+export const TableSpreadNoRoom: Story = {
+  parameters: { conversation: true },
+  args: { mode: "static", children: plansAnswer },
+  render: (args) => (
+    <InAConversation className="w-196">
+      <Markdown {...args} />
+    </InAConversation>
+  ),
+  play: async ({ canvasElement }) => {
+    const lane = canvasElement
+      .querySelector("[data-slot=markdown]")!
+      .getBoundingClientRect()
+    const table = canvasElement
+      .querySelector("[data-slot=markdown-table]")!
+      .getBoundingClientRect()
+    await expect(table.width).toBe(lane.width)
+    await expect(table.left).toBe(lane.left)
+  },
+}
+
+/**
+ * While it streams, a table shows whole rows only: a heading row waits
+ * for its rule (never pipes in a paragraph first), a row for its line's
+ * end.
+ */
+export const TableStreamingRows: Story = {
+  args: { mode: "streaming", isAnimating: true, children: "" },
+  render: (args) => (
+    <div className="flex flex-col gap-6">
+      {[
+        "Compare them.\n\n| Tier | Pick |\n| --",
+        `Compare them.\n\n${plans.slice(0, 3).join("\n")}\n| Dedicated (many`,
+        // Not a table: pipes in code are code.
+        "```text\n| a | b |\n| c",
+      ].map((text) => (
+        <div key={text} data-case>
+          <Markdown {...args}>{text}</Markdown>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [heading, rows, code] = canvasElement.querySelectorAll("[data-case]")
+    await expect(heading!.querySelector("table")).toBeNull()
+    await expect(heading).not.toHaveTextContent("|")
+    await expect(heading).toHaveTextContent("Compare them.")
+    await expect(rows!.querySelectorAll("tbody tr")).toHaveLength(1)
+    await expect(rows).not.toHaveTextContent("Dedicated")
+    await waitFor(() => expect(code).toHaveTextContent("| c"))
+  },
+}
+
+/** An answer written a few characters at a time, as an agent streams. */
+function Streamed({ text }: { text: string }) {
+  const [at, setAt] = React.useState(0)
+  React.useEffect(() => {
+    if (at >= text.length) return
+    const timer = setTimeout(() => setAt((at) => at + 4), 8)
+    return () => clearTimeout(timer)
+  }, [at, text])
+  return (
+    <Markdown mode="streaming" isAnimating={at < text.length}>
+      {text.slice(0, at)}
+    </Markdown>
+  )
+}
+
+/**
+ * A table as it streams in a wide conversation: rows come whole, each
+ * fading in; it only widens, centred, until its columns have their room.
+ */
+export const TableStreaming: Story = {
+  parameters: { conversation: true },
+  args: { children: "" },
+  render: () => (
+    <InAConversation className="w-320">
+      <Streamed text={plansAnswer} />
+    </InAConversation>
+  ),
+  play: async ({ canvasElement }) => {
+    const cells = new Set(
+      plans
+        .slice(2)
+        .flatMap((row) => row.split("|").slice(1, -1))
+        .map((cell) => cell.trim())
+    )
+    const partial: string[] = []
+    const widths: number[] = []
+    // Each row drawn once (so faded in once), each fading in.
+    const rows = new Set<Element>()
+    let fading = false
+    const observer = new MutationObserver(() => {
+      for (const cell of canvasElement.querySelectorAll("td"))
+        if (!cells.has(cell.textContent!.trim()))
+          partial.push(cell.textContent!)
+      const table = canvasElement.querySelector("[data-slot=markdown-table]")
+      if (table) widths.push(table.getBoundingClientRect().width)
+      for (const row of canvasElement.querySelectorAll("tbody tr")) {
+        rows.add(row)
+        if (getComputedStyle(row).transitionProperty.includes("opacity"))
+          fading = true
+      }
+    })
+    observer.observe(canvasElement, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    })
+    await waitFor(
+      () =>
+        expect(canvasElement).toHaveTextContent(
+          "The flash sale is the one to wait for."
+        ),
+      { timeout: 10000 }
+    )
+    observer.disconnect()
+    await expect(partial).toEqual([])
+    await expect(widths.length).toBeGreaterThan(0)
+    for (const [at, width] of widths.entries())
+      await expect(width).toBeGreaterThanOrEqual(widths[at - 1] ?? 0)
+    await expect(rows.size).toBe(3)
+    await expect(fading).toBe(true)
   },
 }
 

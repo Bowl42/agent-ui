@@ -548,8 +548,10 @@ function MessageScrollerViewport({
     <MessageScrollerPrimitive.Viewport
       ref={setRef}
       data-slot="message-scroller-viewport"
+      // agentui: a container, so what is in it can take the room beside
+      // the column (a Markdown table wider than the text).
       className={cn(
-        "size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent data-pending-scroll:invisible",
+        "@container/message-scroller size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent data-pending-scroll:invisible",
         className
       )}
       {...props}

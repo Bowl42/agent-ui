@@ -118,11 +118,18 @@ the app.
   list's `start`), growing to pills for wider numbers with a shared gutter.
 - Tables have rules between rows only; the Markdown's column alignment
   (`--:`) lines numbers up on the right. Cells wrap, align at the top and
-  have a 24rem cap; wider tables scroll horizontally and take focus to
-  scroll by keyboard. Under each table, a button copies it (an HTML
-  table, so a spreadsheet or document pastes it as one, plus Markdown
-  text with the alignment kept) and one opens it full screen, its heading
-  pinned as it scrolls (`labels.table*`, `labels.close`).
+  have a 24rem cap. In a message scroller, a table wider than the text
+  takes the room either side, centred, as wide as its columns need (at
+  most the viewport less 48px each side, clear of a conversation map, and
+  1152px); with no more room, it scrolls horizontally and takes focus to
+  scroll by keyboard. Over each table, its size and a button that copies
+  it (an HTML table, so a spreadsheet or document pastes it as one, plus
+  Markdown text with the alignment kept) and one that opens it full
+  screen, its heading pinned as it scrolls (`labels.table*`,
+  `labels.close`). While it streams, a table shows whole rows only, each
+  fading in: a row waits for its line's end, the heading row for the
+  rule under it, so it never shows as pipes first, its columns never
+  shift with each word, and it only widens.
 - **Sources** are GFM footnotes: `[^1]` in the text is a numbered tile
   linking to its note, and the notes are a list under a rule, each with
   the site its link goes to (`rollupjs.org`). Turn the protocol's
