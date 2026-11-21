@@ -1073,6 +1073,57 @@ export const Running: Story = {
 }
 
 /**
+ * A running step whose words hold a link (an `AgentTurnTarget` with
+ * `href`): the link shimmers with them, its own ground clipped to its
+ * text. As its own layer (over the line's button), WebKit painted none
+ * of its words' ground in it, and its text was not seen.
+ */
+export const RunningLink: Story = {
+  args: {
+    id: "turn:running-link",
+    status: "running",
+    parts: [
+      read("link:read", "src/build.ts"),
+      {
+        type: "tool",
+        id: "link:agent",
+        kind: "agent",
+        status: "running",
+        title: (
+          <>
+            Starting{" "}
+            <AgentTurnTarget href="#review-the-build">
+              Review the build
+            </AgentTurnTarget>{" "}
+            · Helper
+          </>
+        ),
+      },
+    ],
+  },
+  render: (args) => <Exchange {...args} />,
+  play: async ({ canvasElement }) => {
+    // Folded, the run's line (a button) says it, the link its words alone.
+    const line = runLine("Starting Review the build · Helper")
+    await expect(line.querySelector("a")).toBeNull()
+    await expect(within(line).getByText("Review the build")).toBeVisible()
+    await userEvent.click(line)
+    const link = await waitFor(() => {
+      const found = canvasElement.querySelector<HTMLElement>(
+        "[data-slot=agent-turn-step] a[data-slot=agent-turn-target]"
+      )
+      expect(found).not.toBeNull()
+      return found!
+    })
+    await expect(link.closest(".shimmer")).not.toBeNull()
+    const style = getComputedStyle(link)
+    await expect(style.backgroundImage).not.toBe("none")
+    await expect(style.backgroundClip).toBe("text")
+    line.blur()
+  },
+}
+
+/**
  * Running while its link to the agent is lost: the step under way is not
  * seen going, so its line is still, no spinner and no shimmer, its icon
  * the step's own (a command's), not the run's first step's.

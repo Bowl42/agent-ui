@@ -4971,7 +4971,10 @@ ran, other }`, files once each), `failures`, `edits`, `changes`, `exit`,
   (`clampLabels` for other languages; `lines={false}` shows it all). Done with
   nothing, give it no `details`: the line does not open. Subagents under
   way each stand under their run's line; done, they join it ("Explored
-  with 3 agents").
+  with 3 agents"). With an `href`, its `AgentTurnTarget` is a link (e.g.
+  to the subagent's conversation) on its step's line, shimmering with
+  its words while it runs; in a fold's line saying the step under way,
+  a button, it is its words alone.
 
   ```tsx
   {

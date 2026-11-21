@@ -635,12 +635,17 @@ const StepDetailsContext = React.createContext<
   ((nests: boolean) => void) | null
 >(null)
 
+/** False inside a button (a fold's line): a target there is no link. */
+const TargetLinks = React.createContext(true)
+
 /**
  * What a tool call acted on, in its title: a file, a page, a command. In
  * the words' font, a step lighter than its verb ("Ran", "Read"): the
  * faintest grey, the muted one while its step runs. A `file` is
  * underlined with dots; with an `href`, it is a link (a file the app
- * opens). `code` marks a command; it looks as the rest.
+ * opens), but in a fold's line (the run's or the work's, saying the
+ * step under way), a button, where it is its words alone. `code` marks
+ * a command; it looks as the rest.
  */
 function AgentTurnTarget({
   code = false,
@@ -654,7 +659,8 @@ function AgentTurnTarget({
     "data-code": code || undefined,
     "data-file": file || undefined,
   }
-  if (href === undefined)
+  const links = React.useContext(TargetLinks)
+  if (href === undefined || !links)
     return (
       // A step lighter than its line's words: by its line's state, not its
       // step's, which a subagent's steps in the step's details would take.
@@ -676,6 +682,10 @@ function AgentTurnTarget({
       className={cn(
         // Over the line's own button, so it is the link that is pressed.
         "relative z-10 rounded-xs text-subtle-foreground underline decoration-muted-foreground/60 decoration-dotted underline-offset-3 outline-none hover:text-foreground hover:decoration-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
+        // In words that shimmer, it shimmers itself: a layer of its own,
+        // WebKit paints none of their clipped ground in it, and its text,
+        // transparent with theirs, was not seen.
+        "motion-safe:in-[.shimmer]:shimmer",
         className
       )}
       {...props}
@@ -1916,7 +1926,7 @@ function FoldLine({
           data-slot={`agent-turn-${slot}-title`}
           className={cn("min-w-0 truncate", open && "text-foreground")}
         >
-          {title}
+          <TargetLinks value={false}>{title}</TargetLinks>
         </span>
         <Chevron open={open} className="text-subtle-foreground" />
       </span>
