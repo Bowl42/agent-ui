@@ -449,7 +449,7 @@ Apps should follow the same rules:
 | Part                                                                                 | Open when                                                                                  | Shows when closed                                                                                                                          |
 | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | A turn's work: everything before its answer, what the agent said in between included | it runs, it failed or was stopped, it has no answer, or the reader touched it while it ran | "Worked for 6m 12s", "Failed after 1m 40s"; decisions, media and steps under way                                                           |
-| Work after a steer                                                                   | the same rule as the turn's work                                                           | "Continued for 40s", or "Continued"                                                                                                        |
+| Work before and after a steer                                                        | the same rule as the turn's work                                                           | each its own time: "Worked for 40s"; the last "Working" while it runs, counted from its steer                                              |
 | A superseded attempt                                                                 | never by itself                                                                            | "Superseded attempt", then its reason                                                                                                      |
 | A run: the steps between two things the agent said                                   | never by itself                                                                            | "Explored 6 files, edited 4, ran 4 commands", "⚠ 1 failed" at its end; decisions and media under it; while live, it says the step it is at |
 | Reads, searches and listings in a row, in a run                                      | never by itself                                                                            | "Read 6 files, searched 3 times"                                                                                                           |
@@ -544,9 +544,13 @@ Apps should follow the same rules:
   a `steer` part where it came, at the turn's end edge, always seen,
   as the user's message is (`UserMessageText`'s bubble and text, cut
   to 6 lines over "Show all" where long; `labels.steerClamp` its
-  fold's words). The work after it folds under its own title
-  ("Continued for 40s"), by the same rule as the turn's work; the turn's
-  title keeps the turn's whole time. Steers back to back split it once.
+  fold's words). The work before it and after it each fold under a
+  title as a turn's work does, by the same rule, with its own time: the
+  last "Working" while it runs, counted from its steer's `startedAt`,
+  the others "Worked for" theirs (the first steer's `before`, then each
+  steer's `duration`), or "Working" while a step of theirs is still
+  under way; only the last says the turn failed or stopped. Steers back
+  to back split it once.
   Where it is split is the app's data, not a guess of the UI's.
 - **A superseded attempt** (cut off by a steer, replaced by a retry) is
   one closed line, "Superseded attempt · Cut off by a steer", that opens
@@ -3807,7 +3811,7 @@ tree and filesystem operations.
   touch are the same ones. The picker keeps what it made of each level
   by the level, so opening it again, or a folder loading into a tree of
   100,000, makes again only what changed (10 ms, not 20, to open; `pnpm
-  perf`). A level changed in place is not seen.
+perf`). A level changed in place is not seen.
 - Files are hidden by default; `files="dimmed"` shows them disabled for context.
   The status count is the level being picked in: the folder typed into, or
   the picked folder's own (on a phone, the folder shown); folders, plus
@@ -4933,7 +4937,7 @@ command }`, `{ kind: "described", description }` or `{ kind: "script"
   reading"), `summary(count, kinds, others)` and `looked(count)` for the lines
   over a run and its reads (`count` is `{ read, searched, listed, edited,
 ran, other }`, files once each), `failures`, `edits`, `changes`, `exit`,
-  `steer`, `continued(duration)`, `superseded`, `cutOffBySteer`,
+  `steer`, `steerClamp`, `superseded`, `cutOffBySteer`,
   `waiting`, `earlierLines`, `allLines`, `copy`, `expand` and the rest.
   Past three groups, `summary` gets three (edits, commands, reads, the
   app's kinds, other tools, in that order of priority) and `others`, what
@@ -4942,9 +4946,12 @@ ran, other }`, files once each), `failures`, `edits`, `changes`, `exit`,
 - `AgentTurnStep` is a call's line alone, outside a turn (a request card,
   a search's match).
 - A steered turn has a `steer` part in `parts` (`id`, `content`, optional
-  `duration`). Its user bubble stays visible between the work folds; work
-  after it has its own fold, "Continued for 40s" ("Continued" without a
-  duration). Back-to-back steers split once, using the last steer's duration.
+  `startedAt`, `duration`, and on the first `before`). Its user bubble
+  stays visible between the work folds; the work before and after it each
+  has its own fold, titled as a turn's work with its own time ("Worked
+  for 1m 30s" before, from `before`; "Worked for 40s" after, from
+  `duration`; the last "Working", counted from `startedAt`, while it
+  runs). Back-to-back steers split once, using the last steer's duration.
   Where the turn is split is the app's data.
 - A `superseded` part (`id`, `parts`, optional `reason`) is an attempt the
   agent replaced, folded to one line. Without a reason, a steer immediately

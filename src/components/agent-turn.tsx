@@ -264,12 +264,18 @@ type AgentSteer = {
   id: string
   /** Their words, as the app renders them. */
   content: React.ReactNode
+  /** When it was sent (ms since the epoch): the work after it counts from it. */
+  startedAt?: number | undefined
   /**
    * How long the agent worked after it, as the app words it from its own
-   * timestamps ("40s"): the work after it is "Continued for 40s", else
-   * "Continued".
+   * timestamps ("40s"): the work after it is "Worked for 40s" once over.
    */
   duration?: string | undefined
+  /**
+   * The first steer's: how long the agent worked before it, from the
+   * turn's start ("2m 10s"): the work before it is "Worked for 2m 10s".
+   */
+  before?: string | undefined
 }
 
 /**
@@ -338,8 +344,6 @@ type AgentTurnLabels = {
   steer: string
   /** A long steer's fold: "Show all", "Show less", "N lines". */
   steerClamp: Partial<ClampLabels>
-  /** The title of the work after a steer: "Continued for 40s", "Continued". */
-  continued: (duration: string | undefined) => string
   /** A superseded attempt's line: "Superseded attempt". */
   superseded: string
   /** After it, when a steer comes right after it: "Cut off by a steer". */
@@ -457,8 +461,6 @@ const verbs: Record<AgentToolKind, [string, string, string]> = {
 const defaultLabels: AgentTurnLabels = {
   steer: "You",
   steerClamp: {},
-  continued: (duration) =>
-    duration ? `Continued for ${duration}` : "Continued",
   superseded: "Superseded attempt",
   cutOffBySteer: "Cut off by a steer",
   event: {},
@@ -2719,9 +2721,9 @@ function TurnWork({
 }
 
 /**
- * A turn, or a piece of a steered one: the work before its first steer
- * under the turn's title, or the work after a steer under its own
- * ("Continued for 40s"); the last piece has the answer and the end.
+ * A turn, or a piece of a steered one: the work before its first steer,
+ * or the work after a steer, each under a title as a turn's work with its
+ * own time ("Worked for 40s"); the last piece has the answer and the end.
  */
 function Segment({
   segment,
@@ -2914,22 +2916,29 @@ function Segment({
   // Nothing seen going while its link is lost: the line at its end says so.
   const pending =
     running && segment?.last !== false && !live && connection === undefined
-  const seconds = useElapsed(running ? startedAt : undefined)
-  const title = segment?.steer
-    ? labels.continued(segment.steer.duration)
-    : running
-      ? thinking
-        ? labels.thinking
-        : labels.working
-      : status === "error"
-        ? labels.failed(duration)
-        : status === "stopped"
-          ? labels.stopped(duration)
-          : labels.worked(duration)
+  // A piece of a steered turn says its own, as a turn's work: the last
+  // runs as the turn does, counted from its steer; one before it is over,
+  // however the turn ends, unless a step of it is still under way.
+  const current = segment?.last !== false
+  const seconds = useElapsed(
+    running && current ? (segment?.steer?.startedAt ?? startedAt) : undefined
+  )
+  const goingOn =
+    running &&
+    (current || parts.some((part) => part.type === "tool" && active(part)))
+  const title = goingOn
+    ? thinking
+      ? labels.thinking
+      : labels.working
+    : status === "error" && current
+      ? labels.failed(duration)
+      : status === "stopped" && current
+        ? labels.stopped(duration)
+        : labels.worked(duration)
   // While it runs: how long, counted from `startedAt` (or the app's
   // `duration`), and the app's `metrics`.
   const since = seconds !== undefined ? labels.elapsed(seconds) : duration
-  const going = running && !segment?.steer && (
+  const going = running && current && (
     <>
       {since && (
         <span data-slot="agent-turn-elapsed" className="tabular-nums">
@@ -3237,6 +3246,8 @@ function AgentTurn(
     >
       {groups.map((group, index) => {
         const steer = group.steers.at(-1)
+        // Each piece's own time: after its steer, or before the first.
+        const own = steer ? steer.duration : groups[1]?.steers[0]?.before
         return (
           <React.Fragment key={steer?.id ?? id}>
             {group.steers.map((part) => (
@@ -3246,6 +3257,7 @@ function AgentTurn(
               {...props}
               className={undefined}
               parts={group.parts}
+              duration={own}
               segment={{
                 ...(steer ? { steer } : {}),
                 last: index === groups.length - 1,

@@ -474,6 +474,7 @@ const steeredParts: AgentTurnPart[] = [
     id: "steer:message",
     content: "Use the existing helper instead",
     duration: "40s",
+    before: "1m 30s",
   },
   read("continued:read", "src/helper.ts"),
   edit("continued:edit", "src/app.tsx"),
@@ -481,7 +482,10 @@ const steeredParts: AgentTurnPart[] = [
   text("steer:answer", "The existing helper is now used."),
 ]
 
-/** A steer stays visible between independently folded runs of work. */
+/**
+ * A steer stays visible between independently folded runs of work, each
+ * titled as a turn's work with its own time: before the steer, after it.
+ */
 export const Steered: Story = {
   args: {
     id: "steered",
@@ -494,8 +498,8 @@ export const Steered: Story = {
       "[data-slot=agent-turn-work-trigger]"
     )
     await expect(titles).toHaveLength(2)
-    await expect(titles[0]).toHaveTextContent("Worked for 2m 10s")
-    await expect(titles[1]).toHaveTextContent("Continued for 40s")
+    await expect(titles[0]).toHaveTextContent("Worked for 1m 30s")
+    await expect(titles[1]).toHaveTextContent("Worked for 40s")
     for (const title of titles)
       await expect(title).toHaveAttribute("aria-expanded", "false")
     const bubble = canvasElement.querySelector<HTMLElement>(
@@ -637,7 +641,7 @@ export const SteerAsUserMessage: Story = {
   },
 }
 
-/** Consecutive user steers share one continued fold, titled by the last. */
+/** Consecutive user steers share one fold after them, timed by the last. */
 export const SteeredTwice: Story = {
   args: {
     id: "twice",
@@ -657,14 +661,20 @@ export const SteeredTwice: Story = {
     await expect(
       canvasElement.querySelectorAll("[data-slot=agent-turn-steer]")
     ).toHaveLength(2)
-    await expect(canvas.getAllByText(/^Continued/)).toHaveLength(1)
+    const titles = canvasElement.querySelectorAll<HTMLElement>(
+      "[data-slot=agent-turn-work-trigger]"
+    )
+    await expect(titles).toHaveLength(2)
     await waitFor(() =>
-      expect(canvas.getByText("Continued for 12s")).toBeVisible()
+      expect(canvas.getByText("Worked for 12s")).toBeVisible()
     )
   },
 }
 
-/** Only the work after the latest steer has a running, shimmering title. */
+/**
+ * Only the work after the latest steer is "Working", shimmering, counted
+ * from the steer; the work before it is over, "Worked for" its time.
+ */
 export const SteeredRunning: Story = {
   args: {
     id: "steering",
@@ -675,19 +685,26 @@ export const SteeredRunning: Story = {
         type: "steer",
         id: "live:steer",
         content: "Use the existing helper instead",
+        startedAt: Date.now() - 42_000,
+        before: "1m 30s",
       },
       read("live:read", "src/helper.ts"),
       edit("live:edit", "src/app.tsx"),
       command("live:command", "pnpm test", "", "running"),
     ],
   },
-  play: async ({ canvasElement, canvas }) => {
-    const title = canvas.getByText("Continued")
+  play: async ({ canvasElement }) => {
+    const titles = canvasElement.querySelectorAll<HTMLElement>(
+      "[data-slot=agent-turn-work-trigger]"
+    )
+    await expect(titles).toHaveLength(2)
+    await expect(titles[0]).toHaveTextContent("Worked for 1m 30s")
+    await expect(titles[0]!.querySelector(".shimmer")).toBeNull()
+    const title = within(titles[1]!).getByText("Working")
     await expect(title).toHaveClass("shimmer", "motion-reduce:shimmer-none")
     await expect(title.closest("button")).toHaveClass("text-foreground")
-    await expect(
-      canvasElement.querySelectorAll("[data-slot=agent-turn-work-trigger]")
-    ).toHaveLength(2)
+    // Counted from the steer, not the turn.
+    await expect(titles[1]).toHaveTextContent(/Working · 4[2-9]s/)
     await waitFor(() =>
       expect(runLine("Running pnpm test", canvasElement)).toBeVisible()
     )
