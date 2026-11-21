@@ -541,8 +541,10 @@ Apps should follow the same rules:
   steps' column; the step that comes takes its place, so nothing moves.
   With the work folded, or nothing come yet, it is under the title.
 - **A turn the user steers** (a message sent while it runs) keeps it as
-  a `steer` part where it came, a small muted bubble at the turn's end
-  edge, always seen. The work after it folds under its own title
+  a `steer` part where it came, at the turn's end edge, always seen,
+  as the user's message is (`UserMessageText`'s bubble and text, cut
+  to 6 lines over "Show all" where long; `labels.steerClamp` its
+  fold's words). The work after it folds under its own title
   ("Continued for 40s"), by the same rule as the turn's work; the turn's
   title keeps the turn's whole time. Steers back to back split it once.
   Where it is split is the app's data, not a guess of the UI's.

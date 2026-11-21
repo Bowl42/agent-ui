@@ -331,8 +331,13 @@ type AgentWorkCount = {
 type AgentStepState = "done" | "running" | "waiting" | "stopped"
 
 type AgentTurnLabels = {
-  /** Before a steer's words, for screen readers: "You". */
+  /**
+   * Before a steer's words, for screen readers, and the bar over a long
+   * one opened and scrolled past its start: "You".
+   */
   steer: string
+  /** A long steer's fold: "Show all", "Show less", "N lines". */
+  steerClamp: Partial<ClampLabels>
   /** The title of the work after a steer: "Continued for 40s", "Continued". */
   continued: (duration: string | undefined) => string
   /** A superseded attempt's line: "Superseded attempt". */
@@ -451,6 +456,7 @@ const verbs: Record<AgentToolKind, [string, string, string]> = {
 
 const defaultLabels: AgentTurnLabels = {
   steer: "You",
+  steerClamp: {},
   continued: (duration) =>
     duration ? `Continued for ${duration}` : "Continued",
   superseded: "Superseded attempt",
@@ -3246,8 +3252,9 @@ function AgentTurn(
 
 /**
  * What the user sent into the turn while it ran, where it came: their
- * words in a small muted bubble at the turn's end edge, as their message
- * is, a size smaller, at most 9 of the column's 12 columns.
+ * words as their message's (`UserMessageText`'s), in a muted bubble at
+ * the turn's end edge, at most 9 of the column's 12 columns, cut to 6
+ * lines when longer (a long one, cut or opened, 10).
  */
 function Steer({
   part,
@@ -3257,16 +3264,26 @@ function Steer({
   labels?: Partial<AgentTurnLabels> | undefined
 }) {
   const { labels } = React.useContext(TurnContext)
+  const you = overrides?.steer ?? labels.steer
+  const clampLabels = { ...labels.steerClamp, ...overrides?.steerClamp }
   return (
     <Bubble
       variant="muted"
       data-slot="agent-turn-steer"
       data-part-id={part.id}
-      className="my-3 ms-auto max-w-span-9"
+      className="my-3 ms-auto max-w-span-9 has-[[data-slot=clamp]:is([data-clamped],[data-open])]:max-w-span-10"
     >
-      <BubbleContent className="px-3 py-2 text-2sm whitespace-pre-wrap max-sm:text-md">
-        <span className="sr-only">{overrides?.steer ?? labels.steer}: </span>
-        {part.content}
+      {/* As UserMessageText's: not clipped, for the bar to stick. */}
+      <BubbleContent className="overflow-visible px-3 py-2 text-base leading-7 [--clamp-muted:var(--muted-foreground)] max-sm:rounded-2xl">
+        <span className="sr-only">{you}: </span>
+        <Clamp
+          lines={6}
+          title={you}
+          labels={clampLabels}
+          className="scroll-mt-4 [&>[data-slot=clamp-content]]:whitespace-pre-wrap"
+        >
+          {part.content}
+        </Clamp>
       </BubbleContent>
     </Bubble>
   )

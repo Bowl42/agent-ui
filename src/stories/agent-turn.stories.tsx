@@ -577,6 +577,66 @@ export const SteerOnTheGrid: Story = {
   },
 }
 
+/**
+ * A steer's words as the user's message's: 16px on lines of 28px, the
+ * same bubble; a long one cut to 6 lines, "Show all" opening it.
+ */
+export const SteerAsUserMessage: Story = {
+  decorators: [
+    (Story) => (
+      <div className="w-188 max-w-full">
+        <UserMessage>
+          <UserMessageText>Make the build faster.</UserMessageText>
+        </UserMessage>
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    id: "steer-long",
+    status: "done",
+    parts: [
+      ...steeredParts.slice(0, 3),
+      {
+        type: "steer",
+        id: "steer:many",
+        content: Array.from(
+          { length: 9 },
+          (_, line) => `Step ${line + 1}: keep the public API unchanged.`
+        ).join("\n"),
+        duration: "12s",
+      },
+      ...steeredParts.slice(4),
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const steer = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=agent-turn-steer] [data-slot=bubble-content]"
+    )!
+    const message = canvasElement.querySelector<HTMLElement>(
+      "[data-slot=user-message-text] [data-slot=bubble-content]"
+    )!
+    await waitFor(() => expect(steer).toBeVisible())
+    const style = (element: HTMLElement) => {
+      const { fontSize, lineHeight, paddingInlineStart, paddingTop } =
+        getComputedStyle(element)
+      return { fontSize, lineHeight, paddingInlineStart, paddingTop }
+    }
+    await expect(style(steer)).toEqual(style(message))
+    await expect(style(steer).fontSize).toBe("16px")
+    const clamp = steer.querySelector("[data-slot=clamp]")!
+    const content = steer.querySelector<HTMLElement>(
+      "[data-slot=clamp-content]"
+    )!
+    await waitFor(() => expect(clamp).toHaveAttribute("data-clamped"))
+    await expect(content.clientHeight).toBe(6 * 28)
+    await userEvent.click(
+      within(steer).getByRole("button", { name: "Show all" })
+    )
+    await waitFor(() => expect(content.clientHeight).toBe(9 * 28))
+  },
+}
+
 /** Consecutive user steers share one continued fold, titled by the last. */
 export const SteeredTwice: Story = {
   args: {
