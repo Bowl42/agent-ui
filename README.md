@@ -108,6 +108,7 @@ Copied into your app as a starting point to edit.
 | `message-outline`               | A long answer's outline, beside it or in a button at its top.                                  |
 | `message-reader`                | A message read on its own, over the conversation, with its outline and search.                 |
 | `message-scroller-load-earlier` | Loads earlier messages of a long conversation.                                                 |
+| `conversation-skeleton`         | A conversation not here yet: a message asked and the lines of an answer.                       |
 | `conversation-find`             | Ctrl/⌘F through a conversation, folded parts included.                                         |
 | `conversation-minimap`          | A conversation's map, a tick per user message, in the margin.                                  |
 | `conversation-details`          | A conversation's details: where it runs, its branch and changes, its subagents.                |

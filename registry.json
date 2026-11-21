@@ -218,14 +218,14 @@
             "vector-effect": "non-scaling-stroke"
           },
           "::highlight(mark)": {
-          "background-color": "var(--mark)",
-          "color": "inherit"
-        },
-        "::highlight(mark-current)": {
-          "background-color": "var(--mark-current)",
-          "color": "inherit"
-        },
-        "::selection": {
+            "background-color": "var(--mark)",
+            "color": "inherit"
+          },
+          "::highlight(mark-current)": {
+            "background-color": "var(--mark-current)",
+            "color": "inherit"
+          },
+          "::selection": {
             "background-color": "color-mix(in oklch, var(--foreground) 18%, transparent)"
           },
           "[data-slot=dialog-content], [data-slot=alert-dialog-content]": {
@@ -481,10 +481,7 @@
       "type": "registry:ui",
       "title": "Avatar",
       "description": "shadcn/ui's base-nova avatar, as shadcn's, its badge's 10px dot marked as a mark (`grid: mark`), so an app's check-grid passes it. Its spacing on the 4px module (docs/grid.md). AvatarBadge takes variant (success, warning, info, destructive) for its dot's colour by a state, e.g. a reminder on an account.",
-      "dependencies": [
-        "@base-ui/react",
-        "cn"
-      ],
+      "dependencies": ["@base-ui/react", "cn"],
       "files": [
         {
           "path": "src/components/ui/avatar.tsx",
@@ -530,9 +527,7 @@
       "type": "registry:ui",
       "title": "Card",
       "description": "shadcn/ui's base-nova card, fixed: its title's line 24px, a whole step, not leading-snug's 22. Its spacing on the 4px module (docs/grid.md).",
-      "dependencies": [
-        "cn"
-      ],
+      "dependencies": ["cn"],
       "files": [
         {
           "path": "src/components/ui/card.tsx",
@@ -666,10 +661,7 @@
       "type": "registry:ui",
       "title": "Alert Dialog",
       "description": "shadcn/ui's base-nova alert dialog, fixed: its footer's buttons sit under the content, without the ruled-off band, as Dialog's. Its spacing on the 4px module (docs/grid.md). It pops in and out by the theme's motion-pop (in at 150ms on --ease-enter, out at 100ms on --ease-exit), not shadcn's 100ms on `ease`. On a phone it is a sheet from the bottom as a dialog's, its footer kept at its foot, and on a short screen (short:) its buttons in a row.",
-      "dependencies": [
-        "@base-ui/react",
-        "cn"
-      ],
+      "dependencies": ["@base-ui/react", "cn"],
       "registryDependencies": [
         "Bowl42/agentui/button",
         "Bowl42/agentui/dialog"
@@ -686,11 +678,7 @@
       "type": "registry:ui",
       "title": "Toggle",
       "description": "shadcn/ui's base-nova toggle, fixed: its padding on the 4px module (docs/grid.md), 12px inline at its default and large sizes, 8px small, 4px on an icon's side, as Button's.",
-      "dependencies": [
-        "@base-ui/react",
-        "class-variance-authority",
-        "cn"
-      ],
+      "dependencies": ["@base-ui/react", "class-variance-authority", "cn"],
       "files": [
         {
           "path": "src/components/ui/toggle.tsx",
@@ -1469,6 +1457,20 @@
       ]
     },
     {
+      "name": "conversation-skeleton",
+      "type": "registry:component",
+      "title": "Conversation Skeleton",
+      "description": "A conversation not here yet (ConversationSkeleton): a message asked, at the end edge in a bubble the user's message's size and corners, and the lines of an answer in the conversation's type (16px on lines of 28px); a status named by label (\"Loading conversation\"), seen only past a short wait (animate-wait-in) so a quick load never flashes it. SkeletonLines: lines of text not here yet, each a thin rounded bar on a line of the text's height, so the place is as tall as the text will be; widths one a line.",
+      "dependencies": ["cn"],
+      "registryDependencies": ["skeleton"],
+      "files": [
+        {
+          "path": "src/components/conversation-skeleton.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "message-divider",
       "type": "registry:component",
       "title": "Message Divider",
@@ -1622,9 +1624,7 @@
       "type": "registry:component",
       "title": "Auth Page",
       "description": "A sign-in or sign-up page, the app's form in it. Wide (48rem and up, by its own width): two halves, the app's aside on the muted grey at the start (the brand at the top, its title, h2, and words at the foot) and the form on the page's colour at the end, its title (h1, text-display) and description over it, switchTo (e.g. a link to sign up) at the top's end on the brand's line, terms at the foot. Narrow: the form on a card on the grey, the brand and switchTo above it, the terms under it; the aside only with asideOnNarrow. The app puts in its form and its words, no styles of its own. With titlebar, in a desktop window whose own buttons are over the page, a bar across its top as high as the window's title bar (env(titlebar-area-height), else --agent-app-titlebar-height on the root, else 40px) drags the window as an AgentApp titlebar does, the page 8px under it. Wide or narrow by its own width, measured (data-wide, group-data-wide/auth: for the app's), not a container query, so no size container wraps the form's own.",
-      "dependencies": [
-        "cn"
-      ],
+      "dependencies": ["cn"],
       "files": [
         {
           "path": "src/components/auth-page.tsx",
@@ -1651,11 +1651,7 @@
       "type": "registry:component",
       "title": "Picture in Picture",
       "description": "A small window in a corner of its place (the nearest positioned ancestor, e.g. the main area) showing what an agent is on while the conversation goes on: of its items (pages, terminals), the one it is on (active), following it from one to the next. Dots (or \"2/12\" past seven; under a finger 28px wide each, so a tap takes its own, a count past four and in a pill) say how many there are; a swipe across the preview (taken on past its side, a move: the window catches up with the finger), a sideways scroll, the left and right arrows or a dot go through them, and it then stays where the reader went, a Follow button taking it back (following, onFollowingChange; onShownChange says which it shows, e.g. to stream that one's frames only). Each is a card (its title and preview, at aspectRatio 16:10; 320px wide, 240px on a phone) or a pill of one line (its icon, line and status; up to 384px, 240px on a phone), as its form says or the reader makes it (Minimize; the pill's line shows the card again, or expands one with no preview); a terminal is best a pill of its last line, PictureInPictureLines its last lines for a card. Dragged by any part but its buttons, it lands in the corner it is let go nearest or thrown towards, sliding there (none with reduced motion), or, let go with its middle past a side or thrown out past the side it is at, tucks into it, a 24px tab left; a tap on its preview is still a press; Shift and the arrow keys move it. corner/defaultCorner/onCornerChange in the reading direction, 16px (inset) from its place's edges and the safe areas. An item's attention is a strip under a card or the pill's line, in the text's colour with a ring, read out, the window nudged once. Expand (onExpand(id), e.g. into the side panel) and Close (onClose) are the app's; the app renders it while it shows.",
-      "dependencies": [
-        "cn",
-        "@hugeicons/react",
-        "@hugeicons/core-free-icons"
-      ],
+      "dependencies": ["cn", "@hugeicons/react", "@hugeicons/core-free-icons"],
       "registryDependencies": [
         "Bowl42/agentui/button",
         "Bowl42/agentui/tooltip"
@@ -1672,9 +1668,7 @@
       "type": "registry:component",
       "title": "Code Readout",
       "description": "A short code read out to be typed elsewhere (a sign-in's one-time code, a device's pairing code): 32px on 40px lines (the theme's text-readout), monospaced, its characters in groups (`group`, 4 by default) apart by a margin, not spaces, so it is copied and selected whole; read out character by character to a screen reader, its `label` first. Beside it, a CopyButton with `showLabel`.",
-      "dependencies": [
-        "cn"
-      ],
+      "dependencies": ["cn"],
       "files": [
         {
           "path": "src/components/code-readout.tsx",
@@ -1687,9 +1681,7 @@
       "type": "registry:component",
       "title": "Stat",
       "description": "Headline numbers and facts of a page: StatGrid (as many columns as fit, each at least 192px, 16px apart), Stat (a card's hairline edge, 16px in) of StatLabel (13px, grey), StatValue (22px, text-display, tabular) and StatDetail (a line in the faintest grey); and FactList, a row of Facts under a page's title, each its label small and grey over its value, 24px apart, wrapping where narrow (a description list).",
-      "dependencies": [
-        "cn"
-      ],
+      "dependencies": ["cn"],
       "files": [
         {
           "path": "src/components/stat.tsx",
@@ -2359,11 +2351,7 @@
       "type": "registry:component",
       "title": "Viewer Overlay",
       "description": "A viewer over the whole window, e.g. a conversation's image, as a dialog: to the window's edges, one surface (no inset, corners or card in it). The app's viewer (a MediaViewer, or any ViewerFrame) fills it, its toolbar the window's top row (ViewerFrameTitlebar): as tall as an AgentApp's titlebar (--agent-app-titlebar, else 44px), past the window's own buttons (--agent-app-titlebar-inset), dragging the window but by its controls ([data-titlebar], app-region: drag; a host that drags it itself does so on a pointerdown there whose target is not a control); the viewer's name at its start, its facts after it, quieter (not in More, which is there only for the app's menu), then its lead (an image's versions and compare); at its end \"Open in side panel\" (where the app has a panel to move it to) and close (its own row with the overlay's label where the viewer has no toolbar). The viewer's tools are islands at the middle of its foot, over the composer and never over the image: marking (a mode whose tools, Clear marks and the send come after it) and the app's edits, then the zoom with the viewer's and the app's tools, add to chat, download and More; on two rows where they have no room on one. A strip of the conversation's images at the start, under the row (even of one; a placeholder for one with no thumbnail yet, the app loading it when it is picked, a spinner while `loading`) picking the one shown, its current one ringed and kept in view, gone on a phone; round buttons to the one before and after by the viewer's sides, with a mouse while it points at the viewer or one has focus, always under a finger and on a phone (the app gives its viewer no previous and next of its own); past a phone's status bar; and the app's composer under it, to ask about what is shown while it is. ← → go to the one before and after, where focus is not in a field, a menu or a slider.",
-      "dependencies": [
-        "cn",
-        "@hugeicons/react",
-        "@hugeicons/core-free-icons"
-      ],
+      "dependencies": ["cn", "@hugeicons/react", "@hugeicons/core-free-icons"],
       "registryDependencies": [
         "Bowl42/agentui/button",
         "Bowl42/agentui/dialog",

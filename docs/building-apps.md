@@ -3108,6 +3108,17 @@ copy and app actions in the header, then Revise and Implement at its foot.
   nested labels merge with their English defaults. `title` overrides
   the default title, and `lines` defaults to 12.
 
+### `conversation-skeleton`
+
+A conversation not here yet, e.g. while the app loads its messages:
+`<ConversationSkeleton />` in the scroller's place, a message asked in a
+bubble the user's message's size and the lines of an answer, in the
+conversation's type. It is a status (`label`, "Loading conversation") and
+shows only past a short wait (`animate-wait-in`), so a quick load never
+flashes it. `SkeletonLines` is its lines alone, each on a line of the
+text's height, for any text not here yet: `<SkeletonLines
+className="text-sm leading-5" widths={["w-1/3", "w-2/3"]} />`.
+
 ### `message-divider`
 
 An event in a conversation between its messages: a day, the context
