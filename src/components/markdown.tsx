@@ -1174,11 +1174,12 @@ function Table(all: ElementProps<"table">) {
         "flex min-w-0 flex-col",
         // In a message scroller (itself `@container/message-scroller`),
         // a table of the answer's own wider than the text takes the room
-        // either side, centred, as wide as it needs: at most the room less
-        // 48px each side (clear of a conversation map there), and 1152px.
+        // either side, centred, as wide as it needs: at most the scroller
+        // less 56px each side (past a scrollbar, 48: clear of a
+        // conversation map there), and 1152px.
         // Never narrower than the text; where there is no more room, it
         // scrolls as before.
-        "@min-[0px]/message-scroller:[[data-slot=markdown]>&]:w-max @min-[0px]/message-scroller:[[data-slot=markdown]>&]:max-w-[min(100cqw-6rem,72rem)] @min-[0px]/message-scroller:[[data-slot=markdown]>&]:min-w-full @min-[0px]/message-scroller:[[data-slot=markdown]>&]:self-center"
+        "@min-[0px]/message-scroller:[[data-slot=markdown]>&]:w-max @min-[0px]/message-scroller:[[data-slot=markdown]>&]:max-w-[min(100cqw-7rem,72rem)] @min-[0px]/message-scroller:[[data-slot=markdown]>&]:min-w-full @min-[0px]/message-scroller:[[data-slot=markdown]>&]:self-center"
       )}
     >
       {/* Over it, its size and its buttons: seen as the table's, where

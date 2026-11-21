@@ -1273,7 +1273,7 @@ export const TableHeader: Story = {
 /**
  * In a wide conversation, a table wider than the text takes the room
  * either side, centred, as wide as its columns need, clear of the
- * scroller's edges by 48px; the text keeps its width, and a table that
+ * scroller's edges by 48px (past a scrollbar too); the text keeps its width, and a table that
  * fits keeps the text's.
  */
 export const TableSpread: Story = {
@@ -1302,6 +1302,7 @@ export const TableSpread: Story = {
       Math.abs(lane.left - wide!.left - (wide!.right - lane.right))
     ).toBeLessThanOrEqual(1)
     await expect(wide!.left - viewport.left).toBeGreaterThanOrEqual(48)
+    await expect(viewport.right - wide!.right).toBeGreaterThanOrEqual(48)
     await expect(fits!.width).toBe(lane.width)
     await expect(fits!.left).toBe(lane.left)
     // Its columns whole: nothing to scroll.

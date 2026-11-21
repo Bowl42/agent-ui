@@ -120,9 +120,9 @@ the app.
   (`--:`) lines numbers up on the right. Cells wrap, align at the top and
   have a 24rem cap. In a message scroller, a table wider than the text
   takes the room either side, centred, as wide as its columns need (at
-  most the scroller less 48px each side, clear of a conversation map, and
-  1152px); with no more room, it scrolls horizontally and takes focus to
-  scroll by keyboard. Over each table, its size and a button that copies
+  most the scroller less 56px each side, 48 past a scrollbar, clear of a
+  conversation map, and 1152px); with no more room, it scrolls
+  horizontally and takes focus to scroll by keyboard. Over each table, its size and a button that copies
   it (an HTML table, so a spreadsheet or document pastes it as one, plus
   Markdown text with the alignment kept) and one that opens it full
   screen, its heading pinned as it scrolls (`labels.table*`,
