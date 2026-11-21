@@ -510,8 +510,11 @@ function MessageScroller({
   return (
     <MessageScrollerPrimitive.Root
       data-slot="message-scroller"
+      // agentui: a container, so what is in it can take the room beside
+      // the column (a Markdown table wider than the text). Not the
+      // viewport: WebKit then misses the end it is held at.
       className={cn(
-        "group/message-scroller relative flex size-full min-h-0 flex-col overflow-clip",
+        "group/message-scroller @container/message-scroller relative flex size-full min-h-0 flex-col overflow-clip",
         className
       )}
       {...props}
@@ -548,10 +551,8 @@ function MessageScrollerViewport({
     <MessageScrollerPrimitive.Viewport
       ref={setRef}
       data-slot="message-scroller-viewport"
-      // agentui: a container, so what is in it can take the room beside
-      // the column (a Markdown table wider than the text).
       className={cn(
-        "@container/message-scroller size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent data-pending-scroll:invisible",
+        "size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent data-pending-scroll:invisible",
         className
       )}
       {...props}

@@ -1172,7 +1172,7 @@ function Table(all: ElementProps<"table">) {
       data-slot="markdown-table"
       className={cn(
         "flex min-w-0 flex-col",
-        // In a message scroller (its viewport `@container/message-scroller`),
+        // In a message scroller (itself `@container/message-scroller`),
         // a table of the answer's own wider than the text takes the room
         // either side, centred, as wide as it needs: at most the room less
         // 48px each side (clear of a conversation map there), and 1152px.
