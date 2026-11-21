@@ -274,9 +274,8 @@ function UsageCard({
             <ChartContainer
               config={config}
               // Reached by Tab (accessibilityLayer), the arrow keys moving
-              // its tooltip from bar to bar: a focus ring round it, as
-              // shadcn's chart hides the surface's outline.
-              className="aspect-auto h-50 w-full rounded-md has-[.recharts-surface:focus-visible]:ring-3 has-[.recharts-surface:focus-visible]:ring-ring/50"
+              // its tooltip from bar to bar: the chart's own focus ring.
+              className="aspect-auto h-50 w-full"
               role="img"
               aria-label={`${labels.title} · ${labels.ranges[range]}`}
             >

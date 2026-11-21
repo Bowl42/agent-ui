@@ -778,7 +778,7 @@
       "name": "chart",
       "type": "registry:ui",
       "title": "Chart",
-      "description": "shadcn/ui's base-nova chart, fixed: its tooltip 12px by 8px inside, 8px under its label, 4px between its rows; a swatch is sized as a glyph. Its spacing on the 4px module (docs/grid.md).",
+      "description": "shadcn/ui's base-nova chart, fixed: its tooltip 12px by 8px inside, 8px under its label, 4px between its rows; a swatch is sized as a glyph; reached by Tab (accessibilityLayer), a focus ring round it, the surface's own being hidden. Its spacing on the 4px module (docs/grid.md).",
       "dependencies": ["cn", "recharts@3.8.0"],
       "registryDependencies": ["Bowl42/agentui/card"],
       "files": [
