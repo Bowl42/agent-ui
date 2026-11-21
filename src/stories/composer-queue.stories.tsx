@@ -524,8 +524,9 @@ export const From: Story = {
     // Before the text, a third of the row at most, cut; the text keeps
     // the rest.
     const box = row.getBoundingClientRect()
+    // A hair over in Firefox on Linux, its layout's rounding.
     await expect(from.getBoundingClientRect().right).toBeLessThanOrEqual(
-      text.getBoundingClientRect().left
+      text.getBoundingClientRect().left + 0.01
     )
     await expect(from.getBoundingClientRect().width).toBeLessThanOrEqual(
       box.width / 3 + 0.5
